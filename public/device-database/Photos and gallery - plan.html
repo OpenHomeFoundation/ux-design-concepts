@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Photos and gallery · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 02 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Photos and gallery: knowing the box when you see it</h1>
+    <p class="lede">
+      A device is a physical thing in a physical box, and half of recognising it is seeing it. This increment
+      adds <strong>curated product and packaging photos</strong>: a gallery on the device page and lead
+      thumbnails on Browse cards. The photos are reference imagery, held to the same evidence bar as every other
+      enrichment. This is the plan for that, and for what a missing photo must never do.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 02 · Richer device pages</span>
+      <span class="muted">·</span>
+      pairs with
+      <a href="Browse%20grid%20view%20-%20plan.html" target="_blank" rel="noopener">Browse grid view</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>A photo is reference, not decoration.</strong>
+        It shows the reader the exact box on the shelf and the device in hand, so the entry they are reading is
+        the product they are holding. Photos are enrichment assets, curated and attributed like prose, and they
+        are always optional: a device with none reads perfectly well, it just reads in words.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>A gallery on the page, a lead on the card</h2>
+    <p class="muted">
+      Photos live as an array on the device record, contributed and curated like any Stage 02 field. They surface
+      in two places. On the device page, a gallery: product shots and packaging, captioned, opened to full size.
+      On Browse, the first photo becomes the card's lead thumbnail, which is what makes the grid view worth
+      looking at.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>On the device page<span class="tag">detail.jsx · gallery</span></h4>
+        <p>A gallery of curated shots: the product, the packaging, the ports. Reference imagery a reader checks against the thing in their hands, not a hero banner.</p>
+      </div>
+      <div class="pane">
+        <h4>On Browse<span class="tag">browse.jsx · lead thumbnail</span></h4>
+        <p>The first photo leads the card, in the grid especially. Where there is no photo, a clean placeholder or text card stands in, never a broken frame.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      With the increment off, the page and cards fall back to text, and nothing about the layout breaks. Photos
+      are an addition over the record, not a dependency of it, which is exactly what lets the increment be toggled
+      cleanly alongside its Stage 02 siblings.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The dependency</p>
+    <h2>Independent of the grid, the reason the grid sings</h2>
+    <p class="muted">
+      Photos and Browse grid view are separate increments. Photos show up in the list and the gallery with the
+      grid off, and the grid renders text cards with photos off. But the lead thumbnail is what a photo-forward
+      grid is for, so the pair is where each one pays off most. Ship and judge them separately, expect them to
+      compound.
+    </p>
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail"><span class="id">02·B</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>Curated photos, gallery and thumbnails</h4>
+          <p>
+            A photos array on the record, a captioned gallery on the device page, and a lead thumbnail on Browse
+            cards, with a graceful placeholder where a device has none. Removable: off falls back to text.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium <span class="mono">· asset handling and curation</span></dd>
+            <dt>Depends on</dt><dd>Stage 02 core only</dd>
+            <dt>Compounds with</dt><dd><span class="mono">grid-view</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Evidence imagery, never a storefront</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Product and packaging, not marketing renders.</strong> The job of a photo is recognition: this is the box, this is the device. Lifestyle hero shots and glamour renders are the wrong register for a reference.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>A missing photo is a graceful gap.</strong> No photo means a placeholder or a text card, never a hidden device and never a broken frame. Coverage will always be partial, and that is fine.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Photos are attributed like any edit.</strong> A contributed photo carries its contributor, the same provenance every Stage 02 field gets. Imagery is held to the evidence bar, not exempt from it.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The photo informs, it never ranks.</strong> Having a picture does not promote a device in Browse. The result order is the filter's, not the gallery's.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Treat photos as evidence.</strong> Curate product and packaging shots that help a reader confirm the device, and keep marketing imagery out. The register is a reference catalogue, not a shop.</p></li>
+      <li><p><strong>Design the empty state first.</strong> Most devices will start with no photo. The placeholder and text fallback are the common case, so make them clean, not an afterthought.</p></li>
+      <li><p><strong>Ship alongside the grid, measure together.</strong> The lead thumbnail is what the grid view was built around. The two increments are independent, but their value is clearest as a pair.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

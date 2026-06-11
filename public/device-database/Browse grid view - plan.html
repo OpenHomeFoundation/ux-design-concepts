@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Browse grid view · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 02 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Browse grid view: a second way to look, not a second list</h1>
+    <p class="lede">
+      Browse ships as a list, dense and scannable, one row per device. The grid view adds a
+      <strong>photo-forward layout and a list-or-grid toggle</strong>, for the moments when you are
+      shopping by eye rather than reading specs. It is a display option over the exact same filtered set.
+      This is the plan for keeping it a view, and never letting it become a different answer.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 02 · Richer device pages</span>
+      <span class="muted">·</span>
+      pairs with
+      <a href="Photos%20and%20gallery%20-%20plan.html" target="_blank" rel="noopener">Photos and gallery</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>The grid changes how the results look, never which results they are.</strong>
+        Same filters, same predicate, same count. The toggle is a lens on one list, not a parallel index that
+        could drift from it. That single rule is what makes the increment safe to switch off: turn it off and
+        Browse falls back to the list with nothing lost.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>One result set, two layouts</h2>
+    <p class="muted">
+      Browse already owns the hard part: a filter model in the URL, a predicate that runs over reported fields,
+      and a live count. The grid view sits on top of that. It reads the same filtered set and lays it out as
+      cards that lead with the device photo, where one exists, instead of a row of text. The list stays the
+      default and the canonical view.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>List<span class="tag">default · text-forward</span></h4>
+        <p>One row per device: name, manufacturer, the verdict, the integration. Dense, sortable by eye, best for reading and comparing facts. The view a deep link opens in.</p>
+      </div>
+      <div class="pane">
+        <h4>Grid<span class="tag">increment · photo-forward</span></h4>
+        <p>Cards leading with the photo where there is one, falling back to a clean text card where there is not. Best for browsing by shape and recognising a box you have seen.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      With the increment off, Browse forces the list and hides the toggle entirely, so there is no dead control
+      pointing at a view that does not exist. The chosen layout is a display preference, never a filter, so it
+      never appears in the count or the shareable URL's result meaning.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The dependency</p>
+    <h2>Independent of photos, better with them</h2>
+    <p class="muted">
+      Grid view and Photos and gallery are separate increments, and each works without the other. The grid does
+      not require a photo: a device with none gets a text-forward card, the same facts in a different frame. But
+      the two compound, a photo-led grid is the layout photos were collected for. They are designed to be shipped
+      and judged separately, then to reinforce each other when both are on.
+    </p>
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail"><span class="id">02·A</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>The toggle and the grid layout</h4>
+          <p>
+            A list-or-grid control on Browse, a grid of photo-forward cards reading the same filtered set, and a
+            graceful text card for devices without a photo. Removable: off forces the list and hides the toggle.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Small <span class="mono">· layout, no new data</span></dd>
+            <dt>Depends on</dt><dd>Stage 02 core only</dd>
+            <dt>Compounds with</dt><dd><span class="mono">photos</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A view, held to the list's honesty</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>The count never changes with the layout.</strong> Grid and list show the same set. The number you see is the number you land on, in either view, same as Foundation's search.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The list stays canonical.</strong> It is the default and the fallback. A deep link, a screen reader, and the increment-off state all land on the list.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>A missing photo is not a missing device.</strong> No photo means a text card, never a hidden or down-ranked result. The grid never sorts by whether a picture exists.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The card leads with facts, not flourish.</strong> A grid card carries the verdict and the integration like the row does. The photo helps you recognise it, it does not replace the answer.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Keep it a pure view.</strong> No grid-only filters, no grid-only ordering. The moment the layout changes the result, it has stopped being a view and started being a second, driftable index.</p></li>
+      <li><p><strong>Default to the list, fall back to it.</strong> Remember the user's choice, but treat the list as canonical so deep links and the off state are always coherent.</p></li>
+      <li><p><strong>Ship before photos, judge with photos.</strong> The grid stands alone on text cards. Its real payoff arrives when the photos increment fills the cards, so evaluate the pair together.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

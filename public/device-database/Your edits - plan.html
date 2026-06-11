@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your edits · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Your edits: one place for what you have in flight</h1>
+    <p class="lede">
+      A contributor used to track their work across two surfaces, a notifications inbox and a changes tray. This
+      increment merges them into <strong>one private dashboard</strong> that answers a single question: what have
+      I got in flight, and what happened to it? Drafts, edits in review, what went live, what was declined, with
+      submit-all batching. This is the plan, and the reason it replaces the tray rather than joining it.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 03 · Accounts and editing</span>
+      <span class="muted">·</span>
+      lives in
+      <span class="mono">your-changes.jsx</span>
+      <span class="muted">·</span>
+      replaces the Changes tray
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>One question, one surface.</strong>
+        Drafts, pending review, live, declined: a contributor wants all of it in a single view they can reach from
+        one nav icon, not split between a tray for things going out and an inbox for things coming back. Your edits
+        merges those into an inbox-shaped dashboard, and retires the changes tray so there is exactly one home for
+        a contributor's in-flight work.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>An inbox for your own work</h2>
+    <p class="muted">
+      The layout is an inbox. A left folder rail leads with Drafts, where you act, then a hairline, then the
+      submitted lifecycle: All, Awaiting approval, Live, Declined, each with a count. Drafts are unsubmitted and
+      account-only, a different class from the GitHub-tracked states, so the submitted folder never counts them.
+      The page opens on Drafts when you have any, otherwise on the submitted view.
+    </p>
+    <table class="matrix grid">
+      <thead>
+        <tr><th>State</th><th>What it is</th><th>What you do</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Draft</td><td class="muted">Unsubmitted, saved to your account.</td><td class="mono-val">continue or discard</td></tr>
+        <tr><td>Awaiting approval</td><td class="muted">Submitted, a pull request is open.</td><td class="mono-val">open the PR</td></tr>
+        <tr><td>Live</td><td class="muted">Merged and public.</td><td class="mono-val">open the device</td></tr>
+        <tr><td>Declined</td><td class="muted">Not accepted.</td><td class="mono-val">revise and resubmit</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      A row click goes where the work lives: a draft opens straight into edit mode, since no pull request exists
+      yet, and a submitted change opens its pull request, since that is where the change and its status are. On
+      tablet the rail becomes a tab strip, and on mobile the table becomes cards.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The one new mechanic</p>
+    <h2>Submit all, one pull request per device</h2>
+    <p class="muted">
+      Most of the dashboard is a clear view over states that already exist. The one genuinely new action is
+      batching: Submit all takes every draft and opens one pull request per device. That is the right grain,
+      because a device page is the unit a reviewer reviews and the unit that merges, so a contributor who has been
+      tidying ten devices sends ten reviewable changes, not one tangled mega-edit and not ten separate clicks.
+    </p>
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail"><span class="id">03·C</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>The merged dashboard</h4>
+          <p>
+            One private surface with a Drafts-first folder rail and the submitted lifecycle, row-click routing to
+            the right place, submit-all batching one PR per device, and responsive collapse to tabs and cards.
+            Replaces the changes tray. Reads notification records for status when that increment is on.
+          </p>
+          <dl class="meta-grid">
+            <dt>Depends on</dt><dd>Stage 03 core only</dd>
+            <dt>Independent of</dt><dd><span class="mono">contributor-profiles · notifications</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Private, honest about state, one home</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Drafts are account-only, never public.</strong> An unsubmitted draft is a private class, kept out of the submitted counts and off your public profile until it becomes a pull request.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>One device, one pull request.</strong> Submit-all batches by device because the device page is what a reviewer reviews. It never bundles unrelated devices into one unreviewable change.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Declined is a beginning, not a wall.</strong> A declined edit can be revised and resubmitted from here. The dashboard treats it as work to continue, not a failure to file away.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>One home, so retire the tray.</strong> Merging means actually removing the changes tray, not running both. Two surfaces for in-flight work is the problem this increment exists to end.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Keep drafts a separate class.</strong> Account-only, never in the submitted counts, never public until submitted. Blurring drafts into pending is how a private workspace leaks.</p></li>
+      <li><p><strong>Batch by device, always.</strong> One pull request per device matches what review and merge operate on. Resist a single combined PR, and resist making the contributor click through one at a time.</p></li>
+      <li><p><strong>Actually replace the tray.</strong> The win is one surface. Shipping Your edits while leaving the tray in place would recreate the very split it set out to fix.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

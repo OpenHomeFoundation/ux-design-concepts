@@ -1,0 +1,237 @@
+/* Editorial figures for the device detail article.
+ *
+ * Line-based, theme-adaptive (all stroke/fill via CSS vars in app.css),
+ * one accent reserved for the "live / current" state. Each public figure is
+ * exported on window and wrapped by the page in <DetailFigure>.
+ *
+ *   ConnectionSchematic , where control travels (LAN vs manufacturer cloud)
+ *   RequirementsMatrix  , what setup / control / offline each depend on
+ *   FirmwareTimeline    , versions observed since data collection began
+ *   ArticlePhoto        , captioned striped image slot (filled later)
+ *   DetailFigure        , frame + "Fig. N -" caption wrapper
+ */
+
+/* Local control profile, derived the same way the rest of the app decides
+   "requires internet": fully local control AND no mandatory cloud account. */
+const figConnectivity = (d) => {
+  const requiresNet = window.requiresInternet
+    ? window.requiresInternet(d)
+    : !(d.local === "always" && d.cloud !== "required");
+  let kind;
+  if (d.local === "always" && d.cloud !== "required") kind = "local";
+  else if (d.local === "never" || d.cloud === "required") kind = "cloud";
+  else kind = "mixed";
+  return { requiresNet, kind };
+};
+
+/* ---------- Figure frame ---------- */
+const DetailFigure = ({ n, caption, children }) => (
+  <figure className="detail-figure">
+    <div className="detail-figure-frame">{children}</div>
+  </figure>
+);
+
+/* ---------- 1. Connection schematic ----------
+   Home Assistant -(local network)- Device, with a manufacturer-cloud node
+   branching off the network. The route that is actually "live" for this
+   device is drawn in the accent; the alternative is dashed and dimmed. */
+const ConnectionSchematic = ({ device }) => {
+  const { kind } = figConnectivity(device);
+
+  const lanClass = kind === "cloud" ? "is-off" : "is-live";
+  const cloudClass = kind === "local" ? "is-off" : (kind === "cloud" ? "is-live" : "is-partial");
+  const cloudNodeLive = kind !== "local";
+  const status =
+    kind === "local" ? "NOT REQUIRED" :
+    kind === "cloud" ? "REQUIRED" : "SOME FEATURES";
+  const statusClass = kind === "local" ? "is-off" : (kind === "cloud" ? "is-live" : "is-partial");
+
+  // Status chip geometry (background knocks out the connector behind it).
+  const chipW = status.length * 7.4 + 22;
+
+  return (
+    <svg className="schematic" viewBox="0 0 640 220" role="img"
+      aria-label={
+        kind === "local"
+          ? "Home Assistant controls the device over the local network. The manufacturer cloud is not required."
+          : kind === "cloud"
+          ? "Home Assistant reaches the device through the manufacturer cloud, which is required."
+          : "Home Assistant controls the device locally; the manufacturer cloud is used for some features."
+      }>
+      {/* LAN link */}
+      <line className={"sch-link " + lanClass} x1="172" y1="70" x2="468" y2="70" />
+      <text className="sch-edge-label" x="320" y="56" textAnchor="middle">LOCAL NETWORK</text>
+
+      {/* Cloud branch, drops from the middle of the LAN line */}
+      <line className={"sch-link " + cloudClass} x1="320" y1="70" x2="320" y2="152" />
+
+      {/* Strike-through when the cloud is not in the path */}
+      {kind === "local" &&
+        <g className="sch-strike">
+          <line x1="310" y1="101" x2="330" y2="121" />
+          <line x1="330" y1="101" x2="310" y2="121" />
+        </g>}
+
+      {/* Status chip over the branch */}
+      <rect className="sch-chip-bg" x={320 - chipW / 2} y="124" width={chipW} height="24" rx="2" />
+      <text className={"sch-chip-text " + statusClass} x="320" y="140" textAnchor="middle">{status}</text>
+
+      {/* Nodes */}
+      <g>
+        <rect className="sch-node is-live" x="22" y="48" width="150" height="44" rx="3" />
+        <text className="sch-node-label" x="97" y="75" textAnchor="middle">HOME ASSISTANT</text>
+      </g>
+      <g>
+        <rect className="sch-node is-live" x="468" y="48" width="150" height="44" rx="3" />
+        <text className="sch-node-label" x="543" y="75" textAnchor="middle">DEVICE</text>
+      </g>
+      <g>
+        <rect className={"sch-node " + (cloudNodeLive ? "is-live" : "is-off")} x="218" y="152" width="204" height="44" rx="3" />
+        <text className={"sch-node-label " + (cloudNodeLive ? "" : "is-dim")} x="320" y="179" textAnchor="middle">MANUFACTURER CLOUD</text>
+      </g>
+    </svg>
+  );
+};
+
+/* ---------- 2. Requirements matrix ----------
+   Three plain-language rows: setup / daily control / offline behaviour.
+   These are contributor-entered facts (Stage 2 enrichment), read straight
+   from device.specs.connectivity rather than derived from the Home Assistant
+   local/cloud fields. A row shows "-" until a contributor fills it in.
+   A success dot marks a local answer; a quiet neutral dot a cloud
+   dependency; an amber dot a mixed answer. */
+
+// Each contributed option maps to a dependency colour. Keys match the
+// editor's CONNECTIVITY_FIELDS option lists exactly.
+const CONNECTIVITY_DEP = {
+  initialSetup: { "Local": "local", "Manufacturer account": "mixed", "Manufacturer cloud": "cloud" },
+  dayToDay:     { "Local": "local", "Mixed": "mixed", "Manufacturer cloud": "cloud" },
+  offline:      { "Keeps working": "local", "Limited": "mixed", "Stops working": "cloud" },
+};
+
+const RequirementsMatrix = ({ device }) => {
+  const c = (device.specs && device.specs.connectivity) || {};
+  const fields = [
+    { key: "initialSetup", label: "Initial setup" },
+    { key: "dayToDay", label: "Day-to-day control" },
+    { key: "offline", label: "If the internet drops" },
+  ];
+  const rows = fields.map((f) => {
+    const value = c[f.key];
+    return {
+      label: f.label,
+      value: value || "-",
+      dep: value ? (CONNECTIVITY_DEP[f.key][value] || "none") : "none",
+    };
+  });
+
+  return (
+    <dl className="req-matrix">
+      {rows.map((r) => (
+        <div className="req-row" key={r.label}>
+          <dt>{r.label}</dt>
+          <dd>
+            <span className={"req-dot dep-" + r.dep}></span>
+            <span className="req-value">{r.value}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+};
+
+/* ---------- 3. Firmware timeline ----------
+   Versions observed plotted on a hairline time axis from first-seen to
+   last-verified. The current firmware is the accent dot. Labels that would
+   collide are stacked upward. */
+const FirmwareTimeline = ({ device }) => {
+  const fmtMonth = (iso) => {
+    const dt = new Date(iso);
+    return dt.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  };
+
+  const pts = [];
+  (device.versionHistory || []).forEach((v) =>
+    pts.push({ version: v.version, t: new Date(v.lastSeen).getTime(), current: false }));
+  pts.push({ version: device.softwareVersion || "-", t: new Date(device.lastVerified).getTime(), current: true });
+  pts.sort((a, b) => a.t - b.t);
+
+  const times = pts.map((p) => p.t);
+  const firstSeenT = device.firstSeen ? new Date(device.firstSeen).getTime() : Math.min(...times);
+  const startT = Math.min(firstSeenT, ...times);
+  const endT = Math.max(...times);
+  const span = endT - startT;
+
+  const W = 640, padL = 28, padR = 28;
+  const xOf = (t) => span <= 0 ? W / 2 : padL + ((t - startT) / span) * (W - padL - padR);
+
+  // Stack colliding labels upward.
+  let lastX = -999, level = 0, maxLevel = 0;
+  const placed = pts.map((p) => {
+    const x = xOf(p.t);
+    if (x - lastX < 56) level += 1; else level = 0;
+    lastX = x;
+    if (level > maxLevel) maxLevel = level;
+    return { ...p, x, level };
+  });
+
+  const labelGap = 16;
+  const topPad = 18 + (maxLevel + 1) * labelGap;
+  const baseY = topPad;
+  const H = baseY + 40;
+  const axisX1 = xOf(startT), axisX2 = xOf(endT);
+
+  return (
+    <svg className="timeline" viewBox={`0 0 ${W} ${H}`} role="img"
+      aria-label={`Firmware: current ${device.softwareVersion}, last verified ${fmtMonth(device.lastVerified)}.`}>
+      {/* Axis */}
+      <line className="tl-axis" x1={Math.min(axisX1, padL)} y1={baseY} x2={Math.max(axisX2, W - padR)} y2={baseY} />
+
+      {/* End ticks + dates */}
+      <line className="tl-tick" x1={axisX1} y1={baseY - 4} x2={axisX1} y2={baseY + 4} />
+      <text className="tl-date" x={axisX1} y={baseY + 22} textAnchor="start">{fmtMonth(new Date(startT).toISOString())}</text>
+      <line className="tl-tick" x1={axisX2} y1={baseY - 4} x2={axisX2} y2={baseY + 4} />
+      <text className="tl-date" x={axisX2} y={baseY + 22} textAnchor="end">{fmtMonth(new Date(endT).toISOString())}</text>
+
+      {/* First-seen caption at the origin */}
+      <text className="tl-origin" x={Math.min(axisX1, padL)} y={baseY - 8} textAnchor="start"></text>
+
+      {/* Points */}
+      {placed.map((p, i) => {
+        const ly = baseY - 14 - p.level * labelGap;
+        const anchor = p.x > W - 96 ? "end" : (p.x < 96 ? "start" : "middle");
+        return (
+          <g key={i}>
+            <line className="tl-stem" x1={p.x} y1={baseY - 4} x2={p.x} y2={ly + 4} />
+            <text className={"tl-ver" + (p.current ? " is-current" : "")} x={p.x} y={ly} textAnchor={anchor}>
+              {p.version}{p.current ? "  ·  current" : ""}
+            </text>
+            <circle className={"tl-dot" + (p.current ? " is-current" : "")} cx={p.x} cy={baseY} r="4" />
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+/* ---------- Captioned image slot (filled with real photography later) ---------- */
+const ArticlePhoto = ({ n, caption, label = "PRODUCT PHOTO", ratio = "16 / 9" }) => (
+  <figure className="detail-figure">
+    <div className="figure-photo-slot" style={{ aspectRatio: ratio }}>
+      <span className="figure-photo-label">{label}</span>
+    </div>
+    {(n || caption) &&
+      <figcaption className="detail-figure-cap">
+        {n && <span className="fig-n">Fig. {n}</span>}
+        {caption && <span className="fig-text">{caption}</span>}
+      </figcaption>}
+  </figure>
+);
+
+Object.assign(window, {
+  DetailFigure,
+  ConnectionSchematic,
+  RequirementsMatrix,
+  FirmwareTimeline,
+  ArticlePhoto,
+});

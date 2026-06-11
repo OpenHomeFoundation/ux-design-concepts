@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundation · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 01</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Foundation: the floor every stage stands on</h1>
+    <p class="lede">
+      The whole project answers one question about a smart-home device: <strong>does it work locally
+      with Home Assistant, and how.</strong> Foundation is the smallest honest thing that answers it,
+      browse, search, and read, built from data the community opts in to share, with no account needed
+      and no personal data collected. This is the plan for what the baseline holds, and what it deliberately
+      does not.
+    </p>
+    <p class="ref">
+      The floor that
+      <span class="mono">Stages 02&ndash;05</span>
+      all build on
+      <span class="muted">·</span>
+      sets the line held by the
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>Foundation is not a feature. It is the contract.</strong>
+        It fixes three things the rest of the roadmap inherits and never renegotiates: where the data comes
+        from (opt-in, anonymized), the single fact the database exists to publish (the local-or-cloud verdict),
+        and who is allowed to read it (anyone, no account). Get these right once and every later stage is an
+        addition. Get them wrong and there is nothing honest to build on.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The source · where the facts come from</p>
+    <h2>Opt-in, anonymized, and that is the whole point</h2>
+    <p class="muted">
+      Manufacturer specs say what a device <em>should</em> do. Foundation tracks what it <em>actually</em>
+      does, assembled from Home Assistant users who choose to share which devices they run and how those
+      devices behave. The chain is three steps, and each one is a constraint, not a convenience.
+    </p>
+
+    <div class="twocol">
+      <div class="pane">
+        <h4>The community shares<span class="tag">opt-in · anonymized</span></h4>
+        <p>Users opt in to report what devices they run and how they behave. No personal data, no identifiers, no addresses. The privacy line is load-bearing, not a footnote.</p>
+      </div>
+      <div class="pane">
+        <h4>The database verifies<span class="tag">deduplicated · cross-checked</span></h4>
+        <p>Reports are deduplicated, paired with manufacturer documentation, and cross-checked against integration source code before a fact goes live.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);">
+      <strong>No personal data is the rule the rest of the project is shaped around.</strong> Counts like
+      <span class="ic">reports</span> and <span class="ic">installs</span> are aggregate signal, never a list
+      of people. Stage 03 later adds named contributor accounts, but those describe who <em>edited</em> an
+      entry, never who <em>runs</em> a device. The reporting population stays anonymous forever. That separation
+      is decided here so no later stage has to walk it back.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The record · what an entry actually holds</p>
+    <h2>Reported facts, and nothing that needs an editor</h2>
+    <p class="muted">
+      A Foundation entry is the set of fields a report can justify on its own. It identifies the device, names
+      how Home Assistant talks to it, states the verdict, and carries the aggregate counts and the version
+      history that catches change over time. Everything that takes an editor to write, the curated overview,
+      references, requirements, detailed specs, belongs to Stage 02, not here.
+    </p>
+
+    <div class="codeblock"><span class="c">// A Foundation entry: facts a report can stand behind by itself.</span>
+<span class="k">{</span>
+  id, name, manufacturer, model, category,   <span class="c">// identity</span>
+  local:    <span class="v">"always" | "sometimes" | "never"</span>,    <span class="c">// the verdict, three axes</span>
+  cloud:    <span class="v">"none"   | "optional"  | "required"</span>,
+  ha:       <span class="v">"official" | "community" | "partial" | "none"</span>,
+  haIntegration,                             <span class="c">// what controls it</span>
+  reports, installs,                         <span class="c">// aggregate signal, never people</span>
+  entityTypes, protocols, identifiers,       <span class="c">// reported, not narrated</span>
+  versionHistory, firstSeen, lastVerified    <span class="c">// change over time</span>
+<span class="k">}</span>
+<span class="c">// summary, references, requirements, detailed specs  → Stage 02 enrichment</span></div>
+
+    <p>
+      The seam matters because search and Browse are built to read <strong>only the reported fields</strong>.
+      A committed search never matches on the Stage 02 summary, so the baseline can never surface a device on
+      enrichment text it does not otherwise show. Foundation stays self-contained: it does not reach forward
+      into a stage that may be switched off.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The verdict · the one fact worth the project</p>
+    <h2>Three axes that resolve to one answer</h2>
+    <p class="muted">
+      "Does it work locally" is not a yes-or-no. A device can run fully on the local network, lean on the cloud
+      for some features, or refuse to work without an account. Foundation pins that down with a fixed, three-axis
+      vocabulary so every entry answers in the same words and a reader learns to read them once.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Axis</th><th>Values</th><th>What it tells a buyer</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Local control</td><td class="mono-val">always · sometimes · never</td><td class="muted">Whether it keeps working with no internet at all.</td></tr>
+        <tr><td>Cloud dependency</td><td class="mono-val">none · optional · required</td><td class="muted">Whether a vendor account sits in the control path.</td></tr>
+        <tr><td>Home Assistant support</td><td class="mono-val">official · community · partial · none</td><td class="muted">How it connects, and how well that path is supported.</td></tr>
+      </tbody>
+    </table>
+
+    <table class="matrix grid" style="margin-top: var(--space-6);">
+      <caption>One worked entry. The three axes resolve to a single, plain reading.</caption>
+      <thead>
+        <tr><th>Device</th><th>Local</th><th>Cloud</th><th>Home Assistant</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Hue White A19 <span class="cell-sub">Zigbee · via bridge</span></th>
+          <td><span class="vdot local"></span>Always<span class="cell-sub">local: always</span></td>
+          <td><span class="vdot local"></span>Optional<span class="cell-sub">cloud: optional</span></td>
+          <td><span class="yes">Official</span><span class="cell-sub">Philips Hue</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>The verdict is reported, never editorialized.</strong> The entry states "runs locally over Zigbee,
+      cloud optional," not "a great local bulb." Where a claim is unverified, the entry says so. Where a device
+      behaves one way on one firmware and another way on the next, both are noted, and that is exactly what
+      <span class="ic">versionHistory</span> exists to hold. Change over time lives here, not in a variant.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The surfaces · three doors, no key</p>
+    <h2>Browse, search, read, and never a sign-in wall</h2>
+    <p class="muted">
+      Foundation ships three ways into the same facts, and all three work for a visitor who has never heard of
+      Home Assistant. You do not have to run it to benefit, and you never have to make an account to look
+      something up. That is a deliberate floor: reading is always free and open.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Browse<span class="tag">browse.jsx · filter on reported fields</span></h4>
+        <p>The filterable index. Every filter, category, protocol, the local-or-cloud verdict, runs against reported fields, so the count you see is the count you land on.</p>
+      </div>
+      <div class="pane">
+        <h4>Search<span class="tag">searchbox.jsx · self-contained corpus</span></h4>
+        <p>A word index built only from reported fields: names, manufacturers, models, categories. Six quick-filter recipes give a zero-typing on-ramp into Browse.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      The device page is the third door: the read view of one entry, showing the verdict, the integration, and
+      how many others have run it. Stage 02 enriches that page, Stage 03 lets a signed-in member edit it, but the
+      bare, account-free read is Foundation, and it is what the others decorate.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>Built once, then everything hangs off it</h2>
+    <p class="muted">
+      Foundation is live. There is no ladder of increments to climb here, the point of a baseline is that it is
+      whole. What follows is the dependency map: each later stage reaches back into exactly one part of this
+      floor, which is what lets it be switched off in the canvas without the floor collapsing.
+    </p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail">
+          <span class="id">01</span>
+          <span class="pill live">Live</span>
+        </div>
+        <div class="body">
+          <h4>The baseline, whole</h4>
+          <p>
+            The reported-field data model, the three-axis verdict, and the three account-free surfaces, Browse,
+            search, and read. Self-contained: nothing in Foundation depends on a stage that can be toggled off.
+            This is the only stage that ships locked, with no switch.
+          </p>
+          <dl class="meta-grid">
+            <dt>Lives in</dt><dd><span class="mono">data.js · browse.jsx · searchbox.jsx · detail.jsx</span></dd>
+            <dt>Owns</dt><dd>Identity, verdict, counts, version history, the read view</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Builds on it</span>
+      <h3>What each later stage adds, and where it attaches</h3>
+    </div>
+    <p class="stage-sub">Every stage reaches into one part of the floor. The dependency direction is the whole test for what is a stage and what is an increment.</p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Stage</th><th>What it adds</th><th>Where it attaches to Foundation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>02 · Richer device pages</td><td class="muted">Curated overview, references, requirements, detailed specs, photos.</td><td class="muted">Enriches the <span class="ic">read</span> view. Search still reads only reported fields.</td></tr>
+        <tr><td>03 · Accounts and editing</td><td class="muted">Sign-in, edit mode, edit history with attribution.</td><td class="muted">Lets a member change a record. Reading stays account-free.</td></tr>
+        <tr><td>04 · Variants and families</td><td class="muted">Group regional and protocol variants under one family.</td><td class="muted">Grows the unit the verdict binds to, from a device to a variant.</td></tr>
+        <tr><td>05 · Goal-based discovery</td><td class="muted">Browse by intent, grown from the quick-filter recipes.</td><td class="muted">A new lens over the same reported facts and counts.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>What the baseline refuses, on purpose</h2>
+    <p class="muted">
+      The editorial stance is neutral, citable, never sponsored. Foundation is where those words become rules in
+      the data, not aspirations in a footer. These rails hold under every stage above.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Data is opt-in and anonymized, always.</strong> The reporting population is never named, never located, never counted as people. Aggregate signal only. No later stage relaxes this.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Reading needs no account.</strong> Sign-in arrives in Stage 03 for editing, never for looking something up. The lookup is free and open to anyone.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Search reads only reported facts.</strong> The corpus is names, models, and categories, never the Stage 02 summary, so the baseline can never surface a device on text it does not show.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The verdict is stated, not graded.</strong> "Runs locally, cloud optional," not "best local bulb." No ranking, no affiliate, no recommendation order. Verbs over adjectives.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to protect, in order</h2>
+    <ol>
+      <li><p><strong>Keep Foundation small.</strong> The temptation is to pull an enrichment field forward because it is useful. Resist it. A field belongs in the baseline only if a single report can justify it without an editor.</p></li>
+      <li><p><strong>Hold the reported-versus-enriched seam.</strong> Search and Browse read reported fields only. Every stage that adds narration must leave that corpus alone, so a toggled-off stage never changes what the baseline finds.</p></li>
+      <li><p><strong>Never trade the privacy line for a feature.</strong> The opt-in, anonymized, aggregate-only rule is the project's credibility. Anything that would name or locate the reporting population is out, no matter how much it would add.</p></li>
+      <li><p><strong>Keep reading account-free, forever.</strong> Stage 03 may gate editing behind sign-in. The lookup never moves behind a wall, that openness is the reason the database is worth keeping.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

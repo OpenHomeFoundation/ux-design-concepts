@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Accounts and editing · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Accounts and editing: a database the community keeps</h1>
+    <p class="lede">
+      A reference is only as current as the people who tend it. Stage 03 lets community members
+      <strong>sign in, edit a device page, and have that edit attributed and reviewed</strong> before it goes
+      live. The trick is doing it without spending Foundation's two guarantees: reading stays free and
+      account-free, and the reported core stays read-only. This is the plan for the editing core, and the
+      children that build on it.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 02 · Richer device pages</span>
+      <span class="muted">·</span>
+      holds the line set by the
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>Editing is added at the edges, never at the centre.</strong>
+        Sign-in gates writing, never reading. An edit touches the contributor fields, never the reported verdict.
+        And nothing a contributor submits is live until it has been reviewed, as a pull request, with their name
+        on it. Stage 03 makes the database maintainable by adding a careful write path around a record that stays
+        exactly as trustworthy as it was in Foundation.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The two guarantees it must not spend</p>
+    <h2>Open to read, careful to write</h2>
+    <p class="muted">
+      Stage 03 introduces accounts, which is precisely the moment a reference site usually starts asking visitors
+      to sign in and starts letting anyone overwrite anything. Foundation's guarantees forbid both. They are
+      restated here as the constraints the whole stage is built around.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Reading stays free<span class="tag">no account wall</span></h4>
+        <p>Sign-in unlocks editing and a few personal surfaces. It never gates a lookup. A signed-out visitor reads every page in full, exactly as in Foundation.</p>
+      </div>
+      <div class="pane">
+        <h4>The core stays read-only<span class="tag">contributor fields only</span></h4>
+        <p>An edit changes the curated and reported-context fields. The local-or-cloud verdict and the reported record are not hand-editable, so editing cannot quietly rewrite the headline fact.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      Drafts make this safe to live with. An in-progress edit overlays the approved record and autosaves to your
+      account, so leaving and coming back keeps the work, and a pending field is locked so two people do not fight
+      over it. The approved record underneath never changes until review says so.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The write path</p>
+    <h2>Draft, submit, review, attribute</h2>
+    <p class="muted">
+      Every change walks the same path, and the path is the product. A contributor edits into a draft, submits it,
+      which opens a pull request, and the change goes live only when that request is merged. Decline is a first
+      class outcome, not a dead end: a declined edit can be revised and resubmitted. Every step carries the
+      contributor's name.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>State</th><th>What it means</th><th>Where it lives</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Draft</td><td class="muted">Unsubmitted, saved to your account. Continue or discard.</td><td class="mono-val">local, account-only</td></tr>
+        <tr><td>Awaiting approval</td><td class="muted">Submitted, a pull request is open. Review conversation lives there.</td><td class="mono-val">GitHub PR</td></tr>
+        <tr><td>Live</td><td class="muted">Merged and public. Now part of the approved record.</td><td class="mono-val">device page</td></tr>
+        <tr><td>Declined</td><td class="muted">Not accepted. Can be revised and resubmitted.</td><td class="mono-val">reopened on device</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      Putting review on a pull request is the load-bearing decision. It means the edit history is real and
+      external, attribution is a GitHub identity rather than a name we mint, and the conversation about a change
+      lives in one place every contributor can see. The edit history on a device page is the merged tail of that
+      same record.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>A core that defines the stage, then four children</h2>
+    <p class="muted">
+      The core is sign-in, the edit mode, the draft and submit flow, and the attributed edit history. Ship it and
+      Stage 03 exists. Each child builds on that core and on nothing else, so each can be switched off on its own.
+      No child depends on another, which is the test that keeps them children and not a tangle.
+    </p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail"><span class="id">03</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>Sign-in, edit mode, review, history</h4>
+          <p>
+            Accounts and settings, an edit mode over the contributor fields, drafts that autosave and overlay the
+            approved record, submit-to-review as a pull request, and an attributed edit history. The core every
+            child hangs from.
+          </p>
+          <dl class="meta-grid">
+            <dt>Lives in</dt><dd><span class="mono">community-edit.jsx · edit-mode.jsx · edit-fields.jsx · pending-edits.jsx</span></dd>
+            <dt>Depends on</dt><dd>Stage 02 enriched pages</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Increments</span>
+      <h3>Four additions, each its own plan</h3>
+    </div>
+    <p class="stage-sub">Each builds on the Stage 03 core and is independent of the others. Read each plan for the full case.</p>
+
+    <div class="ladder">
+      <div class="step">
+        <div class="rail"><span class="id">A</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Contributor profiles and directory</h4>
+          <p>Public profile pages and a browsable directory. Edit attributions link to a contributor's profile. With it off, they show as plain names.</p>
+          <dl class="meta-grid"><dt>Plan</dt><dd><a class="ref" href="Contributor%20profiles%20and%20directory%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Contributor profiles and directory</a></dd></dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">B</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Notifications</h4>
+          <p>How we tell you when a submitted edit is in review, goes live, or is declined. Email or GitHub, or off, chosen in Settings. Powers the status on Your edits.</p>
+          <dl class="meta-grid"><dt>Plan</dt><dd><a class="ref" href="Notifications%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Notifications</a></dd></dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">C</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Your edits</h4>
+          <p>One private dashboard merging the old inbox and changes tray: drafts, edits in review, what went live, declined edits to revise, with submit-all batching.</p>
+          <dl class="meta-grid"><dt>Plan</dt><dd><a class="ref" href="Your%20edits%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Your edits</a></dd></dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">D</span><span class="pill later">Planned</span></div>
+        <div class="body">
+          <h4>Trusted reference sources</h4>
+          <p>Outside data offered at the edit point, recognised by identifier and reviewed like any other edit. Feeds the dormant suggestion rail already in the core.</p>
+          <dl class="meta-grid"><dt>Plan</dt><dd><a class="ref" href="Trusted%20reference%20sources%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Trusted reference sources</a></dd></dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Community-kept, editorially held</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Sign-in never gates reading.</strong> Accounts exist for editing and a few personal views. The lookup stays open to everyone, the Foundation promise that does not bend.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Nothing goes live unreviewed.</strong> Every edit is a pull request first. The approved record a reader sees never changes on a single contributor's say-so.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Every change is attributed.</strong> Edits carry their author through submission, history, and the device page. Anonymous-to-read, named-to-edit: the reporting population stays private, the editors do not.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The reported core is not hand-editable.</strong> Contributors improve the curated and contextual fields. The verdict and the reported record keep their own provenance, untouched by the edit form.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold, in order</h2>
+    <ol>
+      <li><p><strong>Guard the read path above all.</strong> Any feature that would put a lookup behind sign-in is out, no matter how convenient. The open read is why the database is trusted.</p></li>
+      <li><p><strong>Keep review external and attributed.</strong> The pull-request model gives real history and real identity. Do not replace it with an in-house approval queue that only we can see.</p></li>
+      <li><p><strong>Keep the four children independent.</strong> Profiles, notifications, Your edits, and trusted sources each depend only on the core. If one starts needing another, the seam has broken.</p></li>
+      <li><p><strong>Hold the editable surface to contributor fields.</strong> The day the verdict becomes a free-text edit, the headline fact stops being reported and starts being opinion.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

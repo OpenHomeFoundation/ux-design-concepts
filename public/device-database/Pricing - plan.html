@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pricing · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface-sunken);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: var(--fs-16);
+    line-height: var(--lh-normal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: var(--space-9) var(--space-7) var(--space-11);
+  }
+
+  /* ---- Header ---- */
+  .doc-head { margin-bottom: var(--space-8); }
+  .eyebrow-row {
+    display: flex; align-items: center; gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  .eyebrow {
+    font-size: var(--fs-12); font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-caps); text-transform: uppercase;
+    color: var(--accent);
+  }
+  .eyebrow-rule { flex: 1; height: 1px; background: var(--border); }
+  .doc-head h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: var(--fs-48); line-height: var(--lh-tight);
+    letter-spacing: var(--ls-tight); margin: 0 0 var(--space-5);
+    max-width: 20ch;
+  }
+  .lede {
+    font-size: var(--fs-20); line-height: var(--lh-snug);
+    color: var(--fg-muted); max-width: 62ch; margin: 0 0 var(--space-5);
+    text-wrap: pretty;
+  }
+  .lede strong { color: var(--fg); font-weight: var(--fw-semibold); }
+  .ref {
+    display: inline-flex; align-items: baseline; gap: var(--space-2);
+    font-size: var(--fs-13); color: var(--fg-muted); flex-wrap: wrap;
+  }
+  .ref .mono { font-family: var(--font-mono); color: var(--fg); }
+  .ref a { color: var(--link); }
+
+  /* ---- Sections ---- */
+  section { padding-top: var(--space-8); margin-top: var(--space-8); border-top: 1px solid var(--border); }
+  section.flush { border-top: none; margin-top: var(--space-7); padding-top: 0; }
+  h2 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: var(--fs-30); line-height: var(--lh-snug);
+    letter-spacing: var(--ls-tight); margin: 0 0 var(--space-2);
+  }
+  .sec-kicker {
+    font-size: var(--fs-13); font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide); text-transform: uppercase;
+    color: var(--fg-subtle); margin: 0 0 var(--space-5);
+  }
+  p { margin: 0 0 var(--space-4); max-width: 64ch; text-wrap: pretty; }
+  p:last-child { margin-bottom: 0; }
+  .muted { color: var(--fg-muted); }
+  em { color: var(--fg); font-style: italic; }
+  code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
+  .ic {
+    font-family: var(--font-mono); font-size: 0.86em;
+    background: var(--surface-tint-mid); border: 1px solid var(--border);
+    border-radius: var(--radius-2); padding: 1px 6px; white-space: nowrap;
+    color: var(--fg);
+  }
+
+  /* ---- Thesis card ---- */
+  .thesis {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-2);
+    padding: var(--space-6);
+  }
+  .thesis p { font-size: var(--fs-18); line-height: var(--lh-normal); color: var(--fg); max-width: 68ch; }
+  .thesis p strong { font-weight: var(--fw-semibold); }
+
+  /* ---- Flag card (policy conflict) ---- */
+  .flag {
+    background: var(--warning-soft); border: 1px solid var(--warning);
+    border-left: 3px solid var(--warning-strong);
+    border-radius: var(--radius-2);
+    padding: var(--space-6); margin-top: var(--space-5);
+  }
+  .flag .flag-label {
+    font-size: var(--fs-12); font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide); text-transform: uppercase;
+    color: var(--warning-strong); margin: 0 0 var(--space-3);
+  }
+  .flag p { color: var(--fg); max-width: 68ch; }
+  .flag p strong { font-weight: var(--fw-semibold); }
+  .flag blockquote {
+    margin: var(--space-4) 0 0; padding: var(--space-3) var(--space-5);
+    border-left: 2px solid var(--warning); background: var(--surface);
+    border-radius: var(--radius-1);
+    font-style: italic; color: var(--fg-muted); font-size: var(--fs-14);
+  }
+
+  /* ---- Code / data shape ---- */
+  .codeblock {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-2); padding: var(--space-5);
+    font-family: var(--font-mono); font-size: var(--fs-13);
+    line-height: var(--lh-loose); color: var(--fg-muted);
+    overflow-x: auto; margin: 0 0 var(--space-5);
+    white-space: pre;
+  }
+  .codeblock .k { color: var(--fg); }
+  .codeblock .v { color: var(--accent); }
+  .codeblock .c { color: var(--fg-subtle); }
+
+  /* ---- Two-up panes ---- */
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); margin-top: var(--space-5); }
+  .pane { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-2); padding: var(--space-5); }
+  .pane.calm { border-top: 3px solid var(--success); }
+  .pane.hot { border-top: 3px solid var(--warning-strong); }
+  .pane h4 { font-family: var(--font-display); font-size: var(--fs-16); font-weight: 600; margin: 0 0 var(--space-2); letter-spacing: var(--ls-wide); text-transform: uppercase; }
+  .pane h4 .tag { font-family: var(--font-mono); font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--fg-subtle); font-size: var(--fs-12); display: block; margin-top: 2px; }
+  .pane p { font-size: var(--fs-14); color: var(--fg-muted); margin: 0 0 var(--space-3); }
+  .pane p:last-child { margin-bottom: 0; }
+  .pane ul { margin: 0; padding: 0; list-style: none; display: grid; gap: var(--space-2); }
+  .pane li { display: grid; grid-template-columns: 16px 1fr; gap: var(--space-3); font-size: var(--fs-13); color: var(--fg-muted); }
+  .pane li .gly { font-family: var(--font-mono); font-weight: 600; }
+  .pane li .gly.calm { color: var(--success-strong); }
+  .pane li .gly.hot { color: var(--warning-strong); }
+
+  /* ---- Matrix ---- */
+  .matrix { width: 100%; border-collapse: collapse; margin: var(--space-5) 0 var(--space-2); font-size: var(--fs-14); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-2); overflow: hidden; }
+  .matrix caption { caption-side: top; text-align: left; font-size: var(--fs-13); color: var(--fg-muted); padding: 0 0 var(--space-3); }
+  .matrix th, .matrix td { text-align: left; padding: var(--space-4) var(--space-5); vertical-align: top; }
+  .matrix thead th { font-size: var(--fs-12); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--fg-subtle); font-weight: var(--fw-semibold); border-bottom: 1px solid var(--border); }
+  .matrix tbody tr + tr td, .matrix tbody tr + tr th { border-top: 1px solid var(--border-subtle); }
+  .matrix td:first-child { font-weight: var(--fw-medium); color: var(--fg); width: 30%; }
+  .matrix td.muted { color: var(--fg-muted); font-weight: 400; }
+  .matrix.grid td:first-child { width: auto; }
+  .yes { color: var(--success-strong); font-weight: var(--fw-semibold); }
+  .no { color: var(--fg-subtle); font-weight: var(--fw-semibold); }
+
+  /* ---- Sources ranked list ---- */
+  .srcs { border: 1px solid var(--border); border-radius: var(--radius-2); overflow: hidden; background: var(--surface); margin: var(--space-5) 0 var(--space-3); }
+  .src-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-4); align-items: center; padding: var(--space-4) var(--space-5); }
+  .src-row + .src-row { border-top: 1px solid var(--border-subtle); }
+  .src-row .name { font-weight: var(--fw-medium); }
+  .src-row .name .scope { display: block; font-size: var(--fs-12); color: var(--fg-subtle); font-weight: 400; margin-top: 2px; max-width: 56ch; }
+  .src-tag {
+    font-size: var(--fs-12); font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide); text-transform: uppercase;
+    padding: 3px 9px; border-radius: var(--radius-pill); white-space: nowrap;
+    border: 1px solid var(--border-strong); color: var(--fg-muted); background: var(--surface);
+  }
+  .src-tag.good { border-color: var(--success); color: var(--success-strong); background: var(--success-soft); }
+  .src-tag.ok { border-color: var(--accent); color: var(--accent-hover); background: var(--accent-soft); }
+  .src-tag.care { border-color: var(--warning); color: var(--warning-strong); background: var(--warning-soft); }
+
+  /* ---- Ladder ---- */
+  .stage-head {
+    display: flex; align-items: baseline; gap: var(--space-3);
+    margin: var(--space-7) 0 var(--space-2); flex-wrap: wrap;
+  }
+  .stage-head .num { font-family: var(--font-mono); font-size: var(--fs-13); color: var(--fg-subtle); }
+  .stage-head h3 { font-family: var(--font-display); font-size: var(--fs-24); font-weight: 600; margin: 0; }
+  .stage-sub { color: var(--fg-muted); font-size: var(--fs-14); margin: 0 0 var(--space-5); }
+
+  .ladder { display: flex; flex-direction: column; }
+  .step {
+    display: grid; grid-template-columns: 104px 1fr; gap: var(--space-5);
+    padding: var(--space-5) 0; border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .step.now { background: linear-gradient(90deg, var(--surface) 0%, transparent 70%); }
+  .step .rail { display: flex; flex-direction: column; gap: var(--space-2); }
+  .step .id { font-family: var(--font-mono); font-size: var(--fs-16); font-weight: 500; color: var(--fg); }
+  .pill {
+    display: inline-flex; align-items: center; align-self: flex-start;
+    font-size: var(--fs-12); font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-wide); text-transform: uppercase;
+    padding: 2px 8px; border-radius: var(--radius-pill);
+    border: 1px solid var(--border-strong); color: var(--fg-muted);
+    background: var(--surface);
+  }
+  .pill.live { color: var(--success-strong); border-color: var(--success); background: var(--success-soft); }
+  .pill.next { color: var(--accent-hover); border-color: var(--accent); background: var(--accent-soft); }
+  .pill.soon { color: var(--fg); border-color: var(--border-strong); }
+  .pill.later { color: var(--fg-subtle); }
+  .pill.gate { color: var(--warning-strong); border-color: var(--warning); background: var(--warning-soft); }
+
+  .step .body h4 { font-family: var(--font-display); font-size: var(--fs-20); font-weight: 600; margin: 0 0 var(--space-2); letter-spacing: var(--ls-tight); }
+  .step .body p { font-size: 0.9375rem; color: var(--fg-muted); margin: 0 0 var(--space-4); max-width: 62ch; }
+  .meta-grid { display: grid; grid-template-columns: auto 1fr; gap: var(--space-1) var(--space-4); font-size: var(--fs-13); align-items: baseline; }
+  .meta-grid dt { color: var(--fg-subtle); font-weight: var(--fw-semibold); letter-spacing: var(--ls-wide); text-transform: uppercase; font-size: var(--fs-12); white-space: nowrap; }
+  .meta-grid dd { margin: 0; color: var(--fg); }
+  .meta-grid dd .mono { color: var(--fg-muted); }
+
+  /* ---- Guardrails ---- */
+  .rails { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+  .railrow { display: grid; grid-template-columns: 28px 1fr; gap: var(--space-4); align-items: start; }
+  .railrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 9px; }
+  .railrow p { margin: 0; font-size: 0.9375rem; }
+  .railrow strong { font-weight: var(--fw-semibold); }
+
+  /* ---- Mock: how a price reads on the page ---- */
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-2); padding: var(--space-5); margin: var(--space-5) 0 var(--space-3); }
+  .mock-cap { font-size: var(--fs-12); color: var(--fg-subtle); font-family: var(--font-mono); margin: 0 0 var(--space-4); letter-spacing: 0.02em; }
+  .price-line { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
+  .price-amt { font-family: var(--font-display); font-size: var(--fs-30); font-weight: 600; letter-spacing: var(--ls-tight); color: var(--fg); }
+  .price-kind { font-size: var(--fs-12); font-weight: var(--fw-semibold); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--fg-subtle); }
+  .price-meta { font-size: var(--fs-13); color: var(--fg-muted); margin: 0; }
+  .price-meta .mono { color: var(--fg-subtle); }
+  .shop-list { list-style: none; margin: var(--space-4) 0 0; padding: var(--space-4) 0 0; border-top: 1px solid var(--border-subtle); display: grid; gap: var(--space-3); }
+  .shop-list li { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); font-size: var(--fs-14); }
+  .shop-list .shop { color: var(--fg); font-weight: var(--fw-medium); }
+  .shop-list .shop .cc { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--fg-subtle); margin-left: var(--space-2); }
+  .shop-list .val { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .shop-list .val .when { display: block; font-size: var(--fs-12); color: var(--fg-subtle); font-family: var(--font-mono); text-align: right; }
+  .disc { margin-top: var(--space-4); font-size: var(--fs-12); color: var(--fg-subtle); border-top: 1px dashed var(--border); padding-top: var(--space-3); }
+
+  /* ---- Recommendation ---- */
+  .rec { background: var(--surface-inverse); color: var(--fg-inverse); border-radius: var(--radius-4); padding: var(--space-7); margin-top: var(--space-8); border: none; }
+  .rec h2 { color: var(--fg-inverse); }
+  .rec .sec-kicker { color: var(--neutral-400); }
+  .rec ol { margin: var(--space-5) 0 0; padding: 0; list-style: none; counter-reset: rec; display: grid; gap: var(--space-4); }
+  .rec li { counter-increment: rec; display: grid; grid-template-columns: 32px 1fr; gap: var(--space-4); align-items: baseline; }
+  .rec li::before { content: counter(rec); font-family: var(--font-mono); font-size: var(--fs-16); color: var(--accent); font-weight: 500; }
+  .rec li p { margin: 0; color: var(--neutral-200); font-size: 0.9375rem; max-width: 64ch; }
+  .rec li p strong { color: var(--fg-inverse); font-weight: var(--fw-semibold); }
+
+  @media (max-width: 760px) {
+    .doc { padding: var(--space-7) var(--space-5) var(--space-9); }
+    .doc-head h1 { font-size: var(--fs-38); }
+    .twocol { grid-template-columns: 1fr; }
+    .step { grid-template-columns: 1fr; gap: var(--space-3); }
+    .step .rail { flex-direction: row; align-items: center; }
+    .matrix td:first-child { width: auto; }
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Pricing</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Pricing: a fact first, a storefront maybe never</h1>
+    <p class="lede">
+      Two different things wear the word "price". One is a <strong>reference fact</strong> the
+      manufacturer sets, citable and region-bound, that behaves exactly like a spec. The other is a
+      <strong>live shop price in your country</strong>, and the moment money flows back through an
+      affiliate link it stops being a fact and starts being a business. This plan keeps the two apart,
+      ships the safe one, and treats the delicate one as a decision before it is a feature.
+    </p>
+    <p class="ref">
+      Reference price builds on
+      <span class="mono">Stage 04 · Variants and families</span>
+      <span class="muted">·</span>
+      retail and affiliate are blocked on the
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>Split the word in two, and the placement answers itself.</strong>
+        A reference price (MSRP) is a region-bound fact that rides the same axis as voltage and the EAN,
+        so it is an <em>increment on Stage 04</em>, sitting right beside the variant data it depends on.
+        Live retail pricing across shops in a reader's country is a different animal: it needs an outside
+        data pipeline, it is per-country not per-region, and it carries a funding mechanism that the
+        published editorial stance currently forbids outright. That is not an increment you quietly
+        toggle. It is a separate, later stage gated on a policy change.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where it slots · stage or increment</p>
+    <h2>Run it through the same test the other stages use</h2>
+    <p class="muted">
+      The roadmap already has a test for this. A stage changes the core unit of the database. An
+      increment builds on a single parent stage and leaves the unit alone. Price does not change the
+      unit: a priced device is still a device, a priced variant still a variant. So price is an
+      increment, never a stage, by the project's own rule. The only real question is which stage it
+      hangs off, and the answer is the one that owns region.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Question</th><th>Reference price (MSRP)</th><th>Live retail in your country</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Changes the core unit?</td>
+          <td class="muted"><span class="no">No.</span> A field on the variant</td>
+          <td class="muted"><span class="no">No.</span> Per-variant data over time</td>
+        </tr>
+        <tr>
+          <td>What does it bind to?</td>
+          <td class="muted">Region, like power and identifiers</td>
+          <td class="muted">Country, a finer grain than region</td>
+        </tr>
+        <tr>
+          <td>Where does the data come from?</td>
+          <td class="muted">The manufacturer, published once, changes rarely</td>
+          <td class="muted">Outside shops, changes daily, needs a pipeline</td>
+        </tr>
+        <tr>
+          <td>Touches the editorial stance?</td>
+          <td class="muted"><span class="yes">No.</span> A neutral, citable fact</td>
+          <td class="muted"><span class="src-tag care" style="padding:1px 7px;">Yes, head-on</span></td>
+        </tr>
+        <tr>
+          <td>Treatment</td>
+          <td class="muted">Increment <span class="ic">04.4</span> on Variants</td>
+          <td class="muted">Its own gated stage, <span class="ic">Stage 06</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Reference price depends on the region axis from <span class="ic">Stage 04</span>, the same way
+      power does. Show a reader in Amsterdam the United States list price and you have published exactly
+      the kind of wrong-region fact the variants plan refuses, the price equivalent of "230 V, Type F"
+      shown in North America. So it cannot come before the region switcher. It comes right after it, as a
+      sibling of the variant children. Live retail depends on that <em>and</em> on a funding decision, so
+      it sits further out, behind Goal-based discovery, and does not move until the stance does.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The two layers</p>
+    <h2>The calm layer and the hot layer</h2>
+    <p class="muted">
+      Naming them separately is most of the work. Once they are two things, each gets the treatment it
+      deserves instead of being averaged into one risky compromise.
+    </p>
+    <div class="twocol">
+      <div class="pane calm">
+        <h4>Reference price<span class="tag">MSRP · a fact</span></h4>
+        <p>One manufacturer-set number per region, with a currency and a source link. It is a spec, not a
+        deal. It changes when the maker changes it, which is rarely.</p>
+        <ul>
+          <li><span class="gly calm">+</span><span>Binds to the region variant, written once per region</span></li>
+          <li><span class="gly calm">+</span><span>Citable: links to the maker's own page or press kit</span></li>
+          <li><span class="gly calm">+</span><span>No shop, no commission, no ranking</span></li>
+          <li><span class="gly calm">+</span><span>Reuses the trusted-sources review path for edits</span></li>
+        </ul>
+      </div>
+      <div class="pane hot">
+        <h4>Live retail<span class="tag">shops · a business</span></h4>
+        <p>What a device costs today at real shops in the reader's country, optionally with affiliate
+        links that fund the Foundation. Fresh, useful, and where every neutrality risk lives.</p>
+        <ul>
+          <li><span class="gly hot">!</span><span>Per-country and per-currency, finer than region</span></li>
+          <li><span class="gly hot">!</span><span>Dynamic: stale the day after it is fetched</span></li>
+          <li><span class="gly hot">!</span><span>Affiliate income contradicts the published stance</span></li>
+          <li><span class="gly hot">!</span><span>Invites "best deal" ranking, which we must refuse</span></li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);">
+      The calm layer can ship this quarter with almost no policy weight. The hot layer should not ship at
+      all until the question on the next section is answered out loud, by the people who own the brand.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The honest read · the policy conflict</p>
+    <h2>Affiliate links contradict what the About page says today</h2>
+    <p class="muted">
+      This is the part to confront before any code. The editorial stance is not vague on this point. It
+      states the position in a single sentence, and that sentence is part of why the project is trusted.
+    </p>
+
+    <div class="flag">
+      <p class="flag-label">Direct conflict</p>
+      <p>
+        The published editorial stance currently reads, word for word:
+      </p>
+      <blockquote>"There are no affiliate links, no sponsored placements, and no recommendation rankings."</blockquote>
+      <p style="margin-top: var(--space-4);">
+        <strong>You cannot add affiliate links and keep that sentence.</strong> The honesty of the About
+        page <em>is</em> the asset. So affiliate income is not a feature you build and announce later. It
+        is a decision the Foundation makes first, in the open, and the stance is rewritten to match before
+        a single link ships. If the answer is "we keep the sentence", then the hot layer is shop links
+        with no commission, or it does not exist. Both are fine. A quiet contradiction is not.
+      </p>
+    </div>
+
+    <p style="margin-top: var(--space-6);" class="muted">
+      There is a version of this that stays true to the mission. Funding the upkeep of a neutral reference
+      is a legitimate, even admirable, reason to earn a referral fee, and plenty of trusted independent
+      catalogues do it openly. The line is not "affiliate or not". The line is <em>whether the money can
+      ever bend a fact</em>. Keep price a dated, sourced fact shown the same for everyone, never sort shops
+      by what they pay us, disclose the arrangement plainly on every surface it touches, and the
+      arrangement can coexist with neutrality. Drop any one of those and it cannot.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The shape</p>
+    <h2>Price is data on a variant, with a date and a source</h2>
+    <p class="muted">
+      Both layers share one rule borrowed straight from the variants plan: a value binds to the axis it
+      varies on. Reference price binds to region. A retail observation binds to a country and, crucially,
+      to a moment. A price with no date is a rumour. The shape carries the date so the page can be honest
+      about how fresh, or how stale, the number is.
+    </p>
+
+    <div class="codeblock"><span class="c">// Reference price rides the region axis, like power and identifiers.</span>
+<span class="k">variant</span> <span class="k">{</span> region: <span class="v">"EU"</span>, <span class="k">…</span>
+  <span class="k">msrp:</span> <span class="k">{</span> amount: <span class="v">99.95</span>, currency: <span class="v">"EUR"</span>, source: <span class="v">"philips-hue.com"</span>, asOf: <span class="v">"2026-03"</span> <span class="k">}</span>
+<span class="k">}</span>
+
+<span class="c">// A retail observation binds to a country AND a moment. No date, no trust.</span>
+<span class="c">// Each is a point-in-time snapshot, never presented as a live ticker.</span>
+<span class="k">offer</span> <span class="k">{</span>
+  gtin:     <span class="v">"8719514291218"</span>,      <span class="c">// the join key, already on the variant</span>
+  country:  <span class="v">"NL"</span>, currency: <span class="v">"EUR"</span>,
+  shop:     <span class="v">"tweakers-partner"</span>, amount: <span class="v">84.00</span>,
+  capturedAt: <span class="v">"2026-06-08"</span>,         <span class="c">// drives the freshness label</span>
+  affiliate:  <span class="v">true</span>                  <span class="c">// disclosed wherever shown</span>
+<span class="k">}</span></div>
+
+    <p class="muted">
+      Notice the join key. The variant already carries a GTIN / EAN once Stage 04 binds identifiers to
+      region. That single identifier is what lets a price attach to the right variant without anyone
+      hand-listing prices per device, the exact pattern the trusted-sources plan uses to pull in outside
+      data at scale. Price is just one more thing keyed on the EAN.
+    </p>
+
+    <div class="mock">
+      <p class="mock-cap">// how it could read on the device page, EU variant resolved</p>
+      <div class="price-line">
+        <span class="price-amt">€99.95</span>
+        <span class="price-kind">Reference price · EU</span>
+      </div>
+      <p class="price-meta">Set by Signify, <span class="mono">philips-hue.com</span>, as of March 2026. Manufacturer list price, not a live shop price.</p>
+      <ul class="shop-list">
+        <li><span class="shop">Independent shop A<span class="cc">NL</span></span><span class="val">€84.00<span class="when">seen 2 days ago</span></span></li>
+        <li><span class="shop">Independent shop B<span class="cc">DE</span></span><span class="val">€86.50<span class="when">seen 5 days ago</span></span></li>
+        <li><span class="shop">Community report<span class="cc">FR</span></span><span class="val">€89.00<span class="when">seen 3 weeks ago</span></span></li>
+      </ul>
+      <p class="disc">Shops are listed neutrally, never ranked by what they pay us. Some links are affiliate links that support the Open Home Foundation. Prices are point-in-time snapshots and may be out of date.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Getting prices, country by country, without the giant shops</p>
+    <h2>Five sources, ranked by how neutral they are</h2>
+    <p class="muted">
+      The question was how to get pricing in different countries without leaning on the big marketplaces.
+      The good news: the join key is already there. Stage 04 gives every regional variant a GTIN / EAN,
+      and that is the one piece every price source in the world keys on. With that, sources stack from
+      cleanest to most delicate. Take them in order, stop wherever the appetite for risk runs out.
+    </p>
+
+    <div class="srcs">
+      <div class="src-row">
+        <span class="name">Manufacturer list price<span class="scope">The maker's own site or press kit, per region. The cleanest source for the reference layer. No shop involved, fully citable, changes rarely.</span></span>
+        <span class="src-tag good">Neutral</span>
+      </div>
+      <div class="src-row">
+        <span class="name">schema.org Offer microdata<span class="scope">Most shops publish price and priceCurrency as standardised structured data on the product page. A neutral, machine-readable read of one number, keyed by GTIN, no marketplace API needed.</span></span>
+        <span class="src-tag good">Neutral</span>
+      </div>
+      <div class="src-row">
+        <span class="name">Community price reports<span class="scope">A contributor records "paid €84 at shop X, country NL, June 2026". Reviewed like any edit, shown dated and attributed. Sparse, but the most on-brand and fully Amazon-free.</span></span>
+        <span class="src-tag good">Neutral</span>
+      </div>
+      <div class="src-row">
+        <span class="name">Independent comparison engines<span class="scope">Geizhals, Idealo, Tweakers Pricewatch, PriceRunner, Kieskeurig and the like. Spec-first, per-country, with feeds or affiliate programmes. Proprietary and regional, so integrated one country at a time.</span></span>
+        <span class="src-tag ok">Partner</span>
+      </div>
+      <div class="src-row">
+        <span class="name">Mission-aligned shops, direct<span class="scope">Specialty smart-home and DIY retailers that run their own affiliate programmes and stock the hardware these readers actually buy. Chosen for fit, not for who pays most. This is where affiliate income would come from, not the marketplaces.</span></span>
+        <span class="src-tag care">Affiliate</span>
+      </div>
+    </div>
+
+    <p style="margin-top: var(--space-5);">
+      A real difference from trusted sources is worth calling out. Those sources are reviewed by a human
+      once, then trusted. A price is reviewed once and wrong by next week. So the calm sources, manufacturer
+      list price and community reports, can flow through the existing review front door, because they are
+      slow-moving or explicitly point-in-time. The fast sources, comparison engines and shop feeds, cannot
+      go through human review on every refresh, so they must carry their own freshness machinery: a
+      <span class="ic">capturedAt</span> on every number, a visible "seen N days ago" label, and a hard
+      cutoff past which a price is hidden rather than shown stale.
+    </p>
+
+    <p class="sec-kicker" style="margin-top: var(--space-6);">What you need to fetch a price for a country</p>
+    <table class="matrix">
+      <thead>
+        <tr><th>Need</th><th>Where it comes from</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A global join key</td><td class="muted">The variant's <span class="ic">GTIN / EAN</span>, already captured per region in Stage 04. The whole scheme rests on this.</td></tr>
+        <tr><td>Country to currency to region map</td><td class="muted">A small static table. NL and DE resolve to the EU region variant, US to the US variant, and so on.</td></tr>
+        <tr><td>A per-country source list</td><td class="muted">Which comparison engine or partner shops to query in each country, with affiliate IDs where they apply.</td></tr>
+        <tr><td>Per price: amount, currency, source, date</td><td class="muted">So every number is citable and the page can label freshness. A price without all four does not get shown.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>Ship the fact now, gate the storefront</h2>
+    <p class="muted">
+      The split lets the safe half move immediately while the delicate half waits on a decision it should
+      not skip. Same ladder idiom as the other stages: a core that defines the work, then pieces that
+      depend on something further out.
+    </p>
+
+    <div class="stage-head">
+      <span class="num">Proposed · now</span>
+      <h3>Stage 04 increment · Reference price</h3>
+    </div>
+    <p class="stage-sub">Key <span class="ic">reference-price</span>. A child of Variants, beside the variant switcher. Depends on the region axis, nothing else.</p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail">
+          <span class="id">04.4</span>
+          <span class="pill next">Increment</span>
+        </div>
+        <div class="body">
+          <h4>MSRP, bound to region</h4>
+          <p>
+            One manufacturer list price per region variant, with currency, source link, and an as-of date,
+            rendered as a plain fact below the variant switcher. Edited through the existing suggestion and
+            review path, with the source named in the attribution. No shops, no links, no ranking. Toggling
+            it on shows a price, toggling it off shows nothing. That is the whole increment.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Small <span class="mono">· one field, one render, reuses review</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">04.1</span> region axis only</dd>
+            <dt>Unlocks</dt><dd>A citable price that is never the wrong region's</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Proposed · later, gated</span>
+      <h3>Stage 06 · Where to buy</h3>
+    </div>
+    <p class="stage-sub">Key <span class="ic">where-to-buy</span>. Sits behind Goal-based discovery. Does not start until the editorial stance is revised.</p>
+
+    <div class="ladder">
+      <div class="step">
+        <div class="rail">
+          <span class="id">Gate</span>
+          <span class="pill gate">Decision</span>
+        </div>
+        <div class="body">
+          <h4>Rewrite the stance, or drop affiliate</h4>
+          <p>
+            Before any retail code, the Foundation decides in the open whether it earns referral income,
+            and the editorial stance is rewritten to say exactly what is true. No commission means shop
+            links with no money attached. Commission means a plain disclosure on every surface. Either is
+            honest. Shipping links while the About page still says "no affiliate links" is the one outcome
+            ruled out.
+          </p>
+          <dl class="meta-grid">
+            <dt>Owner</dt><dd>Foundation, not engineering</dd>
+            <dt>Output</dt><dd>A revised <span class="mono">editorial-stance</span> page</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">06.1</span>
+          <span class="pill soon">Core</span>
+        </div>
+        <div class="body">
+          <h4>Country-resolved shop prices, dated</h4>
+          <p>
+            Resolve the reader's country, fetch prices for the variant's GTIN from the calm sources first,
+            and render them as a neutral, dated list under the reference price. Freshness labels and a
+            staleness cutoff built in from line one. No affiliate links yet, no ranking ever. This proves
+            the pipeline and the freshness model carry their weight before any money is involved.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Large <span class="mono">· data pipeline, per-country sources</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">04.4</span> and the gate</dd>
+            <dt>Unlocks</dt><dd>"What does it cost near me", honestly dated</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">06.2</span>
+          <span class="pill later">Child</span>
+        </div>
+        <div class="body">
+          <h4>Affiliate links and partner shops</h4>
+          <p>
+            Only if the gate said yes. Add disclosed affiliate links for mission-aligned partner shops,
+            chosen for fit rather than payout, listed in the same neutral order as everyone else. The
+            disclosure rides every price surface. Removable without touching the price data, which is what
+            keeps it a child of the core rather than baked into it.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium <span class="mono">· partner integrations, disclosure</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">06.1</span> and a "yes" at the gate</dd>
+            <dt>Unlocks</dt><dd>Upkeep funding, without bending a fact</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Money can fund the truth, never bend it</h2>
+    <p class="muted">
+      The editorial stance is neutral, citable, never sponsored. Pricing is allowed to exist only inside
+      that sentence, not around it. These rails hold at every step above.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>A price is a dated, sourced fact, not a deal.</strong> Every number carries a currency, a source, and the date it was seen. No date, no display. A price shown without its freshness is the pricing version of an unverified claim.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Shops are never ranked by what they pay us.</strong> List them in a fixed neutral order, by country or by name, the same for every reader. The day the order follows commission is the day the page stops being a reference.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Disclosure is on the surface, not in a footer nobody reads.</strong> If a link is affiliate, it says so right where it sits, and the editorial stance is rewritten to match before the first link ships.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Price binds to the variant, like every other fact.</strong> Reference price to region, retail price to country, and never pooled across a family. A US plug's price never shows on the EU variant, the same scoping the variants plan applies to telemetry.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to do, in order</h2>
+    <ol>
+      <li><p><strong>Treat pricing as an increment, never a stage.</strong> A priced device is still a device. By the project's own test it cannot be a stage. Reference price is increment <span class="ic">04.4</span> on Variants, retail is the gated <span class="ic">Stage 06</span> behind Goal-based discovery.</p></li>
+      <li><p><strong>Ship the reference price now, after the region switcher.</strong> It binds to region exactly like power, reuses the review path, and carries almost no policy weight. Build it on a device where the regional price genuinely differs, so the binding is visible.</p></li>
+      <li><p><strong>Make the affiliate question a decision before a feature.</strong> The About page says "no affiliate links" today. Resolve that in the open and rewrite the stance first. A quiet contradiction would cost more trust than the income could ever be worth.</p></li>
+      <li><p><strong>Key everything on the GTIN, and source from the calm end first.</strong> Manufacturer price, schema.org offers, and community reports get you real prices in many countries with zero dependence on the marketplaces. Reach for partner shops and feeds only when those run out.</p></li>
+      <li><p><strong>Put the date on every number.</strong> Freshness labels and a staleness cutoff are not polish, they are the line between a useful price and a rumour. Build them in from the first render, not after.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

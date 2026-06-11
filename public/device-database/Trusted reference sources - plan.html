@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trusted reference sources — plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+<style>
+  /* ---- Doc-specific: checklist, sources table, 2-col matrix ---- */
+  .pane h4 { margin-bottom: var(--space-3); }
+  .matrix td:first-child { width: 38%; }
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+  .checklist li { display: grid; grid-template-columns: 18px 1fr; gap: var(--space-3); align-items: start; font-size: var(--fs-14); color: var(--fg-muted); }
+  .checklist li .gly { font-family: var(--font-mono); font-size: var(--fs-14); line-height: 1.4; font-weight: 600; }
+  .checklist li .gly.done { color: var(--success-strong); }
+  .checklist li .gly.todo { color: var(--accent); }
+  .checklist li code { color: var(--fg); }
+  .srcs { border: 1px solid var(--border); border-radius: var(--radius-2); overflow: hidden; background: var(--surface); margin: var(--space-5) 0 var(--space-3); }
+  .src-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-4); align-items: center; padding: var(--space-4) var(--space-5); }
+  .src-row + .src-row { border-top: 1px solid var(--border-subtle); }
+  .src-row .name { font-weight: var(--fw-medium); }
+  .src-row .name .scope { display: block; font-size: var(--fs-12); color: var(--fg-subtle); font-weight: 400; margin-top: 2px; }
+  .src-tag { font-size: var(--fs-12); font-weight: var(--fw-semibold); letter-spacing: var(--ls-wide); text-transform: uppercase; padding: 3px 9px; border-radius: var(--radius-pill); border: 1px solid var(--warning); color: var(--warning-strong); background: var(--warning-soft); white-space: nowrap; }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Trusted sources: the same front door for outside data</h1>
+    <p class="lede">
+      When a device matches a source we trust, recognised by its own model or EAN, we should offer what
+      that source knows to contributors. Not paste it in. The plan is to bring outside data through
+      <strong>exactly the path every other edit takes</strong>: proposed, attributed, and reviewed on
+      GitHub before it goes live.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 03 · Accounts and editing</span>
+      <span class="muted">·</span>
+      reuses the pending-review model in
+      <span class="mono">pending-edits.jsx</span>
+      <span class="muted">and the</span>
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>This is an increment, not a new stage.</strong>
+        Half of it is already in the codebase, dormant. Edit mode was built to accept a
+        <span class="ic">makeSuggest</span> function, every field editor already renders a suggestion
+        rail with an Apply button, and the pending store already records a
+        <span class="ic">source</span> per field. What is missing is small: a data layer that
+        recognises a device by its identifiers, one notice in the sidebar, and the wire that connects
+        them. The review bar does not move an inch.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The honest read · what already exists</p>
+    <h2>The rail is built. It is just unplugged.</h2>
+    <p class="muted">
+      Increment 03 left deliberate seams for this. Edit mode passes a per-field
+      <span class="ic">ctx.suggestionsFor(key)</span> through to <span class="ic">FieldShell</span>,
+      which renders a <span class="ic">SuggestionRow</span>: a source label, the proposed value, and an
+      Apply button. None of it shows today because no <span class="ic">makeSuggest</span> is passed in.
+      The new work is the supply side, the source data and the notice that sends a visitor into edit mode.
+    </p>
+
+    <div class="twocol">
+      <div class="pane">
+        <h4>Already wired<span class="tag">dormant in 03</span></h4>
+        <ul class="checklist">
+          <li><span class="gly done">✓</span><span><code>SuggestionRow</code> + Apply button, per field</span></li>
+          <li><span class="gly done">✓</span><span><code>ctx.suggestionsFor</code> / <code>ctx.applySuggestion</code></span></li>
+          <li><span class="gly done">✓</span><span><code>EditMode</code> accepts <code>makeSuggest(draft)</code></span></li>
+          <li><span class="gly done">✓</span><span><code>__appliedSources</code> writes <code>source</code> into the pending entry</span></li>
+          <li><span class="gly done">✓</span><span>Pending store persists and surfaces a field's <code>source</code></span></li>
+        </ul>
+      </div>
+      <div class="pane">
+        <h4>To build<span class="tag">one increment</span></h4>
+        <ul class="checklist">
+          <li><span class="gly todo">+</span><span>A <code>window.TRUSTED_SOURCES</code> layer that matches a device by model or EAN</span></li>
+          <li><span class="gly todo">+</span><span>The bundled sidebar notice on the read view, above Real-world data</span></li>
+          <li><span class="gly todo">+</span><span>The CTA that opens edit mode with <code>makeSuggest</code> supplied</span></li>
+          <li><span class="gly todo">+</span><span>Conflict semantics: agree once, disagree twice, empty as suggestion</span></li>
+          <li><span class="gly todo">+</span><span>Source named in the edit attribution and history</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The data layer</p>
+    <h2>A source recognises a device by its identifiers</h2>
+    <p class="muted">
+      This is the reason the increment exists. A source declares how it recognises a device, by
+      <span class="ic">model</span> or <span class="ic">EAN</span>, and carries an index keyed on that
+      identifier. A device resolves its matches from its own identifiers, so nothing is hand-listed per
+      device and coverage grows as the dataset does. Keep it in the dataset, never inline in a component,
+      so the notice, the suggestions, and the attribution all read from one place.
+    </p>
+
+    <div class="codeblock"><span class="c">// window.TRUSTED_SOURCES — each source says how it recognises a device</span>
+<span class="k">{</span>
+  id:          <span class="v">"zigbee2mqtt"</span>,
+  name:        <span class="v">"Zigbee2MQTT devices"</span>,
+  reviewPolicy:<span class="v">"contributor-review"</span>,   <span class="c">// requires a human pass</span>
+  matchOn:     <span class="k">[</span><span class="v">"model"</span>, <span class="v">"modelId"</span><span class="k">]</span>,        <span class="c">// recognise by identifier</span>
+  deviceLink:  <span class="k">(d) =></span> <span class="v">`https://www.zigbee2mqtt.io/devices/${d.model}.html`</span>
+<span class="k">}</span>
+
+<span class="c">// Each source carries an index keyed by the identifier it matches on.</span>
+<span class="c">// A device resolves its matches from its own model / EAN — no per-device list.</span>
+<span class="k">matchesFor(device)</span> → <span class="k">[</span> <span class="k">{</span> source, fields: <span class="k">{</span> <span class="ic">protocols</span>, <span class="ic">identifiers</span>, … <span class="k">}</span> <span class="k">}</span>, … <span class="k">]</span></div>
+
+    <p class="muted">
+      The field keys are the ones the pending store and editors already speak:
+      <span class="ic">protocols</span>, <span class="ic">identifiers</span>, <span class="ic">ecosystems</span>,
+      <span class="ic">dimensions</span>, <span class="ic">references</span>, and the rest of
+      <span class="ic">contributorFieldKeys</span>. A source can only ever propose fields a contributor
+      is allowed to edit, never the read-only Home Assistant core.
+    </p>
+
+    <p class="sec-kicker" style="margin-top: var(--space-6);">The four sources, all review-gated</p>
+    <div class="srcs">
+      <div class="src-row">
+        <span class="name">Zigbee2MQTT devices<span class="scope">Matches Zigbee devices by model. Protocols, identifiers, references.</span></span>
+        <span class="src-tag">Contributor review</span>
+      </div>
+      <div class="src-row">
+        <span class="name">Blakadder Zigbee devices<span class="scope">Matches Zigbee devices. Pairing notes, identifiers.</span></span>
+        <span class="src-tag">Contributor review</span>
+      </div>
+      <div class="src-row">
+        <span class="name">matterdevices.io<span class="scope">Matches Matter and Thread devices. Protocols, ecosystems.</span></span>
+        <span class="src-tag">Contributor review</span>
+      </div>
+      <div class="src-row">
+        <span class="name">smarthomeindex.com<span class="scope">General catalogue. Summary, references, identifiers.</span></span>
+        <span class="src-tag">Contributor review</span>
+      </div>
+    </div>
+    <p class="muted">
+      Every one of these requires a contributor to look before anything lands. The tag is not
+      decoration. It is the contract: trusted enough to surface, never trusted enough to write
+      unattended.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The visitor path</p>
+    <h2>One notice, then the suggestion rail</h2>
+    <p class="muted">
+      On a device known at one or more trusted sources, a notice appears in the sidebar above Real-world
+      data. If several sources match, they bundle into a single notice, never one box per source. The
+      notice says additional data is available and offers one call to action: add it as a reference.
+    </p>
+    <p class="muted">
+      The call to action opens edit mode with <span class="ic">makeSuggest</span> supplied. From there the
+      already-built rail takes over, and the contributor decides every value. The one design decision worth
+      getting right is how source data meets data the page already has.
+    </p>
+
+    <table class="matrix">
+      <thead>
+        <tr><th>Situation</th><th>What the contributor sees</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sources agree on a value</td>
+          <td class="muted">Shown once, a single suggestion with an Apply button.</td>
+        </tr>
+        <tr>
+          <td>Sources disagree</td>
+          <td class="muted">Shown as separate suggestions, one per source, each with its own Apply. The contributor picks.</td>
+        </tr>
+        <tr>
+          <td>Field has no existing value</td>
+          <td class="muted">Suggestion shown, input left empty. Nothing is pre-filled. Apply fills it.</td>
+        </tr>
+        <tr>
+          <td>Source conflicts with an existing value</td>
+          <td class="muted">Per-field suggestion sits beside the current value. Apply replaces it, the contributor confirms.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      One rule unifies the table: <em>the source never silently writes an input.</em> Every value is a
+      proposal the contributor applies. That is exactly what the dormant
+      <span class="ic">SuggestionRow</span> already does, which is why this is wiring and not new
+      interaction design.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The increment</p>
+    <h2>One toggle, matched by identifier</h2>
+    <p class="muted">
+      One child increment on Stage 03, beside Contributor profiles and Notifications. An increment is a
+      single toggle, so this is one unit of work that goes live at once, not a ladder of separate pieces.
+      It depends only on its parent stage, <span class="ic">community-edit</span>, exactly like the other
+      Stage 03 children. <strong>No increment depends on another.</strong>
+    </p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail">
+          <span class="id">Base</span>
+          <span class="pill live">Built</span>
+        </div>
+        <div class="body">
+          <h4>The suggestion rail it builds on</h4>
+          <p>
+            Per-field suggestions with Apply, source recorded into the pending entry, all present in
+            <span class="ic">edit-fields.jsx</span> and <span class="ic">edit-mode.jsx</span>. Already
+            shipped inside Stage 03, just dormant because no source data feeds it. The foundation this
+            increment feeds, not part of it. Do not rebuild this, feed it.
+          </p>
+          <dl class="meta-grid">
+            <dt>Stage</dt><dd>03 Accounts and editing</dd>
+            <dt>Lives in</dt><dd><span class="mono">edit-fields.jsx · edit-mode.jsx</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Proposed</span>
+      <h3>Stage 03 increment · Trusted reference sources</h3>
+    </div>
+    <p class="stage-sub">Key <span class="ic">trusted-sources</span>. One toggle, depends only on <span class="ic">community-edit</span>, like the other Stage 03 children.</p>
+
+    <div class="ladder">
+      <div class="step">
+        <div class="rail">
+          <span class="id">TS</span>
+          <span class="pill next">One unit</span>
+        </div>
+        <div class="body">
+          <h4>The whole increment, in one move</h4>
+          <p>
+            A device is recognised by its model or EAN against a trusted source's index. Where a source has
+            data, a single bundled notice appears above Real-world data, and its call to action opens edit
+            mode with <span class="ic">makeSuggest</span> supplied, so the dormant rail lights up. The
+            contributor applies what they want, every applied value carries its source into the
+            attribution, and the edit goes to review like any other. Identifier matching is the point: it
+            is what lets the database pull in outside data at scale, with nobody hand-listing which device
+            lives where.
+          </p>
+          <dl class="meta-grid">
+            <dt>Touches</dt><dd><span class="mono">data.js · detail.jsx · edit-mode.jsx</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">community-edit</span> only, no other increment</dd>
+            <dt>Unlocks</dt><dd>Notice to suggestion to attributed, reviewed edit</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top: var(--space-5);">
+      Inside that one toggle, the only real design problem is the conflict semantics above: agree once,
+      disagree twice, empty without pre-fill, conflict beside the current value. The data layer and its
+      identifier matching is the reason to build it. The semantics are what make it trustworthy rather than
+      noisy. Everything else is wiring seams that already exist.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Trusted to surface, never trusted to write</h2>
+    <p class="muted">
+      The editorial stance is neutral, citable, never sponsored. A trusted source is a convenience, not an
+      authority. These rails hold throughout.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>A source proposes, a contributor decides.</strong> Nothing from a source writes a field unattended. Apply is always a human action, and the submit still goes to review.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The source is named, always.</strong> Every value that came from a source carries that source into the pending entry, the attribution, and the edit history. Provenance is not optional.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The read view never changes from a source alone.</strong> Until an edit is reviewed and merged, the page shows the last approved data. A match adds a notice, never a value.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Conflicts are shown, not resolved for the contributor.</strong> When sources disagree, both are offered. The database does not pick a winner on a visitor's behalf.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to do, in order</h2>
+    <ol>
+      <li><p><strong>Ship it as one increment on Stage 03, one toggle.</strong> It reuses the entire edit-and-review machinery and depends only on <span class="ic">community-edit</span>, never on another increment. A new stage would overstate it, and splitting it into separate toggles would couple increments to each other.</p></li>
+      <li><p><strong>Match on the identifier, not a hand-listed map.</strong> Recognising a device by its model or EAN is the reason the feature exists. It is what lets coverage grow with the dataset instead of one entry at a time.</p></li>
+      <li><p><strong>Treat the conflict semantics as the one design problem.</strong> Agree once, disagree twice, empty without pre-fill, conflict beside the current value. That is where a helpful rail and a noisy one diverge. The rest is connecting seams that already exist.</p></li>
+      <li><p><strong>Register it on the canvas beside Profiles and Notifications.</strong> Add <span class="ic">trusted-sources</span> under Stage 03 in <span class="ic">canvas.html</span> and the index boot deps, so the roadmap shows the third Stage 03 child.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

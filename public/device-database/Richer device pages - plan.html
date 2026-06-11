@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Richer device pages · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 02</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Richer device pages: a reading on top of the record</h1>
+    <p class="lede">
+      Foundation publishes the facts a report can stand behind. Stage 02 turns the bare entry into a page
+      worth reading: a <strong>curated overview, references, a plain-language requirements matrix, and
+      detailed specifications.</strong> The rule that makes it safe is that enrichment is a layer over the
+      reported record, never a rewrite of it. This is the plan for that layer, and the three increments that
+      hang off it.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 01 Foundation</span>
+      <span class="muted">·</span>
+      holds the line set by the
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>Stage 02 adds a reading, it does not move the floor.</strong>
+        Every enriched field is an overlay: turn the stage off and the page falls back to Foundation's reported
+        content with nothing missing and nothing broken. Search still indexes only reported fields, the verdict
+        still comes from the reported record, and a claim with no source still says so. The stage earns its place
+        by making the same facts legible, not by inventing new ones.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it adds · four enrichments</p>
+    <h2>From a record to an article</h2>
+    <p class="muted">
+      A Foundation entry can tell you the verdict and the integration. It cannot tell you <em>why</em>, or what
+      a setup actually demands. Stage 02 fills that in with four editorial fields, each authored, each citable,
+      each optional. Where one is empty, the page shows the gap rather than papering over it.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Enrichment</th><th>What it carries</th><th>Source of truth</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Curated overview</td><td class="muted">The prose summary and description: how the device behaves and pairs, in a wiki editor's voice.</td><td class="mono-val">summary · description</td></tr>
+        <tr><td>References</td><td class="muted">Manufacturer pages and documentation a reader can check. Citations, not marketing links.</td><td class="mono-val">specs.references</td></tr>
+        <tr><td>Requirements matrix</td><td class="muted">Setup, day-to-day control, and offline behaviour, in plain language.</td><td class="mono-val">specs.connectivity</td></tr>
+        <tr><td>Detailed specifications</td><td class="muted">Category specs, protocols, dimensions, identifiers, the figures.</td><td class="mono-val">specs.*</td></tr>
+      </tbody>
+    </table>
+    <p>
+      The figures on the page are <strong>derived or contributor-entered, never decorative</strong>. The
+      connection schematic is drawn straight from the reported local-or-cloud verdict, so it cannot disagree with
+      the headline. The requirements matrix reads <span class="ic">specs.connectivity</span> and shows a plain
+      "-" on any row a contributor has not filled in. The firmware timeline is just the version history Foundation
+      already collects, drawn out.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The seam · what stays untouched</p>
+    <h2>Enrichment overlays, it never overwrites</h2>
+    <p class="muted">
+      The whole stage rests on one boundary, the same one Foundation draws: reported facts versus authored
+      reading. Stage 02 only ever adds on the authored side. Three things on the reported side are deliberately
+      left alone, and that is what lets the stage be switched off cleanly.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Search is not enriched<span class="tag">searchbox.jsx · reported corpus</span></h4>
+        <p>The index stays names, manufacturers, models, and categories. A committed search can never surface a device on the curated summary, so toggling the stage never changes what Browse finds.</p>
+      </div>
+      <div class="pane">
+        <h4>The verdict is not re-derived<span class="tag">the reported record</span></h4>
+        <p>Local, cloud, and Home Assistant support still come from Foundation. The overview explains the verdict, it never sets it. The schematic renders the reported answer, not an editor's.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      The third is uncertainty. Stage 02 inherits Foundation's honesty rule rather than smoothing it over: an
+      unverified claim is marked unverified, and a field with no contributor input reads "-" instead of a
+      confident guess. A richer page is not a more certain one.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>A core that defines the stage, then three independent children</h2>
+    <p class="muted">
+      The core is the enriched read view: overview, references, requirements, and specs on the device page.
+      Ship it and Stage 02 exists. The three increments each add a surface that builds on the core and on nothing
+      else, which is why each can be switched off on its own without collapsing the stage. They are independent of
+      one another by design.
+    </p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail">
+          <span class="id">02</span>
+          <span class="pill live">Live</span>
+        </div>
+        <div class="body">
+          <h4>The enriched device page</h4>
+          <p>
+            The curated overview, references, the requirements matrix, the detailed specifications, and the
+            editorial figures. This is the core: the read view goes from a bare record to an article. Removable as
+            a whole, the page falls back to Foundation's reported content.
+          </p>
+          <dl class="meta-grid">
+            <dt>Lives in</dt><dd><span class="mono">detail.jsx · detail-figures.jsx · data.js</span></dd>
+            <dt>Depends on</dt><dd>Stage 01 reported record</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Increments</span>
+      <h3>Three additions, each its own plan</h3>
+    </div>
+    <p class="stage-sub">Each builds on the Stage 02 core and is independent of the other two. Read each plan for the full case.</p>
+
+    <div class="ladder">
+      <div class="step">
+        <div class="rail"><span class="id">A</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Browse grid view</h4>
+          <p>A grid layout option on Browse, with a list-and-grid toggle, cards leading with the device photo. With it off, Browse forces the list and hides the toggle.</p>
+          <dl class="meta-grid">
+            <dt>Plan</dt><dd><a class="ref" href="Browse%20grid%20view%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Browse grid view</a></dd>
+            <dt>Lives in</dt><dd><span class="mono">browse.jsx</span></dd>
+          </dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">B</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Photos and gallery</h4>
+          <p>Curated device photos: a gallery on the device page and lead thumbnails on Browse cards. The pairing that makes the grid view worth having.</p>
+          <dl class="meta-grid">
+            <dt>Plan</dt><dd><a class="ref" href="Photos%20and%20gallery%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Photos and gallery</a></dd>
+            <dt>Lives in</dt><dd><span class="mono">detail.jsx · browse.jsx · data.js</span></dd>
+          </dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">C</span><span class="pill soon">Child</span></div>
+        <div class="body">
+          <h4>Connects with</h4>
+          <p>Expands the Connects with section beyond Home Assistant to every ecosystem a device is marked compatible with, one tab each. With it off, the page shows Home Assistant alone.</p>
+          <dl class="meta-grid">
+            <dt>Plan</dt><dd><a class="ref" href="Connects%20with%20-%20plan.html" target="_blank" rel="noopener" style="color: var(--link);">Connects with</a></dd>
+            <dt>Lives in</dt><dd><span class="mono">connects-with.jsx · data.js</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A reference page, never a review</h2>
+    <p class="muted">
+      Richer pages are the place the editorial stance is most tempting to break. More room invites opinion. These
+      rails keep the extra space factual.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Verbs over adjectives.</strong> "Exposes 14 entities," not "powerful entity support." The overview describes behaviour, never quality, and never ranks one device against another.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>References are citations, not links to buy.</strong> Manufacturer docs and source a reader can check. No affiliate, no sponsored placement, no store.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>A gap reads as a gap.</strong> An empty requirement shows "-", an unverified claim is marked. Enrichment never manufactures a fact to fill the layout.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The floor is reachable with the stage off.</strong> Every enriched field is an overlay over the reported record, so Foundation always shows through underneath.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold, in order</h2>
+    <ol>
+      <li><p><strong>Keep the core and the children separable.</strong> The enriched page must stand without grid view, photos, or multi-ecosystem Connects with. If a child cannot be switched off cleanly, it has crept into the core.</p></li>
+      <li><p><strong>Never let enrichment reach into search.</strong> The reported corpus is the contract with Foundation. The day a curated summary changes a search result, the floor has moved.</p></li>
+      <li><p><strong>Derive the figures, never decorate.</strong> The schematic and timeline must read from reported data so they cannot contradict the headline. A figure that asserts its own fact is a bug.</p></li>
+      <li><p><strong>Treat the three increments as separate decisions.</strong> Each has its own plan and its own toggle. Ship and evaluate them one at a time, not as a bundle.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

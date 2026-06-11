@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Device Database, Canvas</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <link rel="stylesheet" href="tokens.css">
+
+  <!-- Boot: resolve theme attr BEFORE stylesheets paint, so the sidebar
+       loads in the right mode without a flash. Reads the same key the
+       embedded pages use. -->
+  <script>
+    (function () {
+      try {
+        var s = JSON.parse(localStorage.getItem('devicedb.demoState.v1') || '{}');
+        var pref = s.theme || 'auto';
+        var resolved = (pref === 'light' || pref === 'dark')
+          ? pref
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-resolved-theme', resolved);
+      } catch (e) {
+        document.documentElement.setAttribute('data-resolved-theme', 'light');
+      }
+    })();
+  </script>
+
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: var(--neutral-100, #ececef); font-family: var(--font-sans); color: var(--fg); }
+
+    /* Layout, sidebar fixed on the left, canvas fills the rest. */
+    #root { height: 100vh; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100vh;
+      width: 100vw;
+    }
+    .layout .canvas-host { position: relative; overflow: hidden; }
+
+    /* =========================================================================
+       Sidebar, appearance + increments controls. State persists to
+       localStorage and is broadcast to every embedded iframe via postMessage.
+       ========================================================================= */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      font-family: var(--font-sans);
+      color: var(--fg);
+    }
+    .sb-head {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 1.2;
+      margin: 0 0 4px;
+      color: var(--fg);
+    }
+    .sb-sub {
+      font-size: 12px;
+      color: var(--fg-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+    .sb-section { padding: 18px 20px 6px; }
+    .sb-section + .sb-section { border-top: 1px solid var(--border-subtle); }
+    .sb-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      margin: 0 0 12px;
+    }
+    /* Section heading row: title left, "Enable all" link right. */
+    .sb-section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+    }
+    .sb-section-head .sb-section-title { margin: 0; }
+    .sb-enable-all {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font: 500 11px/1 var(--font-sans);
+      color: var(--link);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: var(--border-strong);
+    }
+    .sb-enable-all:hover { color: var(--link-hover); text-decoration-color: currentColor; }
+    .sb-enable-all:disabled { color: var(--fg-subtle); cursor: default; text-decoration: none; }
+
+    /* Segmented control, theme picker (System / Light / Dark). */
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2);
+      overflow: hidden;
+      background: var(--surface-tint-soft);
+      margin-bottom: 12px;
+    }
+    .seg-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      font: 500 12px/1 var(--font-sans);
+      color: var(--fg-muted);
+      padding: 8px 6px;
+      cursor: pointer;
+      border-right: 1px solid var(--border-subtle);
+      transition: background 120ms ease, color 120ms ease;
+    }
+    .seg-btn:last-child { border-right: 0; }
+    .seg-btn:hover { color: var(--fg); }
+    .seg-btn.is-active {
+      background: var(--surface);
+      color: var(--fg);
+      box-shadow: inset 0 0 0 1px var(--border-strong);
+    }
+    .seg-meta {
+      font-size: 11px;
+      color: var(--fg-subtle);
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+    .seg-meta b { font-weight: 600; color: var(--fg-muted); }
+
+    /* Increment row, title, description, toggle switch on the right.
+       Whole row is the click target. */
+    .inc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-bottom: 18px;
+    }
+    .inc {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      padding: 12px 10px;
+      margin: 0 -10px;
+      border-radius: var(--radius-2);
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .inc:hover { background: var(--surface-tint-soft); }
+    .inc-num {
+      font: 500 10px/1 var(--font-mono);
+      letter-spacing: 0.06em;
+      color: var(--fg-subtle);
+      margin-bottom: 4px;
+    }
+    .inc-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      line-height: 1.3;
+      margin: 0 0 4px;
+    }
+    .inc-desc {
+      font-size: 12px;
+      color: var(--fg-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+    .inc.is-coming .inc-title,
+    .inc.is-coming .inc-num { color: var(--fg-subtle); }
+    .inc.is-coming { cursor: not-allowed; opacity: 0.6; }
+
+    /* Planned (not built yet): a non-toggleable row with a "Planned" tag,
+       a disabled switch, and a link out to the plan doc. Mirrors the
+       in-app Experiments dialog. */
+    .inc.is-planned { cursor: default; opacity: 0.85; }
+    .inc.is-planned:hover { background: transparent; }
+    .inc-plan-pill {
+      display: inline-flex; align-items: center;
+      font: var(--fw-semibold) 9px/1 var(--font-sans);
+      letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 2px 6px; margin-left: 6px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-strong); color: var(--fg-subtle);
+      vertical-align: middle;
+    }
+    .inc-plan-link {
+      color: var(--link);
+      text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--border-strong);
+    }
+    .inc-plan-link:hover { color: var(--link-hover); text-decoration-color: currentColor; }
+    .sw.is-disabled { opacity: 0.45; cursor: not-allowed; }
+    .sw.is-disabled input { cursor: not-allowed; }
+
+    /* Nested increments, additions that build on a stage and are
+       independent of one another. Indented under their parent stage with a
+       hairline spine. */
+    .inc-children {
+      margin: 0 0 8px 10px;
+      padding-left: 14px;
+      border-left: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .inc-children-label {
+      font: 500 10px/1 var(--font-mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--fg-subtle);
+      margin: 8px 0 2px;
+    }
+    .inc-child { padding-top: 9px; padding-bottom: 9px; }
+    .inc-child .inc-title { font-size: 12.5px; }
+
+    /* Locked row, baseline increment that ships as-is. Not toggleable;
+       cursor reverts to default, no hover affordance, and a small "Live"
+       pill replaces the switch on the right. */
+    .inc.is-locked { cursor: default; }
+    .inc.is-locked:hover { background: transparent; }
+    .inc-badge {
+      font: var(--fw-semibold) 10px/1 var(--font-sans);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--success-strong);
+      background: var(--success-soft);
+      border: 1px solid var(--success-soft);
+      border-radius: var(--radius-pill);
+      padding: 4px 8px;
+      margin-top: 2px;
+      align-self: start;
+      white-space: nowrap;
+    }
+
+    /* Switch, same visual idiom as the embedded app's .switch. Sits
+       in the inc row's right column. */
+    .sw {
+      position: relative;
+      width: 32px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .sw input {
+      position: absolute; inset: 0;
+      opacity: 0; margin: 0; cursor: pointer; z-index: 1;
+    }
+    .sw-track {
+      position: absolute; inset: 0;
+      background: var(--surface-tint-strong);
+      border-radius: 999px;
+      transition: background 140ms ease;
+    }
+    .sw-thumb {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--neutral-0);
+      box-shadow: var(--shadow-1);
+      transition: transform 140ms ease;
+    }
+    .sw.is-on .sw-track { background: var(--primary); }
+    .sw.is-on .sw-thumb {
+      transform: translateX(14px);
+      background: var(--fg-on-primary);
+    }
+    .sw input:focus-visible + .sw-track {
+      box-shadow: var(--ring-focus);
+    }
+
+    /* Footer, reset / version line. Pushed to the bottom of the panel. */
+    .sb-foot {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--fg-subtle);
+    }
+    .sb-reset {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      font: 500 11px/1 var(--font-sans);
+      color: var(--link);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: var(--border-strong);
+    }
+    .sb-reset:hover { color: var(--link-hover); text-decoration-color: currentColor; }
+
+    /* The overview is fixed: every page × every breakpoint, in a meaningful
+       order. Hide the design canvas's drag-reorder grip so the layout reads
+       as a grid, not a deck of cards. Same for the built-in expand/focus
+       button, we replace it with a richer "play" button below that opens
+       the page in a Figma-Prototype-style responsive viewer. */
+    .dc-grip   { display: none !important; }
+    .dc-expand { display: none !important; }
+
+    /* Make all design-canvas labels (artboard labels, section titles) read-only.
+       The artboard labels just echo their breakpoint name and the section
+       titles are the page names, neither should be renamable in an overview. */
+    .dc-editable {
+      pointer-events: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      cursor: default !important;
+    }
+
+    /* Each artboard hosts a full-bleed iframe. The artboard width controls the
+       iframe's viewport width, so the page inside picks up its actual responsive
+       behaviour at that breakpoint (no zooming, no scaling tricks). */
+    .frame-wrap {
+      width: 100%;
+      height: 100%;
+      background: var(--surface, #fff);
+      overflow: hidden;
+      position: relative;
+    }
+    .frame-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: var(--surface, #fff);
+    }
+    /* Transparent shield over the iframe. Catches wheel/trackpad gestures so
+       they bubble up to the canvas's pan/zoom handlers instead of being
+       swallowed by the iframe, without this, swiping across an artboard
+       boundary kills the canvas pan. The shield hosts a centered action
+       group (Interact + Open prototype) that fades in on hover. */
+    .frame-shield {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      /* `auto` so it intercepts pointer + wheel events. */
+      pointer-events: auto;
+      cursor: pointer;
+      display: block;
+    }
+    /* Faint scrim over the whole artboard on hover, muted enough that the
+       underlying page stays readable, strong enough that the change of state
+       is unmistakable. */
+    .frame-shield::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 24, 30, 0.04);
+      opacity: 0;
+      transition: opacity 180ms ease;
+      pointer-events: none;
+    }
+    .frame-shield:hover::before,
+    .frame-shield:focus-within::before { opacity: 1; }
+
+    /* Centered action cluster, fades in on hover. Sized in fixed px so
+       they stay legible regardless of canvas zoom. */
+    .frame-actions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.96);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 180ms ease, transform 180ms ease;
+      pointer-events: none;
+    }
+    .frame-shield:hover .frame-actions,
+    .frame-shield:focus-within .frame-actions {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Shared button base, both buttons are the same size so they read as
+       a pair. */
+    .frame-action {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font: 600 13px/1 var(--font-sans);
+      letter-spacing: 0.01em;
+      border-radius: var(--radius-pill, 999px);
+      padding: 10px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: var(--shadow-3, 0 8px 24px rgba(15, 23, 30, 0.18));
+      transition: background 140ms ease, color 140ms ease,
+                  border-color 140ms ease, transform 100ms ease;
+    }
+    .frame-action svg { width: 12px; height: 12px; }
+    .frame-action:active { transform: scale(0.97); }
+
+    /* Primary: filled blue. The main affordance, "interact with this
+       page right here". */
+    .frame-action-primary {
+      background: var(--primary, #0288d1);
+      color: var(--fg-on-primary, #fff);
+      border: 1px solid var(--primary, #0288d1);
+    }
+    .frame-action-primary:hover {
+      background: var(--primary-hover, #0277b5);
+      border-color: var(--primary-hover, #0277b5);
+    }
+
+    /* Secondary: white with border. Same shape, lower visual weight -
+       reads as the alternate path (open in a dedicated viewer tab). */
+    .frame-action-secondary {
+      background: var(--surface, #fff);
+      color: var(--fg, #1a1d22);
+      border: 1px solid var(--border, #d6dae0);
+    }
+    .frame-action-secondary:hover {
+      border-color: var(--fg, #1a1d22);
+      background: var(--surface, #fff);
+    }
+    .frame-action-secondary svg {
+      /* Optical nudge so the play triangle reads centered next to text. */
+      margin-left: 1px;
+      color: var(--primary, #0288d1);
+    }
+
+    /* Keyboard-focus state, same affordance shown for keyboard users. */
+    .frame-shield:focus-visible {
+      outline: 2px solid var(--primary, #0288d1);
+      outline-offset: -2px;
+    }
+
+    /* When active, the iframe takes pointer events; show a quiet outline so
+       the user can see which artboard is "live". */
+    .frame-wrap.active {
+      outline: 2px solid var(--primary);
+      outline-offset: -2px;
+    }
+    .frame-deactivate {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      font: 500 11px/1 var(--font-mono);
+      letter-spacing: 0.02em;
+      color: var(--fg);
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .frame-deactivate:hover { border-color: var(--border-strong); }
+
+    /* Loader visible until the iframe paints */
+    .frame-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg-subtle);
+      font: 500 12px/1 var(--font-mono);
+      letter-spacing: 0.04em;
+      background: var(--surface);
+      pointer-events: none;
+      transition: opacity 240ms ease;
+    }
+    .frame-wrap.loaded .frame-loading { opacity: 0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+
+  <script type="text/babel">
+
+/* ─────────────────────────────────────────────────────────────────────
+   Canvas, every page of the Device Database, side-by-side at
+   each of the design system's responsive breakpoints.
+    Breakpoints from app.css:
+     · Mobile  : < 768px         (artboard 390 wide , iPhone-ish)
+     · Tablet  : 768 – 1023px    (artboard 820 wide , iPad-ish)
+     · Desktop : 1024 – 1279px   (artboard 1200 wide, sm laptop)
+     · Wide    : ≥ 1280px        (artboard 1440 wide, std desktop)
+    Pages: hash-routed from index.html. Each artboard hosts an iframe
+   pointed at index.html#/<route>. The iframe's CSS width *is* the
+   viewport width seen by the embedded app, so mobile breakpoints
+   actually trigger, no fake scaling. ────────────────────────────── */
+
+
+
+/* ─────────────────────────────────────────────────────────────────────
+   Demo state, appearance + increments. Persisted to localStorage so
+   refreshing the canvas keeps your demo setup. Broadcast to every
+   embedded iframe via postMessage; each iframe applies the state in
+   its boot script (see index.html). ─────────────────────────────── */
+
+// Each increment definition lives here. To add one: append an entry,
+// gate the corresponding UI inside index.html on
+// `[data-inc-<key>="on"]` (CSS) or `document.documentElement.dataset['inc' + Pascal]` (JS).
+const INCREMENTS = [
+{
+  key: 'foundation',
+  number: '01',
+  title: 'Foundation',
+  desc: 'Browse, search, and read device information drawn from Home Assistant users who opt in to share which devices they run and how those devices behave. No personal data, no identifiers, no addresses. This is the baseline every later stage builds on.',
+  locked: true,   // baseline, no toggle
+  href: 'Foundation%20-%20plan.html'
+},
+{
+  key: 'device-pages',
+  number: '02',
+  title: 'Richer device pages',
+  desc: 'Editorially curated enrichment: a curated overview, references, requirements, and detailed specifications.',
+  href: 'Richer%20device%20pages%20-%20plan.html',
+  status: 'live', // 'live' | 'coming'
+  // Increments build ON this stage and are independent of one another.
+  children: [
+    {
+      key: 'grid-view',
+      title: 'Browse grid view',
+      desc: 'A grid layout option on Browse, with a list and grid toggle. Cards lead with the device photo where one exists.',
+      href: 'Browse%20grid%20view%20-%20plan.html',
+      status: 'live'
+    },
+    {
+      key: 'photos',
+      title: 'Photos and gallery',
+      desc: 'Curated device photos: a gallery on the device page and lead thumbnails on Browse cards.',
+      href: 'Photos%20and%20gallery%20-%20plan.html',
+      status: 'live'
+    },
+    {
+      key: 'connects-with',
+      title: 'Connects with',
+      desc: 'Expands the Connects with section beyond Home Assistant to every ecosystem a device is marked compatible with, one tab each.',
+      href: 'Connects%20with%20-%20plan.html',
+      status: 'live'
+    }
+  ]
+},
+{
+  key: 'community-edit',
+  number: '03',
+  title: 'Accounts and editing',
+  desc: 'Builds on Richer device pages. Adds sign-in, settings, an edit mode for community members, and an edit history with attribution.',
+  href: 'Accounts%20and%20editing%20-%20plan.html',
+  status: 'live',
+  // Increments build ON this stage and are independent of one another.
+  children: [
+    {
+      key: 'contributor-profiles',
+      title: 'Contributor profiles and directory',
+      desc: 'Public profile pages and a browsable directory. Edit attributions link to a contributor\u2019s profile. With this off, they show as plain names.',
+      href: 'Contributor%20profiles%20and%20directory%20-%20plan.html',
+      status: 'live'
+    },
+    {
+      key: 'notifications',
+      title: 'Notifications',
+      desc: 'How we tell you when a submitted edit is sent for review, goes live, or is declined. Choose email or GitHub (or off) in Settings. Powers the status updates shown on Your edits.',
+      href: 'Notifications%20-%20plan.html',
+      status: 'live'
+    },
+    {
+      key: 'your-changes',
+      title: 'Your edits',
+      desc: 'One private dashboard, reached from a single nav icon, that merges the old inbox and changes tray: a timeline of your drafts, edits in review, what went live, and declined edits you can revise, with submit-all batching. Replaces the Changes tray.',
+      href: 'Your%20edits%20-%20plan.html',
+      status: 'live'
+    },
+    {
+      key: 'trusted-sources',
+      title: 'Trusted reference sources',
+      desc: 'Outside data offered at the edit point, reviewed like any other edit.',
+      planned: true,
+      href: 'Trusted%20reference%20sources%20-%20plan.html'
+    }
+  ]
+},
+{
+  key: 'device-variants',
+  number: '04',
+  title: 'Variants and families',
+  desc: 'Group a product\u2019s regional and protocol variants under one family, with a variant switcher and verdict matrix on the device page. Power specs and identifiers bind to the regional variant.',
+  planned: true,
+  href: 'Device%20variants%20and%20families%20-%20plan.html'
+},
+{
+  key: 'goal-based-discovery',
+  number: '05',
+  title: 'Goal-based discovery',
+  desc: 'Browse by what you are trying to achieve, not only by category. Grows out of the quick-filter recipes.',
+  planned: true,
+  href: 'Quick-filter%20recipes%20-%20plan.html'
+}
+// Future stages append here.
+];
+
+const STORAGE_KEY = 'devicedb.demoState.v1';
+const DEFAULT_STATE = { theme: 'auto', increments: {} };
+
+function loadState() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return {
+      theme: raw.theme || 'auto',
+      increments: raw.increments || {}
+    };
+  } catch (e) {
+    return { ...DEFAULT_STATE };
+  }
+}
+function saveState(s) {
+  try {localStorage.setItem(STORAGE_KEY, JSON.stringify(s));}
+  catch (e) {/* ignore */}
+}
+
+// Resolve the effective theme name, given the current preference. Used
+// for the "follows OS = Light" sublabel under the segmented control.
+function resolveTheme(pref) {
+  if (pref === 'light' || pref === 'dark') return pref;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ?
+  'dark' : 'light';
+}
+
+// Broadcast state to every embedded iframe. Run on mount + every
+// change. Iframes that haven't loaded yet pick state up from
+// localStorage in their boot script, no double-apply issues.
+function broadcastState(state) {
+  const frames = document.querySelectorAll('iframe');
+  const msg = { type: 'devicedb.demoState', state };
+  frames.forEach((f) => {
+    try {f.contentWindow && f.contentWindow.postMessage(msg, '*');}
+    catch (e) {/* cross-origin or detached frame */}
+  });
+}
+
+function Switch({ checked, onChange, ariaLabel, disabled }) {
+  return (
+    <span className={`sw${checked ? ' is-on' : ''}${disabled ? ' is-disabled' : ''}`}>
+          <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => { if (!disabled) onChange(e.target.checked); }}
+        aria-label={ariaLabel} />
+      
+          <span className="sw-track" />
+          <span className="sw-thumb" />
+        </span>);
+
+}
+
+function Sidebar({ state, setState }) {
+  // Track OS scheme so the "System (now Light/Dark)" label stays live.
+  const [osIsDark, setOsIsDark] = React.useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+  React.useEffect(() => {
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const h = (e) => setOsIsDark(e.matches);
+    mql.addEventListener('change', h);
+    return () => mql.removeEventListener('change', h);
+  }, []);
+
+  const setTheme = (theme) => setState({ ...state, theme });
+  // Stage dependencies: turning a stage on also turns on the stages it
+  // builds upon; turning a stage off also turns off the stages that build on
+  // it. Stage 3 (community-edit) builds on Stage 2 (device-pages).
+  const INCREMENT_DEPS = { 'community-edit': ['device-pages'], 'notifications': ['community-edit', 'device-pages'], 'contributor-profiles': ['community-edit', 'device-pages'], 'your-changes': ['community-edit', 'device-pages'], 'grid-view': ['device-pages'], 'photos': ['device-pages'], 'connects-with': ['device-pages'] };
+  // Reverse map: which stages depend on a given stage.
+  const INCREMENT_DEPENDENTS = Object.entries(INCREMENT_DEPS).reduce((acc, [k, deps]) => {
+    deps.forEach((d) => { (acc[d] = acc[d] || []).push(k); });
+    return acc;
+  }, {});
+  const setIncrement = (key, on) =>
+  setState({
+    ...state,
+    increments: {
+      ...state.increments,
+      [key]: on,
+      ...(on
+        ? Object.fromEntries((INCREMENT_DEPS[key] || []).map((d) => [d, true]))
+        : Object.fromEntries((INCREMENT_DEPENDENTS[key] || []).map((d) => [d, false])))
+    }
+  });
+  // Turn every toggleable stage + increment on at once (locked Foundation is
+  // always on; "coming" items stay off). Powers the "Enable all" shortcut.
+  const enableAll = () => {
+    const next = { ...state.increments };
+    INCREMENTS.forEach((inc) => {
+      if (!inc.locked && !inc.planned && inc.status !== 'coming') next[inc.key] = true;
+      (inc.children || []).forEach((c) => { if (!c.planned && c.status !== 'coming') next[c.key] = true; });
+    });
+    setState({ ...state, increments: next });
+  };
+  const allOn = INCREMENTS.every((inc) =>
+    (inc.locked || inc.planned || inc.status === 'coming' || state.increments[inc.key]) &&
+    (inc.children || []).every((c) => c.planned || c.status === 'coming' || state.increments[c.key]));
+  const disableAll = () => {
+    const next = { ...state.increments };
+    INCREMENTS.forEach((inc) => {
+      if (!inc.locked && !inc.planned && inc.status !== 'coming') next[inc.key] = false;
+      (inc.children || []).forEach((c) => { if (!c.planned && c.status !== 'coming') next[c.key] = false; });
+    });
+    setState({ ...state, increments: next });
+  };
+  // Reset the whole demo, not just appearance + stages. Matches the in-page
+  // Experiments dialog: appearance + increments go back to defaults AND every
+  // other persisted demo store (device edits, profile changes, new
+  // contributors, notifications, sign-in) is wiped. The embedded artboards
+  // share this origin's localStorage, but each caches its data in memory and
+  // only re-seeds on load, so we clear the keys and reload every iframe.
+  const reset = () => {
+    setState({ ...DEFAULT_STATE });
+    try {
+      // Persist the default demo-state now so reloaded iframes read it.
+      saveState(DEFAULT_STATE);
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf('devicedb.') === 0 && k !== STORAGE_KEY) keys.push(k);
+      }
+      keys.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {/* private mode — nothing persisted to clear */}
+    document.querySelectorAll('iframe').forEach((f) => {
+      try { f.contentWindow.location.reload(); }
+      catch (e) { try { f.src = f.src; } catch (e2) {/* detached */} }
+    });
+  };
+
+  const themeOptions = [
+  { id: 'auto', label: 'System' },
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' }];
+
+
+  return (
+    <aside className="sidebar">
+          <header className="sb-head">
+            <h1 className="sb-title">Experiments</h1>
+            <p className="sb-sub">
+              Flip increments on/off to preview the next iterations of the site.
+              Changes apply to every artboard below.
+            </p>
+          </header>
+
+          <section className="sb-section" aria-labelledby="sb-appearance">
+            <h2 id="sb-appearance" className="sb-section-title">Appearance</h2>
+            <div className="seg" role="radiogroup" aria-label="Theme">
+              {themeOptions.map((opt) =>
+          <button
+            key={opt.id}
+            type="button"
+            role="radio"
+            aria-checked={state.theme === opt.id}
+            className={`seg-btn${state.theme === opt.id ? ' is-active' : ''}`}
+            onClick={() => setTheme(opt.id)}>
+            
+                  {opt.label}
+                </button>
+          )}
+            </div>
+            <p className="seg-meta">
+              {state.theme === 'auto' ?
+          <>System preference: <b>{osIsDark ? 'Dark' : 'Light'}</b></> :
+          <>Overrides system preference (currently <b>{osIsDark ? 'Dark' : 'Light'}</b>).</>}
+            </p>
+          </section>
+
+          <section className="sb-section" aria-labelledby="sb-increments">
+            <div className="sb-section-head">
+              <h2 id="sb-increments" className="sb-section-title">Stages</h2>
+              <button type="button" className="sb-enable-all" onClick={allOn ? disableAll : enableAll}>
+                {allOn ? 'Disable all' : 'Enable all'}
+              </button>
+            </div>
+            <div className="inc-list">
+              {INCREMENTS.map((inc) => {
+            const planned = !!inc.planned;
+            const on = !planned && !!state.increments[inc.key];
+            const coming = inc.status === 'coming';
+            const locked = !!inc.locked;
+            const RowTag = (locked || planned) ? 'div' : 'label';
+            return (
+              <React.Fragment key={inc.key}>
+                  <RowTag
+                className={`inc${coming ? ' is-coming' : ''}${locked ? ' is-locked' : ''}${planned ? ' is-planned' : ''}`}>
+                    
+                    <div>
+                      <div className="inc-num">{inc.number}</div>
+                      <div className="inc-title">{inc.title}{planned && <span className="inc-plan-pill">Planned</span>}</div>
+                      <p className="inc-desc">{inc.desc}{inc.href && <React.Fragment> <a className="inc-plan-link" href={inc.href} target="_blank" rel="noopener">Read the plan</a></React.Fragment>}</p>
+                    </div>
+                    {locked ?
+              null :
+              <Switch
+                checked={on}
+                disabled={planned}
+                onChange={(next) => !coming && setIncrement(inc.key, next)}
+                ariaLabel={planned ? `${inc.title} \u2014 planned, not built yet` : `Toggle ${inc.title}`} />}
+                  </RowTag>
+                  {on && inc.children && inc.children.length > 0 &&
+                <div className="inc-children">
+                      <div className="inc-children-label">Increments</div>
+                      {inc.children.map((child) => {
+                    const childPlanned = !!child.planned;
+                    const childOn = !childPlanned && !!state.increments[child.key];
+                    const childComing = child.status === 'coming';
+                    const ChildTag = childPlanned ? 'div' : 'label';
+                    return (
+                      <ChildTag key={child.key} className={`inc inc-child${childComing ? ' is-coming' : ''}${childPlanned ? ' is-planned' : ''}`}>
+                            <div>
+                              <div className="inc-title">{child.title}{childPlanned && <span className="inc-plan-pill">Planned</span>}</div>
+                              <p className="inc-desc">{child.desc}{child.href && <React.Fragment> <a className="inc-plan-link" href={child.href} target="_blank" rel="noopener">Read the plan</a></React.Fragment>}</p>
+                            </div>
+                            <Switch
+                          checked={childOn}
+                          disabled={childPlanned}
+                          onChange={(next) => !childComing && setIncrement(child.key, next)}
+                          ariaLabel={childPlanned ? `${child.title} \u2014 planned, not built yet` : `Toggle ${child.title}`} />
+                          </ChildTag>);
+
+                  })}
+                    </div>
+              }
+                </React.Fragment>);
+
+          })}
+            </div>
+          </section>
+
+          <footer className="sb-foot">
+            <span>State persists across reloads.</span>
+            <button type="button" className="sb-reset" onClick={reset}>
+              Reset
+            </button>
+          </footer>
+        </aside>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Breakpoints + pages
+// ─────────────────────────────────────────────────────────────────────
+const BREAKPOINTS = [
+{ id: 'mobile', label: 'Mobile · 390px', width: 390, height: 780 },
+{ id: 'tablet', label: 'Tablet · 820px', width: 820, height: 1100 },
+{ id: 'desktop', label: 'Desktop · 1200px', width: 1200, height: 1100 },
+{ id: 'wide', label: 'Wide · 1440px', width: 1440, height: 1100 }];
+
+
+const PAGES = [
+{
+  id: 'landing',
+  title: 'Home',
+  subtitle: 'Hero, search-first entry point, #/',
+  route: ''
+},
+{
+  id: 'browse',
+  title: 'Browse',
+  subtitle: 'Filterable device index, #/browse',
+  route: 'browse'
+},
+{
+  id: 'detail',
+  title: 'Device detail',
+  subtitle: 'Wiki-style device page, #/device/aqara-fp2',
+  route: 'device/aqara-fp2'
+},
+{
+  id: 'how-it-works',
+  title: 'How it works',
+  subtitle: 'About / contributor guide, #/how-it-works',
+  route: 'how-it-works'
+},
+{
+  id: 'editorial-stance',
+  title: 'Editorial stance',
+  subtitle: 'Voice and evidence policy, #/editorial-stance',
+  route: 'editorial-stance'
+},
+{
+  id: 'signin',
+  title: 'Sign in',
+  subtitle: 'Increment 02 · #/signin',
+  route: 'signin'
+},
+{
+  id: 'signup',
+  title: 'Create account',
+  subtitle: 'Increment 02 · #/signup',
+  route: 'signup'
+},
+{
+  id: 'welcome',
+  title: 'Welcome',
+  subtitle: 'Post sign-up onboarding · #/welcome',
+  route: 'welcome'
+},
+{
+  id: 'settings',
+  title: 'Settings',
+  subtitle: 'Increment 02 · #/settings',
+  route: 'settings'
+},
+{
+  id: 'your-changes',
+  title: 'Your edits',
+  subtitle: 'your-changes increment · #/you',
+  route: 'you'
+},
+{
+  id: 'contributors',
+  title: 'Contributors',
+  subtitle: 'contributor-profiles increment · #/contributors',
+  route: 'contributors'
+},
+{
+  id: 'contributor-profile',
+  title: 'Contributor profile',
+  subtitle: 'contributor-profiles increment · #/contributors/northlight',
+  route: 'contributors/northlight'
+}];
+
+
+// A single iframe pane that lazy-loads only once the artboard is near the
+// viewport. Every page × four breakpoints would be many React app instances;
+// loading them eagerly would freeze the canvas for several seconds.
+function PageFrame({ route, label, width, height, onLoad }) {
+  const wrapRef = React.useRef(null);
+  const iframeRef = React.useRef(null);
+  const [shouldLoad, setShouldLoad] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+  // `active` flips on user click: removes the shield so the iframe
+  // accepts input. Clicking outside (or panning the canvas) flips it
+  // back off so trackpad pan resumes flowing through the artboard.
+  const [active, setActive] = React.useState(false);
+
+  // Deactivate on any pointer-down outside this artboard. We listen in
+  // the *capture* phase so we run before the design-canvas's own pan
+  // handler, which is exactly when the user is about to start a pan
+  // gesture and would expect this iframe to release its grab.
+  React.useEffect(() => {
+    if (!active) return;
+    function onDocDown(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setActive(false);
+      }
+    }
+    document.addEventListener('pointerdown', onDocDown, true);
+    return () => document.removeEventListener('pointerdown', onDocDown, true);
+  }, [active]);
+
+  React.useEffect(() => {
+    if (shouldLoad) return;
+    const el = wrapRef.current;
+    if (!el) return;
+    // The canvas applies a transform, which can mess with IO root
+    // calculations. Using a generous rootMargin makes us tolerant of
+    // zoom level + scaling without forcing eager load.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            setShouldLoad(true);
+            io.disconnect();
+            break;
+          }
+        }
+      },
+      { rootMargin: '600px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [shouldLoad]);
+
+  const src = shouldLoad ? `index.html#/${route}` : null;
+
+  // Open this artboard's page in the responsive prototype viewer at
+  // the exact width × height the user clicked from.
+  //
+  // We navigate the same iframe (not window.open) on purpose. The
+  // Claude design UI runs this preview inside an iframe whose auth
+  // cookie is partitioned by top-level site (CHIPS / 3rd-party
+  // cookie blocking). A real new browser tab opens with a different
+  // partition key, the cookie isn't sent, and the server returns a
+  // "preview token required" placeholder. Navigating in-place keeps
+  // the auth context and lets the Claude UI tab bar treat the
+  // viewer as a sibling tab next to the overview.
+  //
+  // The canvas's pan/zoom/order state persists to a sidecar JSON,
+  // so coming back to the overview restores exactly where you left.
+  const openInViewer = (e) => {
+    e.stopPropagation();
+    const qs = new URLSearchParams({
+      route,
+      w: String(width),
+      h: String(height),
+      label
+    });
+    window.location.href = `viewer.html?${qs.toString()}`;
+  };
+
+  return (
+    <div
+      ref={wrapRef}
+      className={`frame-wrap${loaded ? ' loaded' : ''}${active ? ' active' : ''}`}>
+      
+          <div className="frame-loading">loading…</div>
+          {src ?
+      <iframe
+        ref={iframeRef}
+        title={`${route || 'home'} @ ${label}`}
+        src={src}
+        loading="lazy"
+        onLoad={() => {
+          setLoaded(true);
+          if (iframeRef.current && onLoad) onLoad(iframeRef.current);
+        }}
+        scrolling="yes" /> :
+
+      null}
+          {!active ?
+      <div
+        className="frame-shield"
+        aria-label="Click to interact with this artboard"
+        tabIndex={0}
+        role="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setActive(true);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            setActive(true);
+          }
+        }}>
+        
+              <div className="frame-actions">
+                <button
+            type="button"
+            className="frame-action frame-action-primary"
+            aria-label="Activate this artboard, click to interact with the live page"
+            tabIndex={-1}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActive(true);
+            }}>
+            
+                  Click to interact
+                </button>
+                <button
+            type="button"
+            className="frame-action frame-action-secondary"
+            aria-label={`Open ${route || 'home'} in the prototype viewer at ${width}×${height}`}
+            onClick={openInViewer}>
+            
+                  <svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                    <path d="M3 1.5 L10 6 L3 10.5 Z" />
+                  </svg>
+                  Open prototype
+                </button>
+              </div>
+            </div> :
+      null}
+        </div>);
+
+}
+
+function OverviewCanvas({ broadcastOnLoad }) {
+  return (
+    <DesignCanvas
+      title="Device Database, Overview"
+      subtitle="Every page at every breakpoint. Trackpad-pan freely across artboards; click an artboard to interact with the live page inside it, click outside to release. ⤢ opens it focused."
+      storageKey="device-db-overview-v1"
+      initialZoom={0.32}>
+      
+          {PAGES.map((p) =>
+      <DCSection
+        key={p.id}
+        id={p.id}
+        title={p.title}
+        subtitle={p.subtitle}>
+        
+              {BREAKPOINTS.map((bp) =>
+        <DCArtboard
+          key={bp.id}
+          id={`${p.id}-${bp.id}`}
+          label={bp.label}
+          width={bp.width}
+          height={bp.height}>
+          
+                  <PageFrame
+            route={p.route}
+            label={bp.label}
+            width={bp.width}
+            height={bp.height}
+            onLoad={broadcastOnLoad} />
+          
+                </DCArtboard>
+        )}
+            </DCSection>
+      )}
+        </DesignCanvas>);
+
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// App root, holds demo state, renders Sidebar + Canvas, syncs the
+// canvas's own <html> theme so the sidebar UI flips with the picked
+// appearance, and broadcasts state to embedded iframes on every change
+// (and to each iframe individually as it lazy-loads).
+// ─────────────────────────────────────────────────────────────────────
+function App() {
+  const [state, setStateRaw] = React.useState(() => loadState());
+
+  // Single setter that persists + broadcasts + applies to canvas <html>.
+  const setState = React.useCallback((next) => {
+    setStateRaw(next);
+    saveState(next);
+    broadcastState(next);
+  }, []);
+
+  // Apply theme to the canvas page itself so the sidebar / canvas chrome
+  // flips alongside the embedded artboards.
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-resolved-theme', resolveTheme(state.theme));
+  }, [state.theme]);
+
+  // Watch OS scheme so 'auto' stays accurate without a remount.
+  React.useEffect(() => {
+    if (state.theme !== 'auto') return;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const h = () => {
+      document.documentElement.setAttribute(
+        'data-resolved-theme', mql.matches ? 'dark' : 'light'
+      );
+      broadcastState(state);
+    };
+    mql.addEventListener('change', h);
+    return () => mql.removeEventListener('change', h);
+  }, [state]);
+
+  // When an iframe finishes its first paint, push the current state
+  // directly to it. Belt-and-braces with the iframe's own boot script
+  // which reads localStorage, covers the case where the page reloads
+  // without going through the boot path (rare, but cheap insurance).
+  const broadcastToFrame = React.useCallback((frame) => {
+    try {
+      frame.contentWindow &&
+      frame.contentWindow.postMessage(
+        { type: 'devicedb.demoState', state }, '*'
+      );
+    } catch (e) {/* cross-origin or detached */}
+  }, [state]);
+
+  return (
+    <div className="layout">
+          <Sidebar state={state} setState={setState} />
+          <div className="canvas-host">
+            <OverviewCanvas broadcastOnLoad={broadcastToFrame} />
+          </div>
+        </div>);
+
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

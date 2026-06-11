@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connects with · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 02 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Connects with: the same device, in every house it lives in</h1>
+    <p class="lede">
+      Home Assistant is home turf, but a device rarely lives there alone. The same plug answers to Alexa, Apple
+      Home, and Google Home too. This increment widens the Connects with section from one ecosystem to
+      <strong>one tab per ecosystem the device is marked compatible with</strong>, each with the same three
+      fields so the tabs stay comparable. This is the plan for that, and the line that keeps Home Assistant first.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 02 · Richer device pages</span>
+      <span class="muted">·</span>
+      data in
+      <span class="mono">data.js · connects-with.jsx</span>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>One device, many ecosystems, one fixed shape.</strong>
+        Every tab answers the same three questions, how you set it up, what it cannot do there, and where the
+        documentation lives, so a reader compares apples to apples across Alexa, Apple Home, and the rest. With
+        the increment off, the section is Home Assistant alone, exactly the Foundation view. Turning it on adds
+        the other rooms of the house, it never changes the Home Assistant one.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>A tab per compatible ecosystem, a fixed three fields each</h2>
+    <p class="muted">
+      Six ecosystems can earn a tab: Home Assistant, Amazon Alexa, Apple Home, Google Home, Homey, and
+      SmartThings. A device shows a tab for each one it is marked compatible with. Every tab carries the same
+      three contributor fields, each an override over a sensible default, so an unfilled tab still reads instead
+      of going blank.
+    </p>
+
+    <div class="codeblock"><span class="c">// Six known ecosystems can earn a tab, in display order. Home Assistant first.</span>
+CONNECTS_WITH_ECOSYSTEMS = <span class="k">[</span><span class="v">"homeAssistant"</span>, <span class="v">"amazonAlexa"</span>, <span class="v">"appleHome"</span>, <span class="v">"googleHome"</span>, <span class="v">"homey"</span>, <span class="v">"smartThings"</span><span class="k">]</span>
+
+<span class="c">// Every tab, the same three fields. Each is an override over a default.</span>
+tab <span class="k">{</span> setup, limitations, documentation <span class="k">}</span>
+<span class="c">// The Home Assistant tab additionally exposes integration + entity types.</span></div>
+
+    <p class="muted">
+      The fixed-field model is the whole trick. Because every ecosystem speaks the same three fields, the tabs are
+      genuinely comparable, and a contributor filling in Alexa knows exactly what to write. The Home Assistant tab
+      is the one exception, it also carries the reported integration and entity types, because that is the data
+      Foundation already holds.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The fallback</p>
+    <h2>Off is the Foundation view, exactly</h2>
+    <p class="muted">
+      With the increment off, the section collapses to Home Assistant only, with no tab bar, and the heading
+      carries the ecosystem name instead of a switcher. That is precisely the Stage 01 view: the reported
+      integration, entity types, and documentation, with no other ecosystems and no contributor setup prose. The
+      increment is purely additive, so toggling it never disturbs the baseline.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Increment off<span class="tag">Foundation view</span></h4>
+        <p>Home Assistant alone, flat, no tabs. Reported integration, entity types, documentation. The same content the baseline shows.</p>
+      </div>
+      <div class="pane">
+        <h4>Increment on<span class="tag">multi-ecosystem</span></h4>
+        <p>One tab per compatible ecosystem, Home Assistant first, each with setup, limitations, and documentation. The free "others" list stays a list, no tab.</p>
+      </div>
+    </div>
+    <div class="ladder" style="margin-top: var(--space-6);">
+      <div class="step now">
+        <div class="rail"><span class="id">02·C</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>The ecosystem tabs</h4>
+          <p>
+            The six-ecosystem tab set with the fixed three-field shape, defaults under every field, and the Home
+            Assistant tab's extra reported data. Removable: off falls back to the flat Home Assistant view.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium <span class="mono">· data model and tabbed UI</span></dd>
+            <dt>Depends on</dt><dd>Stage 02 core only</dd>
+            <dt>Independent of</dt><dd><span class="mono">grid-view · photos</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A compatibility map, never an endorsement</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Home Assistant is always first.</strong> It leads the tab order and is the one tab that exists for every device. The other ecosystems are added context, not equals jostling for the top slot.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Only the six known ecosystems earn a tab.</strong> The free "others" list stays a list. A tab is a promise of the three structured fields, so it is reserved for ecosystems we model.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Every field is an override over a default.</strong> An unfilled tab reads sensibly rather than blank, and a contributor improves on the default rather than starting from nothing.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>A tab states facts, including the bad ones.</strong> The limitations field is not optional politeness, it is where "Alexa cannot do scenes for this device" gets said plainly. Compatibility is described, never sold.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Keep the field shape fixed.</strong> Setup, limitations, documentation, the same three on every tab. The comparability is the feature. Per-ecosystem custom fields would quietly destroy it.</p></li>
+      <li><p><strong>Lead with Home Assistant, always.</strong> Order and primacy are not cosmetic. They state what this database is for, and the off state must equal the Foundation view exactly.</p></li>
+      <li><p><strong>Hold the tab bar to the six.</strong> Resist promoting an "other" into a tab without modelling it. The list is the right home for the long tail.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

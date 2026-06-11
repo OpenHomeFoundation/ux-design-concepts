@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quick-filter recipes — plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+<style>
+  /* ---- Doc-specific: recipe list ---- */
+  .doc-head h1 { max-width: 18ch; }
+  .lede { max-width: 60ch; }
+  .step { grid-template-columns: 96px 1fr; }
+  .recipes { display: grid; gap: 0; margin: var(--space-5) 0 var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-2); overflow: hidden; background: var(--surface); }
+  .recipe-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-4); align-items: center; padding: var(--space-3) var(--space-5); }
+  .recipe-row + .recipe-row { border-top: 1px solid var(--border-subtle); }
+  .recipe-row .title { font-weight: var(--fw-medium); }
+  .recipe-row .filt { font-family: var(--font-mono); font-size: var(--fs-12); color: var(--fg-subtle); text-align: right; }
+  .legend { font-size: var(--fs-13); color: var(--fg-subtle); margin-top: var(--space-3); }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Discovery</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Quick-filter recipes: a step, not a destination</h1>
+    <p class="lede">
+      The six recipes in the search empty state are useful today, but they are
+      <strong>intent-named, category-deep</strong>. This is the plan for what they are now,
+      and the increments that grow them into the goal-based discovery sketched in the Ideas discussion.
+    </p>
+    <p class="ref">
+      Anchored to
+      <span class="mono">Discussion #147</span>
+      <span class="muted">·</span>
+      <a href="https://github.com/orgs/OHF-Device-Database/discussions/147" target="_blank" rel="noopener">Beyond categories: presenting devices based on what visitors are trying to achieve</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>The recipes are the hardcoded seed of "use cases as a browse entry point."</strong>
+        They belong in Foundation and should stay shipped, but they are not the end goal.
+        Do not scale them by hand. Invest instead in the one cheap move that unlocks everything after:
+        turning the list into a small data layer. Goal-based discovery is then a new stage built on top of it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Today · Stage 01 Foundation</p>
+    <h2>What a recipe actually is</h2>
+    <p class="muted">
+      A recipe is a small object. Its <code>filters</code> field maps one to one onto the Browse page's
+      URL parameters, so clicking a row just navigates to <span class="ic">#/browse?…</span> with those
+      params pre-filled. No new filter code path, and the live count is exactly what you land on.
+    </p>
+
+    <div class="codeblock"><span class="k">{</span>
+  title:      <span class="v">"Sensors with local connection"</span>,
+  breadcrumb: <span class="v">"Sensors · Occupancy and motion · Local connection"</span>,
+  filters:    <span class="k">{</span> category: <span class="v">["sensors", "presence"]</span>, localOnly: <span class="v">true</span> <span class="k">}</span>
+<span class="k">}</span></div>
+
+    <div class="recipes">
+      <div class="recipe-row"><span class="title">Sensors with local connection</span><span class="filt">sensors + presence · local</span></div>
+      <div class="recipe-row"><span class="title">Lighting with local connection</span><span class="filt">lighting · local</span></div>
+      <div class="recipe-row"><span class="title">Cameras with local connection</span><span class="filt">cameras · local</span></div>
+      <div class="recipe-row"><span class="title">Switches with local connection</span><span class="filt">controls · local</span></div>
+      <div class="recipe-row"><span class="title">Hubs and bridges</span><span class="filt">hubs</span></div>
+      <div class="recipe-row"><span class="title">Energy monitoring</span><span class="filt">power</span></div>
+    </div>
+    <p class="legend">Six recipes ship. Four of six lean on <span class="ic">localOnly: true</span>. Five of six are a single category.</p>
+
+    <p style="margin-top: var(--space-5);">
+      Here is the honest read. The <em>title</em> promises an intent. The <em>engine</em> is one
+      category plus a local-connection toggle. There is no data behind a recipe, and nothing crosses
+      a category boundary. That is genuinely fine for what they do now: a zero-typing on-ramp into Browse
+      for the most common starting points. The limitation only matters once we want them to mean more.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The bigger thing they point at · Discussion #147</p>
+    <h2>What a device is, versus what it is for</h2>
+    <p class="muted">
+      The discussion borrows a pattern from marketplaces: separate <em>what a product is</em> (a fixed fact)
+      from <em>where a buyer expects to find it</em> (computed from intent). A contact sensor is a contact sensor.
+      It is also a building block for a fridge-left-open alert, a door alert, or a leak-detection setup,
+      depending on the goal. Recipes today only ever speak the left column.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>What a device is<span class="tag">fixed fact · the foundation</span></h4>
+        <p>The category and reported behaviour. A motion sensor, a smart plug, a hub. Authored once, stable. This is what the database is built on, and it stays the source of truth.</p>
+      </div>
+      <div class="pane">
+        <h4>What it is for<span class="tag">computed intent · the frontier</span></h4>
+        <p>The goals and setups a device shows up in. "Secure my doors and windows." "Monitor my energy use." Cross-category, curated at first, derived from real co-usage later.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      Discussion #147 lists four expressions of the right-hand column: use cases as a browse entry point,
+      a "used for" section on device pages, search that understands intent, and lightweight collections from
+      co-occurrence data. The recipes are the embryonic, hand-authored version of the first one.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>One refactor, then a new stage</h2>
+    <p class="muted">
+      Recipes stay in Foundation. Everything beyond them becomes a proposed Stage 05, "Goal-based discovery,"
+      whose increments build on Foundation and ladder up in cost and ambition. Each one ships on its own and
+      is a real improvement, not just scaffolding for the next.
+    </p>
+
+    <div class="ladder">
+
+      <div class="step now">
+        <div class="rail">
+          <span class="id">Now</span>
+          <span class="pill live">Live</span>
+        </div>
+        <div class="body">
+          <h4>Quick-filter recipes</h4>
+          <p>
+            Six saved searches in the search empty state, with live counts. Keep them shipped.
+            Resist the urge to hand-author twenty more, that is effort spent widening a dead end
+            rather than deepening the model.
+          </p>
+          <dl class="meta-grid">
+            <dt>Stage</dt><dd>01 Foundation</dd>
+            <dt>Lives in</dt><dd><span class="mono">searchbox.jsx</span></dd>
+          </dl>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Proposed</span>
+      <h3>Stage 05 · Goal-based discovery</h3>
+    </div>
+    <p class="stage-sub">The home for Discussion #147. Builds on Foundation. Add to the canvas stage list when 05.1 lands.</p>
+
+    <div class="ladder">
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">05.1</span>
+          <span class="pill next">Next</span>
+        </div>
+        <div class="body">
+          <h4>Recipes become a data layer</h4>
+          <p>
+            Lift the recipe list out of the search component into the dataset as a first-class
+            <span class="ic">window.RECIPES</span>. No new UX, pure refactor. It lets the same recipe
+            power the search dropdown, the landing page, and a Browse empty state without copy-paste.
+            This is the unlock, and the single most valuable thing to do to recipes right now.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Small <span class="mono">· move data, no new surface</span></dd>
+            <dt>Depends on</dt><dd>Nothing</dd>
+            <dt>Unlocks</dt><dd>Reuse everywhere, plus every increment below</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">05.2</span>
+          <span class="pill soon">Soon</span>
+        </div>
+        <div class="body">
+          <h4>Recipes cross categories</h4>
+          <p>
+            Widen the filter vocabulary past category-plus-local (protocol, requirements) and let a recipe
+            name a true goal that spans types. "Secure my doors and windows" becomes security, plus presence,
+            plus cameras, plus contact sensors, in one intent. This is the conceptual break: a recipe stops
+            being a category shortcut and starts being a lens. Counts still come from the same Browse predicate.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium <span class="mono">· Browse already takes multi-category</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">05.1</span></dd>
+            <dt>Unlocks</dt><dd>The first honest "beyond categories" recipe</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">05.3</span>
+          <span class="pill later">Later</span>
+        </div>
+        <div class="body">
+          <h4>Use cases as a browse entry point</h4>
+          <p>
+            The headline of #147. A real surface: a goals lane on the landing page and a section on Browse,
+            sitting alongside categories instead of buried in a dropdown. Each goal opens a filtered view.
+            The search recipes stay as the compact expression of the same catalog, so the two never diverge.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium to large <span class="mono">· new surface and content</span></dd>
+            <dt>Depends on</dt><dd><span class="mono">05.2</span></dd>
+            <dt>Unlocks</dt><dd>Navigation by goal, not only by type</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">05.4</span>
+          <span class="pill later">Later</span>
+        </div>
+        <div class="body">
+          <h4>"Used for" on device pages</h4>
+          <p>
+            Run the relationship backwards. On a device page, show the goals and setups it appears in.
+            Start curated (which use cases include this device), move to data-derived. This closes the loop
+            between the Stage 02 device pages and goal-based discovery, so a visitor can travel device to goal
+            and goal to device.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium</dd>
+            <dt>Depends on</dt><dd><span class="mono">05.3</span> and Stage 02 device pages</dd>
+            <dt>Unlocks</dt><dd>Discovery from a single device outward</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">05.5</span>
+          <span class="pill later">Frontier</span>
+        </div>
+        <div class="body">
+          <h4>Intent and co-usage from data</h4>
+          <p>
+            The actual payoff of "beyond categories." Search that understands intent, so "fridge" or
+            "front door" surfaces relevant devices across categories. Lightweight collections derived from
+            real co-occurrence in Home Assistant installations. Use cases and "used for" stop being hand-curated
+            and become computed. Gated on a real open question from #147: do we have the co-usage signals to power it.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Large</dd>
+            <dt>Depends on</dt><dd><span class="mono">05.3</span>, <span class="mono">05.4</span>, and co-usage data</dd>
+            <dt>Unlocks</dt><dd>Discovery the category tree cannot express</dd>
+          </dl>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A lens on facts, never a buying guide</h2>
+    <p class="muted">
+      Discussion #147 asks where the device database ends and a smart-home guide begins. The editorial stance
+      answers it: neutral, citable, never sponsored. These guardrails hold at every increment above.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>A use case filters facts, it does not rank them.</strong> No "best," no recommendation order, no affiliate. A goal is a saved query with a human name, not an opinion.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Curated first, computed later, never editorialized.</strong> Hand-authoring a goal catalog is fine. Writing tutorials or setup advice is out of scope, that is the guide, not the database.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The count never lies.</strong> The property that makes recipes trustworthy today, the number is exactly what you land on, must survive every increment.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to do, in order</h2>
+    <ol>
+      <li><p><strong>Keep the six recipes shipped, and freeze the list.</strong> They earn their place as a zero-typing on-ramp. Adding more by hand is the wrong investment.</p></li>
+      <li><p><strong>Do 05.1 next.</strong> Move recipes into the data layer. It is cheap, ships invisibly, and is the prerequisite for everything else.</p></li>
+      <li><p><strong>Treat 05.2 as the real design problem.</strong> The first cross-category recipe is where "intent-named" finally becomes intent-driven. That is the increment worth a proper design pass.</p></li>
+      <li><p><strong>Open Stage 05 on the canvas when 05.1 lands.</strong> Name it "Goal-based discovery" and point it at Discussion #147, so the roadmap shows where the recipes are heading.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

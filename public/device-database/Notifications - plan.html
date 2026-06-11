@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notifications · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Notifications: closing the loop on a submitted edit</h1>
+    <p class="lede">
+      You submit an edit, then what? This increment tells you: when it
+      <strong>opens for review, goes live, or is declined</strong>, through the channel you already use, email
+      or GitHub, or off if you would rather just check. One small event model, surfaced where it matters. This is
+      the plan for the loop, and for keeping the review conversation in one place.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 03 · Accounts and editing</span>
+      <span class="muted">·</span>
+      lives in
+      <span class="mono">notifications.jsx</span>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>Three events, one channel, no noise.</strong>
+        A submitted edit can do exactly three things worth telling you about: open as a pull request, get merged
+        live, or be declined. Notifications carry those three and nothing else, on the channel you pick, and the
+        actual review conversation stays on the pull request where everyone can see it. This is a status line, not
+        an inbox to manage.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>One event model, surfaced in two places</h2>
+    <p class="muted">
+      There is a single record per event, and it shows up in two surfaces rather than a standalone inbox. Settings
+      owns the choice of channel and cadence. Your edits reads the same records directly to show what is in
+      review, what went live, and what was declined. The standalone on-site inbox was retired when Your edits
+      shipped, on purpose: two inboxes is one too many.
+    </p>
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Event</th><th>What happened</th><th>Where it leads</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>In review</td><td class="muted">Your submitted edit opened a pull request.</td><td class="mono-val">the PR</td></tr>
+        <tr><td>Live</td><td class="muted">The edit was merged and is public.</td><td class="mono-val">the device page</td></tr>
+        <tr><td>Declined</td><td class="muted">The edit was not accepted. You can revise it.</td><td class="mono-val">reopened on device</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      Each event points at where the real thing lives, never restates it. A review question is answered on the
+      pull request, not in a reply to a notification, so there is one conversation, in public, with a permanent
+      home.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The channel</p>
+    <h2>Use the channel you already have</h2>
+    <p class="muted">
+      Channel choice lives in Settings, and the default leans on what a contributor already uses. A contributor
+      with a connected GitHub account who picks GitHub gets GitHub's own notifications and no email from us at
+      all. Otherwise, email. And off is a first-class choice for the contributor who would rather just open Your
+      edits and look.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>GitHub<span class="tag">native, no duplicate email</span></h4>
+        <p>For a connected GitHub account. We lean entirely on GitHub's notifications and send nothing ourselves, so the loop is not doubled.</p>
+      </div>
+      <div class="pane">
+        <h4>Email, or off<span class="tag">the fallback, and the opt-out</span></h4>
+        <p>Email is the channel when GitHub is not chosen. Off sends nothing, and Your edits still shows every status. No channel is mandatory.</p>
+      </div>
+    </div>
+    <div class="ladder" style="margin-top: var(--space-6);">
+      <div class="step now">
+        <div class="rail"><span class="id">03·B</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>The event model and channel choice</h4>
+          <p>Three events, a Settings panel for channel and cadence, GitHub-native delivery for connected accounts, and the records that feed Your edits. Removable: off drops the channel UI, Your edits still reads status.</p>
+          <dl class="meta-grid">
+            <dt>Depends on</dt><dd>Stage 03 core only</dd>
+            <dt>Independent of</dt><dd><span class="mono">contributor-profiles · your-changes</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A status line, not a megaphone</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Only the three lifecycle events.</strong> In review, live, declined. No digests, no tips, no re-engagement nudges. A notification means something happened to your edit, never that we want your attention.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The conversation lives on the pull request.</strong> Notifications link to the discussion, they are not the discussion. One public thread per change, not a private back-and-forth.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Off is a real option.</strong> A contributor can turn notifications off entirely and lose nothing, because Your edits still shows every status on demand.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Do not double the channel.</strong> A GitHub-native contributor gets GitHub's notifications and no email. We never send the same news twice.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Keep the event set to three.</strong> The value is that a notification always means a real change to a real edit. Adding marketing or digest events would spend that trust immediately.</p></li>
+      <li><p><strong>Point at the source, never copy it.</strong> Every event links to the PR or the device page. The notification is a pointer, so there is exactly one place the truth lives.</p></li>
+      <li><p><strong>Respect off, and respect GitHub.</strong> No channel is mandatory, and a connected contributor should never get a duplicate email. Lean on what they already have.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

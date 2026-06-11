@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Device Database · Open Home Foundation</title>
+
+  <!-- Google Fonts: Inter, Source Serif 4, JetBrains Mono — design system stack -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <!-- Theme + increments boot.
+       Runs before stylesheets to avoid FOUC. Resolves the effective
+       theme from a saved preference (or OS default) and writes it to
+       <html data-resolved-theme>. Also applies any saved increment
+       flags as <html data-inc-*>. The canvas sidebar overrides these
+       via postMessage; see the listener at the bottom of this file. -->
+  <script>
+    (function () {
+      var STORAGE_KEY = 'devicedb.demoState.v1';
+      function read() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+        catch (e) { return {}; }
+      }
+      var state = read();
+      // Theme: 'auto' (default) | 'light' | 'dark'.
+      function resolveTheme(pref) {
+        if (pref === 'light' || pref === 'dark') return pref;
+        return (window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ? 'dark' : 'light';
+      }
+      function apply(s) {
+        var root = document.documentElement;
+        root.setAttribute('data-resolved-theme', resolveTheme(s.theme));
+        // Increments: each key becomes data-inc-<key>="on" when true.
+        var increments = s.increments || {};
+        // Strip stale data-inc-* attrs first so toggles-off propagate.
+        for (var i = root.attributes.length - 1; i >= 0; i--) {
+          var n = root.attributes[i].name;
+          if (n.indexOf('data-inc-') === 0) root.removeAttribute(n);
+        }
+        Object.keys(increments).forEach(function (k) {
+          if (increments[k]) root.setAttribute('data-inc-' + k, 'on');
+        });
+      }
+      apply(state);
+
+      // Expose a tiny state API so in-page UI (the hidden "Experiments"
+      // dialog behind a long-press on the logo) can read and flip increment
+      // flags. Writes persist to localStorage, re-apply the data-inc-* attrs,
+      // and fire a 'devicedb:demostate' event so any open dialog re-syncs.
+      window.DemoState = {
+        get: read,
+        getIncrements: function () { return read().increments || {}; },
+        getTheme: function () { return read().theme || 'auto'; },
+        setIncrement: function (key, on) {
+          var s = read();
+          s.increments = s.increments || {};
+          s.increments[key] = !!on;
+          // Stage dependencies: turning a stage on also turns on the stages
+          // it builds upon; turning a stage off also turns off the stages
+          // that build on it. Stage 3 (community-edit) builds on Stage 2
+          // (device-pages). Keep in sync with INCREMENT_DEPS in canvas.html.
+          if (on) {
+            var deps = { 'community-edit': ['device-pages'], 'notifications': ['community-edit', 'device-pages'], 'contributor-profiles': ['community-edit', 'device-pages'], 'your-changes': ['community-edit', 'device-pages'], 'grid-view': ['device-pages'], 'photos': ['device-pages'], 'connects-with': ['device-pages'] }[key] || [];
+            deps.forEach(function (d) { s.increments[d] = true; });
+          } else {
+            var dependents = { 'device-pages': ['community-edit', 'notifications', 'contributor-profiles', 'your-changes', 'grid-view', 'photos', 'connects-with'], 'community-edit': ['notifications', 'contributor-profiles', 'your-changes'] }[key] || [];
+            dependents.forEach(function (d) { s.increments[d] = false; });
+          }
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+          catch (e) { /* private mode — in-memory apply still runs */ }
+          apply(s);
+          window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: s }));
+        },
+        setTheme: function (theme) {
+          var s = read();
+          s.theme = theme;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+          catch (e) { /* private mode — in-memory apply still runs */ }
+          apply(s);
+          window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: s }));
+        },
+        // Restore the demo to a clean slate. Beyond theme + increments, this
+        // wipes every persisted demo store so device edits, profile changes,
+        // newly created contributors, sign-in state and the notification inbox
+        // all revert to their seeded defaults. Those stores cache their data in
+        // memory and only re-hydrate from the seed on load, so we clear the
+        // keys and reload rather than trying to reset each store in place.
+        reset: function () {
+          try {
+            var keys = [];
+            for (var i = 0; i < localStorage.length; i++) {
+              var k = localStorage.key(i);
+              if (k && k.indexOf('devicedb.') === 0) keys.push(k);
+            }
+            keys.forEach(function (k) { localStorage.removeItem(k); });
+          } catch (e) { /* private mode — nothing was persisted to clear */ }
+          // Go home first so we don't reload onto a route that no longer
+          // exists (e.g. a deleted contributor's profile).
+          try { location.hash = '#/'; } catch (e) {}
+          location.reload();
+        }
+      };
+
+      // Track OS theme changes while pref is 'auto'.
+      if (window.matchMedia) {
+        var mql = window.matchMedia('(prefers-color-scheme: dark)');
+        var onChange = function () {
+          var s = read();
+          if (!s.theme || s.theme === 'auto') apply(s);
+        };
+        if (mql.addEventListener) mql.addEventListener('change', onChange);
+        else if (mql.addListener) mql.addListener(onChange);
+      }
+
+      // Receive state from the canvas sidebar (parent iframe). The canvas
+      // broadcasts the full demo state on every change; we re-apply.
+      window.addEventListener('message', function (e) {
+        if (!e.data || e.data.type !== 'devicedb.demoState') return;
+        var next = e.data.state || {};
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+        catch (err) { /* private mode, etc. — proceed with in-memory only */ }
+        apply(next);
+        window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: next }));
+      });
+    })();
+  </script>
+
+  <link rel="stylesheet" href="tokens.css?v=darkmode">
+  <link rel="stylesheet" href="app.css?v=onboarding1">
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React + Babel (pinned) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Data first, then components, then app -->
+  <script src="data.js"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="community-edit.jsx"></script>
+  <script type="text/babel" src="community-edit-pages.jsx"></script>
+  <script type="text/babel" src="onboarding.jsx"></script>
+  <script type="text/babel" src="notifications.jsx"></script>
+  <script type="text/babel" src="contributor-profile.jsx"></script>
+  <script type="text/babel" src="contributor-hovercard.jsx"></script>
+  <script type="text/babel" src="pending-edits.jsx"></script>
+  <script type="text/babel" src="drafts.jsx"></script>
+  <script type="text/babel" src="changes-tray.jsx"></script>
+  <script type="text/babel" src="your-changes.jsx"></script>
+  <script type="text/babel" src="edit-fields.jsx"></script>
+  <script type="text/babel" src="connects-with.jsx"></script>
+  <script type="text/babel" src="edit-mode.jsx"></script>
+  <script type="text/babel" src="searchbox.jsx"></script>
+  <script type="text/babel" src="landing.jsx"></script>
+  <script type="text/babel" src="browse.jsx"></script>
+  <script type="text/babel" src="detail-figures.jsx"></script>
+  <script type="text/babel" src="detail.jsx"></script>
+  <script type="text/babel" src="how-it-works.jsx"></script>
+  <script type="text/babel" src="editorial-stance.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

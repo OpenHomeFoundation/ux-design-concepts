@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Contributor profiles and directory · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Contributor profiles: a name that goes somewhere</h1>
+    <p class="lede">
+      Stage 03 attributes every edit. This increment makes that attribution <strong>a person you can click</strong>:
+      a public profile with identity and a contributions timeline, and a browsable directory of everyone who
+      tends the database. With it off, an attribution is just a name. This is the plan for turning credit into a
+      profile, without turning a reporting population into a roster.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 03 · Accounts and editing</span>
+      <span class="muted">·</span>
+      lives in
+      <span class="mono">contributor-profile.jsx</span>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>A profile describes an editor, never a device owner.</strong>
+        The people with profiles are the ones who choose to contribute edits, named because attribution is part of
+        the editorial contract. The people who opt in to share what devices they run stay anonymous, forever. This
+        increment makes contributors legible without ever making the reporting population visible, and that line is
+        the whole design.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>Identity, a timeline, and a directory</h2>
+    <p class="muted">
+      A profile is two things: identity, the avatar, name, bio, and links, and a contributions timeline. The same
+      component renders your own profile and everyone else's, your own simply adds Settings and Sign out and is
+      reached from the nav avatar. The directory lists contributors so the community is browsable, not just
+      discoverable one edit at a time.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>The profile<span class="tag">#/contributors/:handle</span></h4>
+        <p>Identity plus a timeline of edits. Live edits come from each device's history filtered by author, pending edits from the pending store. The timeline is derived, never a second copy.</p>
+      </div>
+      <div class="pane">
+        <h4>The directory<span class="tag">#/contributors</span></h4>
+        <p>A browsable index of contributors. Edit attributions across the site link here, so a name on a device page becomes a way to see what else that person has tended.</p>
+      </div>
+    </div>
+    <p style="margin-top: var(--space-5);" class="muted">
+      With the increment off, attributions render as plain names with nowhere to go, and the directory route is
+      simply absent. Nothing else changes, which is what lets profiles be toggled independently of Notifications
+      and Your edits.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The design decisions</p>
+    <h2>Derived, public-by-decision, privacy-gated</h2>
+    <p class="muted">
+      Three choices define the increment. The timeline is derived rather than stored, so it cannot drift from the
+      edits it reflects. Pending edits are public on a profile, a deliberate product decision in favour of an open
+      review process. And privacy is a real control, not an afterthought.
+    </p>
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Setting</th><th>What it hides</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Public profile</td><td class="muted">The default. Identity, stats, and the full contributions timeline are visible to anyone.</td></tr>
+        <tr><td>Private</td><td class="muted">Hides the whole profile from others. You still see your own in full.</td></tr>
+        <tr><td>Activity hidden</td><td class="muted">Keeps the header, hides stats and timeline. A name without a public ledger.</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      You always see your own profile in full regardless of these flags, because the private view is also the
+      surface you manage yourself from. Pending edits showing publicly is the one choice worth restating: it makes
+      review legible, and it is the reason a profile reflects work in flight, not just merged history.
+    </p>
+    <div class="ladder" style="margin-top: var(--space-6);">
+      <div class="step now">
+        <div class="rail"><span class="id">03·A</span><span class="pill live">Live</span></div>
+        <div class="body">
+          <h4>Profiles, timeline, directory</h4>
+          <p>Public profile pages, a derived contributions timeline, the directory, and attribution links across the site, with privacy flags. Removable: off falls back to plain names.</p>
+          <dl class="meta-grid">
+            <dt>Depends on</dt><dd>Stage 03 core only</dd>
+            <dt>Independent of</dt><dd><span class="mono">notifications · your-changes</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>Credit for editors, anonymity for everyone else</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Profiles are for contributors, not reporters.</strong> A profile reflects edits a person chose to make. It never exposes who runs which device. The reporting population stays anonymous, full stop.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Privacy is a control the contributor holds.</strong> Private hides the whole profile, activity-hidden keeps the name and drops the ledger. You opt into visibility, you are not opted in by editing.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>The timeline is derived, never authored.</strong> It is computed from edit history and the pending store, so it cannot claim a contribution that did not happen or hide one that did.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>A profile is a record of work, not a leaderboard.</strong> It shows what a person tended. It does not rank contributors or gamify edits, which would pull against the neutral, factual register.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Keep the editor-versus-reporter line bright.</strong> A profile must never become a path to who owns a device. That separation is inherited from Foundation and is non-negotiable.</p></li>
+      <li><p><strong>Derive the timeline, never store it.</strong> One source of truth for contributions means a profile can never disagree with the device history it draws from.</p></li>
+      <li><p><strong>Treat privacy flags as first-class.</strong> Private and activity-hidden are the contributor's controls. Honour them everywhere a name could otherwise link out.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

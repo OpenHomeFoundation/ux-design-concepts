@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Variants and families · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 04</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Variants and families: one box, several devices</h1>
+    <p class="lede">
+      A single product on the shelf can hide several different devices. A Yale lock ships with a
+      Z-Wave, a Matter, or a Wi-Fi card, and <strong>whether it works without the cloud</strong>
+      changes with the card. A plug sold worldwide runs on 120&nbsp;V here and 230&nbsp;V there. This
+      is the plan to <strong>group those variants under one family</strong> and show, plainly, which
+      one you are reading.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 02</span>
+      <span class="muted">and</span>
+      <span class="mono">Stage 03</span>
+      <span class="muted">·</span>
+      holds the line set by the
+      <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>This is a stage, not an increment.</strong>
+        Variants change the core unit of the database, from a device to a family of variants, and they
+        build on two stages at once: Stage 02 for the page the switcher lives on, and Stage 03 for the
+        editing a contributor needs to split or add a variant. An increment builds on a single parent
+        stage and leaves the unit alone. This does neither. So it becomes Stage 04, and Goal-based
+        discovery moves to Stage 05 behind it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The honest read · what already exists</p>
+    <h2>The variation is already here, with nowhere to live</h2>
+    <p class="muted">
+      We do not need to invent the need. Several entries already carry a variation, smuggled into the
+      name or the description, because there is no structure to hold it. That works for one sentence and
+      fails the moment two facts disagree.
+    </p>
+
+    <div class="codeblock"><span class="c">// Today a variation has nowhere to go, so it hides in prose.</span>
+<span class="k">{</span>
+  id:          <span class="v">"yale-assure-lock-2"</span>,
+  name:        <span class="v">"Assure Lock 2 (Z-Wave)"</span>,   <span class="c">// the variant, smuggled into the name</span>
+  local:       <span class="v">"always"</span>, cloud: <span class="v">"none"</span>,    <span class="c">// true for the Z-Wave card only</span>
+  description: <span class="v">"…the same lock body can take a Matter, Wi-Fi, or Z-Wave card…"</span>
+<span class="k">}</span>                                       <span class="c">// three devices, one entry</span></div>
+
+    <p>
+      The same shape shows up across the catalogue. <span class="ic">Schlage Encode</span> is marked
+      cloud-required while its own text notes the <em>Encode Plus</em> (Matter) variant works locally.
+      <span class="ic">SONOFF ZBMINI-L2</span> exists only because the L2 revision drops the neutral
+      wire. <span class="ic">Aqara Wall Switch H1</span> bakes "No Neutral" straight into the name.
+    </p>
+    <p class="muted">
+      The cost is quiet but real: shared facts get copied across near-identical entries and drift, a
+      shopper holding one box cannot tell which entry matches it, and the single most important fact we
+      publish, whether a device works without the cloud, is exactly the fact that forks. One case is
+      <em>not</em> a variant and is worth ruling out early: <span class="ic">TP-Link Kasa HS103</span>
+      behaves differently across firmware. That is change over time on one product, and it already has a
+      home in version history.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The test</p>
+    <h2>A variation only matters when it changes the verdict</h2>
+    <p class="muted">
+      The database answers one question per device: does it work locally with Home Assistant, and how.
+      That gives a clean test. Run every difference through it: does it change a fact a buyer acts on? If
+      yes, it earns structure. If no, it is just another identifier. This is the same logic GS1 uses to
+      decide when a product needs a new barcode.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Difference</th><th>Example</th><th>Changes a buying fact?</th><th>Treatment</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Radio / protocol</td><td class="muted">Yale Z-Wave vs Matter vs Wi-Fi</td><td><span class="yes">Yes</span>, the verdict</td><td class="muted">A real variant</td></tr>
+        <tr><td>Capability sub-model</td><td class="muted">Encode vs Encode Plus</td><td><span class="yes">Yes</span>, cloud vs local</td><td class="muted">A real variant</td></tr>
+        <tr><td>Hardware revision</td><td class="muted">ZBMINI vs ZBMINI-L2</td><td>Sometimes, wiring</td><td class="muted">A real variant</td></tr>
+        <tr><td>Region</td><td class="muted">120&nbsp;V vs 230&nbsp;V, 908 vs 868&nbsp;MHz</td><td><span class="yes">Yes</span>, power and RF</td><td class="muted">A real variant</td></tr>
+        <tr><td>Pack or colour</td><td class="muted">Single vs 2-pack, black vs white</td><td>No</td><td class="muted">Just an identifier</td></tr>
+        <tr><td>Firmware behaviour</td><td class="muted">Kasa local control by firmware</td><td>No, it is temporal</td><td class="muted">Version history</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Variants are for differences that change a buying fact: <strong>protocol, capability, and region</strong>.
+      Packs and colours are extra identifiers on one entry, not variants. Firmware stays in version history.
+      This is what keeps a single bulb from drowning in six pastel "variants" that differ in nothing the
+      database reports.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The model · two axes</p>
+    <h2>Two axes, not one list</h2>
+    <p class="muted">
+      A product varies along two independent axes. Most vary on one. The hard cases vary on both at once,
+      and that is a grid, not a line.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Protocol<span class="tag">changes the verdict</span></h4>
+        <p>Which integration controls it, and whether it runs local or needs the cloud. Yale's radio card, Encode versus Encode Plus. The fork that confuses buyers most, because the box looks identical.</p>
+      </div>
+      <div class="pane">
+        <h4>Region<span class="tag">changes the power and identifiers</span></h4>
+        <p>Voltage, mains frequency, plug type, max load, bulb base, the Z-Wave band, the EAN and SKU. The verdict usually holds, but the spec sheet does not.</p>
+      </div>
+    </div>
+
+    <table class="matrix grid" style="margin-top: var(--space-6);">
+      <caption>Yale Assure Lock 2, region down, radio card across. Each cell resolves to one verdict.</caption>
+      <thead>
+        <tr><th>&nbsp;</th><th>Z-Wave card</th><th>Matter card</th><th>Wi-Fi card</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>US <span class="cell-sub">120 V · 908 MHz</span></th>
+          <td><span class="vdot local"></span>Local<span class="cell-sub">Z-Wave JS</span></td>
+          <td><span class="vdot local"></span>Local<span class="cell-sub">Matter</span></td>
+          <td><span class="vdot cloud"></span>Cloud<span class="cell-sub">Yale Access</span></td>
+        </tr>
+        <tr>
+          <th>EU <span class="cell-sub">230 V · 868 MHz</span></th>
+          <td><span class="vdot local"></span>Local<span class="cell-sub">Z-Wave JS</span></td>
+          <td><span class="vdot local"></span>Local<span class="cell-sub">Matter</span></td>
+          <td><span class="vdot cloud"></span>Cloud<span class="cell-sub">Yale Access</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Power binds to region, as a correctness rule.</strong> Showing "230&nbsp;V, Type&nbsp;F plug"
+      to a reader in North America is exactly the wrong fact this project refuses to publish. So power specs
+      are not free-floating: they are bound to the region variant, and a family page never renders power
+      without a region resolved.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The shape</p>
+    <h2>A family, with variants that override</h2>
+    <p class="muted">
+      Three models were on the table. A flat list of separate records linked by a family tag is cheapest
+      and matches today, but you maintain four near-identical descriptions and they drift. One record with a
+      variants array breaks one URL per device and cannot attribute reports per variant. The pick sits between
+      them.
+    </p>
+
+    <div class="codeblock"><span class="c">// A family holds shared truth once. Variants override only what differs,</span>
+<span class="c">// and each field is bound to the axis it varies on. Power binds to region.</span>
+<span class="k">family</span> <span class="k">{</span>
+  shared:  <span class="k">{</span> description, photos, dimensions <span class="k">}</span>,        <span class="c">// written once</span>
+  axes:    <span class="k">{</span> region: <span class="v">["US","EU","UK"]</span>, radio: <span class="v">["zwave","matter","wifi"]</span> <span class="k">}</span>,
+  bind:    <span class="k">{</span> power: <span class="v">"region"</span>, verdict: <span class="v">"radio"</span>, identifiers: <span class="v">"region"</span> <span class="k">}</span>,
+  variants:<span class="k">[</span> <span class="k">{</span> region: <span class="v">"US"</span>, radio: <span class="v">"zwave"</span>, override: <span class="k">{</span> … <span class="k">}</span> <span class="k">}</span>, … <span class="k">]</span>
+<span class="k">}</span></div>
+
+    <p class="muted">
+      This is not a stretch for the codebase. Connects-with already stores "an override over a sensible
+      default", and edit drafts already "overlay the approved record". Variants are that same idea applied to
+      the device itself. Declaring axes and binding fields is what stops a region's power block being copied
+      into every protocol cell: power is written once per region, reused across every radio in that region.
+    </p>
+    <p>
+      <strong>Keep an escape hatch.</strong> Declared axes assume the catalogue factors into a clean grid.
+      Most smart-home gear does, but not all. A variant must be able to carry ad-hoc overrides on top of its
+      axis position, so a one-region bundle or an oddball limited edition has somewhere to sit without forcing
+      a fake axis. Every catalogue before us learned that the hard way.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Prior art</p>
+    <h2>Everyone who catalogues things hit this</h2>
+    <p class="muted">
+      Three references, and they agree more than they disagree once you separate two layers.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Source</th><th>Their grouping</th><th>What it teaches us</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MusicBrainz</td>
+          <td class="muted">A release group (the album) holds many releases. A release carries its own country, barcode, and catalogue number.</td>
+          <td class="muted">A release is our regional variant. They settled "the barcode belongs to the variant" years ago. They enumerate rather than declare axes, because archival data refuses to factor. Hence the escape hatch.</td>
+        </tr>
+        <tr>
+          <td>Amazon, Shopify</td>
+          <td class="muted">A parent listing groups child variants. "Variation themes" and "options" are declared axes. Each child has its own GTIN, price, and stock.</td>
+          <td class="muted">Validates declared axes and per-variant identifiers. The GS1 rule is our verdict test, formalised. Warning: Amazon shares reviews across variants, which sellers abuse.</td>
+        </tr>
+        <tr>
+          <td>Tweakers Pricewatch</td>
+          <td class="muted">A spec-first hardware catalogue. Each configuration is its own product with its own price history, cross-linked under chipset overviews.</td>
+          <td class="muted">Closest to us: a spec schema plus per-variant data over time. Because price history cannot be shared, it makes each variant a first-class record. We are in its situation, not Amazon's.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      The references split into two layers, and once you see that they stop conflicting.
+      <strong>Authoring and grouping</strong> uses declared axes and a family, as the stores do, which drives
+      the switcher and the browse collapse. <strong>Identity and data</strong> keeps each resolved variant as
+      a first-class, addressable record with its own URL, as Tweakers and MusicBrainz insist, so reports, the
+      verdict, and identifiers hang off the variant, not the family.
+    </p>
+    <p>
+      The one thing we do not copy is the sharing. Stores pool reviews across variants because their job is to
+      sell. Ours is to tell the truth. So we scope telemetry to the variant: a Z-Wave lock's reports never bleed
+      onto the Wi-Fi variant that behaves nothing like it, even though that costs us headline volume.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The path</p>
+    <h2>A core that defines the stage, then two children</h2>
+    <p class="muted">
+      The split is the same one the other stages use. The core depends only on the stage's own data model.
+      The children depend on something else and can be switched off without collapsing the stage. The
+      dependency direction is the whole test.
+    </p>
+
+    <div class="ladder">
+      <div class="step now">
+        <div class="rail">
+          <span class="id">Base</span>
+          <span class="pill live">Built</span>
+        </div>
+        <div class="body">
+          <h4>The override pattern it builds on</h4>
+          <p>
+            Connects-with stores an override over a default, edit drafts overlay the approved record, and every
+            entry already carries a verdict. The family-and-override model is this pattern aimed at the device
+            itself. Do not invent a new mechanism, reuse this one.
+          </p>
+          <dl class="meta-grid">
+            <dt>Lives in</dt><dd><span class="mono">data.js · connects-with.jsx · edit-mode.jsx</span></dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage-head">
+      <span class="num">Proposed</span>
+      <h3>Stage 04 · Variants and families</h3>
+    </div>
+    <p class="stage-sub">Builds on Stage 02 and Stage 03. Add to the canvas stage list when 04.1 lands. Goal-based discovery moves to Stage 05.</p>
+
+    <div class="ladder">
+      <div class="step">
+        <div class="rail">
+          <span class="id">04.1</span>
+          <span class="pill next">Core</span>
+        </div>
+        <div class="body">
+          <h4>The switcher and the verdict matrix</h4>
+          <p>
+            The family-and-override data model, a variant switcher on the device page (one control per axis,
+            defaulting to the reader's locale), and a verdict matrix below it. Changing the radio re-renders the
+            verdict, changing the region re-renders the power block. That motion is what teaches a reader why the
+            variant matters. Ship this and Stage 04 exists. Without it there is no stage.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Large <span class="mono">· new data model and detail UI</span></dd>
+            <dt>Depends on</dt><dd>Stage 02 only</dd>
+            <dt>Unlocks</dt><dd>One entry tells the truth for every variant</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">04.2</span>
+          <span class="pill soon">Child</span>
+        </div>
+        <div class="body">
+          <h4>Family grouping on Browse</h4>
+          <p>
+            A family collapses to one card with a quiet "3 variants" chip, not three near-identical cards. When a
+            protocol or region filter matches only one variant, the card says which. Removable: detail still works
+            with it off, which is what makes it a child and not the core.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium</dd>
+            <dt>Depends on</dt><dd><span class="mono">04.1</span> and Browse</dd>
+            <dt>Unlocks</dt><dd>A family reads as one product in the grid</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail">
+          <span class="id">04.3</span>
+          <span class="pill later">Child</span>
+        </div>
+        <div class="body">
+          <h4>Variant editing</h4>
+          <p>
+            Contributor tools to split a device into variants or add one, with the per-axis binding enforced at the
+            edit point so power is filled per region. Builds on Stage 03 editing rather than on the Stage 04 core,
+            which is exactly what makes it a child.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium to large</dd>
+            <dt>Depends on</dt><dd><span class="mono">04.1</span> and Stage 03 editing</dd>
+            <dt>Unlocks</dt><dd>The community maintains families, not just staff</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <p class="muted" style="margin-top: var(--space-5);">
+      One small piece does not belong here. Letting the identifiers block hold more than one EAN or SKU, for
+      packs and colours, is too small to be an increment: toggling it shows "one SKU" versus "a list", which is
+      no story. So <span class="ic">identifiers</span> simply accepts a list from the start in Stage 02, and
+      04.1's region axis binds each identifier to a region on top of that. We do not build a collapse system for
+      packs and colours. The catalogue barely has them.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A truthful split, never a marketing one</h2>
+    <p class="muted">
+      The editorial stance is neutral, citable, never sponsored. Variants are a way to be more precise about
+      facts, not a way to multiply listings. These rails hold at every step above.
+    </p>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>A difference earns a variant only if it changes a buying fact.</strong> Protocol, capability, region. Packs, colours, and cosmetic SKUs stay as identifiers on one entry. No splitting for its own sake.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Power is bound to region, and never shown without one.</strong> A family page resolves a region before it prints a voltage or a plug type. We would rather show nothing than show the wrong region's electrics.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Telemetry is scoped to the variant.</strong> Reports and installs never pool across a family. A store shares reviews to sell. We keep them apart to stay honest, even at the cost of headline numbers.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Firmware behaviour is not a variant.</strong> Change over time on one product belongs in version history. The variant system is for differences you can buy, not for differences that arrive in an update.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to do, in order</h2>
+    <ol>
+      <li><p><strong>Build the core first, and prove it on region.</strong> The family-and-override model with a region switcher on a real device, a Shelly or the Inovelli dimmer, where 120&nbsp;V and 230&nbsp;V make the binding visible. Stretch to the two-axis Yale lock once it feels right.</p></li>
+      <li><p><strong>Choose the family-with-overrides model, with declared axes.</strong> It reuses the override pattern already in the codebase and keeps power written once per region. Keep an escape hatch for the variant that refuses a clean cell.</p></li>
+      <li><p><strong>Scope telemetry to the variant.</strong> This is the one place we deliberately part from ecommerce. Pooling reports across a family would publish a comforting lie.</p></li>
+      <li><p><strong>Let identifiers accept a list in Stage 02, with no toggle.</strong> Packs and colours need a list, not a feature. Stage 04's region axis binds onto that substrate rather than inventing its own.</p></li>
+      <li><p><strong>Open Stage 04 on the canvas, and move Goal-based discovery to Stage 05.</strong> Register <span class="ic">device-variants</span> as the new Stage 04 so the roadmap shows the unit growing from a device to a family.</p></li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

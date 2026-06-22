@@ -1,0 +1,195 @@
+/* =========================================================================
+   HA Concept Car — Design Tokens
+   ---------------------------------------------------------------------------
+   Two voices reconciled:
+     · Open Home Device Database  → structure & discipline (4px grid, hairlines,
+       token semantics, type hierarchy, "color is signal, not decoration").
+     · HA Concept direction       → warmth & openness (larger radii, generous
+       mobile/tablet spacing, warm-tinted dark surfaces).
+
+   DARK-FIRST. Desktop stays dense; mobile is roomy.
+   Every component reads from these custom properties — never a hard-coded hex.
+   ========================================================================= */
+
+:root {
+  color-scheme: dark;
+
+  /* ----------------------------------------------------------------------
+     COLOR
+     Backgrounds form an ELEVATION SCALE — the primary tool for grouping and
+     separating content with no borders:
+       bg  →  surface  →  surface-raised
+     Page sits on --color-bg; a card on the page is --color-surface; content
+     nested inside that card (entity tiles in a dashboard card, a widget in a
+     panel) is --color-surface-raised. Distinction comes from tone, not lines.
+     ---------------------------------------------------------------------- */
+
+  /* Backgrounds — warm-tinted dark, never pure black */
+  --color-bg:             #18181a;   /* page base */
+  --color-surface:        #222226;   /* cards, panels */
+  --color-surface-raised: #2c2c32;   /* elevated cards, dropdowns, nested tiles */
+  --color-overlay:        #36363e;   /* tooltips, sheets, popovers */
+
+  /* Borders — hairlines only, used for true dividers (not for grouping) */
+  --color-border:         #3a3a42;
+  --color-border-subtle:  #2a2a30;
+
+  /* Text */
+  --color-text-primary:   #f0eff8;
+  --color-text-secondary: #9e9daa;
+  --color-text-tertiary:  #6a6974;
+  --color-text-disabled:  #4a4952;
+
+  /* Accent — the single blue. Marks links and the one live/active thing on
+     screen. Never decorative, never a background wash. */
+  --color-accent:         #1C6FD6;
+  --color-accent-hover:   #1a5fb8;
+  --color-accent-subtle:  rgba(28, 111, 214, 0.12);
+  --color-on-accent:      #ffffff;
+
+  /* Semantic status — used sparingly, on state only */
+  --color-success:        #4a8c47;
+  --color-warning:        #c47a1a;
+  --color-error:          #b8342a;
+  --color-active:         #f0eff8;   /* active entity state — bright text */
+  --color-inactive:       #6a6974;   /* inactive entity state — muted */
+
+  /* Soft status tints — for chip/alert backgrounds only */
+  --color-success-subtle: rgba(74, 140, 71, 0.15);
+  --color-warning-subtle: rgba(196, 122, 26, 0.15);
+  --color-error-subtle:   rgba(184, 52, 42, 0.15);
+
+  /* Space accents — left-border indicators and subtle tints only.
+     shared = the home everyone uses · personal = private to you ·
+     admin = maintainer only. */
+  --color-space-shared:   #2e7d52;   /* green */
+  --color-space-personal: #1C6FD6;   /* blue */
+  --color-space-admin:    #7c5ab8;   /* purple */
+
+  --color-space-shared-subtle:   rgba(46, 125, 82, 0.14);
+  --color-space-personal-subtle: rgba(28, 111, 214, 0.14);
+  --color-space-admin-subtle:    rgba(124, 90, 184, 0.14);
+
+  /* Scrim — sheet & modal backdrops */
+  --color-scrim:          rgba(0, 0, 0, 0.55);
+
+  /* ----------------------------------------------------------------------
+     TYPOGRAPHY
+     Inter Tight for display, Inter for body/UI, JetBrains Mono for data.
+     Hierarchy via weight + size — never more than 3 sizes on one screen.
+     ---------------------------------------------------------------------- */
+  --font-display:  'Inter Tight', system-ui, -apple-system, sans-serif;
+  --font-body:     'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Scale */
+  --text-xs:    11px;
+  --text-sm:    13px;
+  --text-base:  15px;   /* desktop base — deliberately tight */
+  --text-md:    17px;   /* mobile base */
+  --text-lg:    20px;
+  --text-xl:    24px;
+  --text-2xl:   30px;
+  --text-3xl:   38px;
+
+  /* Weights */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-bold:    600;
+
+  /* Line heights */
+  --leading-tight:   1.2;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
+
+  /* Prose measure */
+  --prose-measure: 62ch;
+
+  /* ----------------------------------------------------------------------
+     SPACING — 4px base, 8px increments preferred
+     ---------------------------------------------------------------------- */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ----------------------------------------------------------------------
+     BORDER RADIUS — warmth lives here. Larger than the Device DB's 2px
+     default; this is the Concept direction's "rounded forms".
+     ---------------------------------------------------------------------- */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   8px;    /* default for most UI elements */
+  --radius-lg:   12px;   /* cards */
+  --radius-xl:   16px;   /* large cards, sheets */
+  --radius-2xl:  24px;   /* bottom sheets */
+  --radius-full: 9999px; /* pills, chips */
+  --radius-squircle: 20%; /* profile pictures — rounded square, not circle */
+
+  /* ----------------------------------------------------------------------
+     MOTION — functional, not expressive. Spring reserved for sheets/toggles.
+     ---------------------------------------------------------------------- */
+  --duration-instant: 0ms;                            /* @kind other */
+  --duration-fast:    150ms;                          /* @kind other */
+  --duration-normal:  200ms;                          /* @kind other */
+  --duration-slow:    300ms;                          /* @kind other */
+  --easing-default:   ease;                           /* @kind other */
+  --easing-out:       ease-out;                       /* @kind other */
+  --easing-spring:    cubic-bezier(0.34, 1.56, 0.64, 1); /* @kind other */
+
+  /* ----------------------------------------------------------------------
+     TOUCH TARGETS — generous on mobile, dense on desktop (per Apple HIG)
+     ---------------------------------------------------------------------- */
+  --touch-target-mobile:  56px;
+  --touch-target-tablet:  44px;
+  --touch-target-desktop: 32px;
+
+  /* Buttons get their own comfortable touch height (44px) on mobile AND
+     tablet, instead of the full 56px row touch target, so action buttons stay
+     compact while list rows / nav still meet the 56px tap minimum. Desktop
+     buttons stay dense, reading the touch-target-desktop token. */
+  --button-height-touch: 44px;
+
+  /* ----------------------------------------------------------------------
+     LAYOUT — shell dimensions (reference)
+       breakpoints: mobile <768 · tablet 768–1279 · desktop ≥1280 · big ≥1920
+     ---------------------------------------------------------------------- */
+  --rail-width:   56px;   /* bookmark rail (desktop/tablet) + bottom bar height */
+  --panel-width:  320px;  /* right contextual panel (desktop) */
+  --bar-height:   56px;   /* mobile bottom bookmark bar */
+}
+
+/* =========================================================================
+   REDUCED MOTION — collapse all transitions/animations to zero.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast:   0ms;   /* @kind other */
+    --duration-normal: 0ms;   /* @kind other */
+    --duration-slow:   0ms;   /* @kind other */
+    --easing-spring:   ease;  /* @kind other */
+  }
+}
+
+/* =========================================================================
+   BASE — minimal element resets so consumers inherit the dark, warm ground.
+   ========================================================================= */
+html {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 1279px) {
+  html { font-size: var(--text-md); }  /* mobile/tablet base bumps to 17px */
+}

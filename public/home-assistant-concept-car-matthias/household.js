@@ -440,3 +440,13 @@ export function bookmarksFor(persona) {
     .map((d) => ({ id: d.id, label: d.label, icon: d.icon, route: d.route }));
   return items;
 }
+
+// Expose the module's exports on a global so the single-file bundle (which can't
+// rewrite the dynamic `import("./household.js")`) can still reach them. When
+// served normally as siblings, the dynamic import works too; this is belt-and-braces.
+if (typeof window !== "undefined") {
+  window.__HH_MOD = {
+    household, directory, bookmarkExtras, extensionCategories,
+    getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor,
+  };
+}

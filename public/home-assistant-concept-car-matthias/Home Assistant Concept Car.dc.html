@@ -8,6 +8,10 @@
 <body>
 <x-dc>
 <helmet>
+  <title>Home Assistant Concept Car</title>
+  <meta name="description" content="A concept for one shared smart home, seen by many people, each with their own bookmarks, a private space, and shared common ground.">
+  <link rel="icon" type="image/svg+xml" href="ds/assets/ha-mark.svg">
+  <script type="module" src="./household.js"></script>
   <link rel="stylesheet" href="ds/styles.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap">
   <script src="./image-slot.js"></script>
@@ -236,9 +240,22 @@
     .cc-bp-desktop .cc-tbtn--icon, .cc-bp-tablet .cc-tbtn--icon { width: 40px; }
     .cc-bp-mobile .cc-toolbar .ha-input, .cc-bp-mobile .cc-toolbar .ha-select { height: var(--button-height-touch, 44px); }
     .cc-bp-desktop .cc-toolbar .ha-input, .cc-bp-desktop .cc-toolbar .ha-select, .cc-bp-tablet .cc-toolbar .ha-input, .cc-bp-tablet .cc-toolbar .ha-select { height: 40px; }
+    @keyframes cc-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cc-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { .cc-scrim, .cc-sheet { animation: none !important; } }
   </style>
 </helmet>
 <div id="cc-app">{{ app }}</div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <rect width="512" height="512" rx="96" fill="#18181a"></rect>
+    <g transform="translate(256 256)">
+      <path d="M0 -96 L112 16 L80 16 L80 96 L24 96 L24 36 L-24 36 L-24 96 L-80 96 L-80 16 L-112 16 Z" fill="none" stroke="#18BCF2" stroke-width="18" stroke-linejoin="round"></path>
+      <circle cx="0" cy="-8" r="14" fill="#18BCF2"></circle>
+    </g>
+  </svg>
+</template>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:896},&quot;person&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;daan&quot;,&quot;sofie&quot;,&quot;tess&quot;,&quot;lars&quot;,&quot;greet&quot;,&quot;nour&quot;],&quot;default&quot;:&quot;daan&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;breakpoint&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;mobile&quot;,&quot;tablet&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
@@ -311,9 +328,22 @@ class Component extends DCLogic {
     return h;
   }
 
+  // Prefer the window global (set by the bundled household.js module script); the
+  // single-file bundle can't resolve a dynamic relative import, so poll briefly for
+  // the global, then fall back to dynamic import (works when served with siblings).
+  async loadHousehold() {
+    if (window.__HH_MOD) return window.__HH_MOD;
+    for (let i = 0; i < 150; i++) {
+      if (window.__HH_MOD) return window.__HH_MOD;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    try { return await import("./household.js"); } catch (e) { return null; }
+  }
+
   async componentDidMount() {
     if (!window.React) window.React = React;
-    try { this.mod = await import("./household.js"); } catch (e) { this.loadErr = String(e); }
+    this.mod = await this.loadHousehold();
+    if (!this.mod) this.loadErr = "household data unavailable";
     await this.loadBundle();
     this.updateBp();
     this.measureToolbar();
@@ -593,7 +623,11 @@ class Component extends DCLogic {
     const narrow = route === "/settings" || route === "/my/settings" || route === "/my/profile" || route === "/extensions" || (route || "").indexOf("/my/data") === 0;
     const isHome = (route || "").split("/").filter(Boolean)[0] === "home";
     const maxW = narrow ? 760 : ((page.fullWidth || isHome) ? "none" : 1320);
-    return h("div", { style: { padding: "var(--space-6) " + padX, paddingTop: bp === "desktop" ? "var(--space-6)" : "var(--space-2)", paddingBottom: bp === "mobile" ? "104px" : "var(--space-12)", maxWidth: maxW, margin: "0 auto", "--cc-padx": padX } },
+    // Mobile pages clear the floating action button (104px); pages without a FAB
+    // only need normal bottom breathing room (the bookmark bar is a sibling, not an overlay).
+    const hasFab = bp === "mobile" && !!this.mobileFabSpec(persona);
+    const padB = bp === "mobile" ? (hasFab ? "104px" : "var(--space-8)") : "var(--space-12)";
+    return h("div", { style: { padding: "var(--space-6) " + padX, paddingTop: bp === "desktop" ? "var(--space-6)" : "var(--space-2)", paddingBottom: padB, maxWidth: maxW, margin: "0 auto", "--cc-padx": padX } },
       page.banner || null,
       this.renderTitleBlock(page, bp),
       h("div", { style: { marginTop: "var(--space-6)" } }, page.body),
@@ -670,8 +704,8 @@ class Component extends DCLogic {
     // large title scrolls away.
     const route = this.state.route || "";
     const forceTitle = bp === "mobile" && /^\/(settings|extensions)(\/|$)/.test(route);
-    const showTitle = (collapsed || forceTitle) && !page.accountLanding;
-    const titleText = selecting && sc.count ? sc.count + " selected" : page.title;
+    const showTitle = (collapsed || forceTitle) && (!page.accountLanding || collapsed);
+    const titleText = selecting && sc.count ? sc.count + " selected" : (page.accountLanding ? persona.name : page.title);
     const titleStyle = { fontFamily: "var(--font-display)", fontWeight: 600, fontSize: "var(--text-lg)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: showTitle ? 1 : 0, transform: showTitle ? "none" : "translateY(4px)", transition: "opacity " + dur + " var(--easing-out), transform " + dur + " var(--easing-out)" };
     const isHomePersp = (this.state.route || "").split("/").filter(Boolean)[0] === "home";
     const { ProfileAvatar, Icon } = this.C;
@@ -1330,6 +1364,7 @@ class Component extends DCLogic {
     opts = opts || {};
     const h = React.createElement; const { Input, Select, Chip, Icon, Checkbox } = this.C;
     const sec = { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", fontWeight: "var(--weight-medium)" };
+    const accordion = !!opts.accordion;
     const blocks = [];
     if (opts.includeSearch !== false && !opts.filtersOnly && spec.search) {
       blocks.push(h("div", { key: "search" }, h(Input, { variant: "search", value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })));
@@ -1391,6 +1426,17 @@ class Component extends DCLogic {
               h("button", { key: op.value, type: "button", onClick: () => fg.onPick(op.value), style: { background: "none", border: "none", padding: 0, cursor: "pointer" } },
                 h(Chip, { variant: fg.cur === op.value ? "active" : "default" }, op.label))));
       }
+      if (accordion) {
+        const chev = h(Icon, { name: "chevron-down", size: "md", style: { color: "var(--color-text-tertiary)", flex: "none", transform: open ? "rotate(180deg)" : "none", transition: "transform 200ms var(--easing-out)" } });
+        blocks.push(h("div", { key: "fg-" + fg.key, style: { borderTop: "1px solid var(--color-border-subtle)" } },
+          h("button", { type: "button", "aria-expanded": open, onClick: () => this.toggleFilter(spec.id, fg.key),
+            style: { width: "100%", display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "var(--space-4) 0", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-body)", textAlign: "left" } },
+            h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)", flex: 1 } }, fg.label),
+            !open && active ? h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-accent)", whiteSpace: "nowrap" } }, curLabel) : null,
+            chev),
+          open ? h("div", { style: { paddingBottom: "var(--space-4)" } }, content) : null));
+        return;
+      }
       blocks.push(h("div", { key: "fg-" + fg.key },
         h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "var(--space-1) 0" } },
           h("span", { style: { fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)" } }, fg.label)),
@@ -1411,7 +1457,7 @@ class Component extends DCLogic {
     }
     const links = [];
     if (spec.hasCustomize && !opts.filtersOnly) links.push(h("button", { key: "cust", type: "button", className: "cc-raillink", onClick: () => this.setState({ customizeId: spec.id }) }, h(Icon, { name: "tune-variant", size: "sm" }), "Display options"));
-    if (spec.onClear) links.push(h("button", { key: "clr", type: "button", className: "cc-raillink", disabled: !spec.hasActiveFilters, onClick: spec.onClear }, "Clear filters"));
+    if (spec.onClear && !opts.noFooterClear) links.push(h("button", { key: "clr", type: "button", className: "cc-raillink", disabled: !spec.hasActiveFilters, onClick: spec.onClear }, "Clear filters"));
     const footerBase = { display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "var(--space-3)", borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-4)" };
     const footerStyle = opts.filtersOnly
       ? Object.assign({}, footerBase, { position: "sticky", bottom: 0, zIndex: 2, background: "var(--color-surface)", marginLeft: "calc(-1 * var(--space-5))", marginRight: "calc(-1 * var(--space-5))", marginBottom: "calc(-1 * var(--space-5))", paddingLeft: "var(--space-5)", paddingRight: "var(--space-5)", paddingBottom: "var(--space-5)", borderBottomLeftRadius: "var(--radius-lg)", borderBottomRightRadius: "var(--radius-lg)" })
@@ -1474,14 +1520,29 @@ class Component extends DCLogic {
       const sheetOpen = this.state.filtersSheet === id;
       const bar = spec.search ? h("div", { className: "cc-msearch", style: { paddingBottom: "var(--space-2)" } },
         h(Input, { variant: "search", value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })) : null;
-      const sheet = sheetOpen ? h("div", { onClick: () => this.setState({ filtersSheet: null, customizeId: null }), style: { position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end" } },
-        h("div", { onClick: (e) => e.stopPropagation(), style: { width: "100%", height: "auto", maxHeight: "90vh", display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--color-overlay)", borderTopLeftRadius: 24, borderTopRightRadius: 24 } },
+      const noAnim = this.reduceMotion();
+      const closeX = h("button", { type: "button", "aria-label": "Close filters", onClick: () => this.setState({ filtersSheet: null, customizeId: null }),
+        style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer" } },
+        h(Icon, { name: "close", size: "md" }));
+      const handle = h("div", { style: { display: "flex", justifyContent: "center", padding: "10px 0 4px", flex: "none" } },
+        h("div", { style: { width: 36, height: 4, borderRadius: 999, background: "var(--color-border)" } }));
+      const header = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "var(--space-1) var(--space-5) var(--space-3)", flex: "none" } },
+        h("span", { style: { fontSize: "var(--text-lg)", fontWeight: "var(--weight-semibold)", color: "var(--color-text-primary)", flex: 1 } }, "Filters"),
+        spec.hasActiveFilters ? h("button", { type: "button", onClick: spec.onClear, style: { background: "none", border: "none", color: "var(--color-accent)", fontSize: "var(--text-sm)", fontFamily: "var(--font-body)", cursor: "pointer", padding: "6px 4px" } }, "Clear all") : null,
+        closeX);
+      const doneLabel = spec.filterCount ? "Show results" : "Done";
+      const sheet = sheetOpen ? h("div", { className: "cc-scrim", onClick: () => this.setState({ filtersSheet: null, customizeId: null }),
+          style: { position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "flex-end", animation: noAnim ? "none" : "cc-scrim-in 200ms var(--easing-out)" } },
+        h("div", { className: "cc-sheet", onClick: (e) => e.stopPropagation(),
+            style: { width: "100%", maxHeight: "78vh", display: "flex", flexDirection: "column", overflow: "hidden", background: "var(--color-overlay)", borderTopLeftRadius: 24, borderTopRightRadius: 24, animation: noAnim ? "none" : "cc-sheet-up 300ms cubic-bezier(0.34, 1.56, 0.64, 1)" } },
+          handle,
           this.state.customizeId === id
-            ? h("div", { style: { flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "var(--space-5)", paddingBottom: "var(--space-8)" } }, this.customizePanel(spec))
+            ? h("div", { style: { flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "0 var(--space-5) var(--space-8)" } }, this.customizePanel(spec))
             : h(React.Fragment, null,
-                h("div", { style: { flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "var(--space-5)" } }, this.filtersRail(spec, { includeSearch: false })),
-                h("div", { style: { flex: "none", padding: "var(--space-4) var(--space-5) var(--space-6)", borderTop: "1px solid var(--color-border-subtle)" } },
-                  h(Button, { variant: "primary", style: { width: "100%" }, onClick: () => this.setState({ filtersSheet: null }) }, "Done"))))) : null;
+                header,
+                h("div", { style: { flex: "1 1 auto", minHeight: 0, overflowY: "auto", padding: "0 var(--space-5) var(--space-4)" } }, this.filtersRail(spec, { includeSearch: false, accordion: true, noFooterClear: true })),
+                h("div", { style: { flex: "none", padding: "var(--space-4) var(--space-5) var(--space-6)", borderTop: "1px solid var(--color-border-subtle)", background: "var(--color-overlay)" } },
+                  h(Button, { variant: "primary", style: { width: "100%" }, onClick: () => this.setState({ filtersSheet: null }) }, doneLabel))))) : null;
       return h("div", { style: this.col("var(--space-4)") }, bar, body, sheet);
     }
     return body;
@@ -1939,17 +2000,18 @@ class Component extends DCLogic {
   myAccountMobileBody(persona, groups) {
     const h = React.createElement; const { ProfileAvatar, Icon, SectionHeader } = this.C;
     const row = (icon, label, onClick, idx, hideChevron) => h("button", { key: label, type: "button", onClick,
-      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", background: "transparent", cursor: "pointer", padding: "var(--space-4)", borderTop: idx === 0 ? "none" : "1px solid var(--color-border)", color: "var(--color-text-primary)", font: "inherit", fontSize: "var(--text-base)" } },
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", background: "transparent", cursor: "pointer", padding: "var(--space-4)", borderTop: idx === 0 ? "none" : "1px solid var(--color-border-subtle)", color: "var(--color-text-primary)", font: "inherit", fontSize: "var(--text-base)" } },
       h(Icon, { name: icon, size: "md", style: { color: "var(--color-text-secondary)", flex: "none" } }),
       h("span", { style: { flex: 1, minWidth: 0 } }, label),
       hideChevron ? null : h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }));
     const card = (rows) => h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", overflow: "hidden" } }, rows);
     const section = (label, rows) => h("div", { style: this.col("var(--space-2)") }, label ? h(SectionHeader, { label }) : null, card(rows));
-    const header = h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) 0 var(--space-6)" } },
+    const header = h("div", { style: { position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) 0 var(--space-6)" } },
       h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "lg", style: { width: 176, height: 176, fontSize: 68 } }),
       h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" } },
         h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-2xl)", fontWeight: 700 } }, persona.name),
-        h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-sm)", textTransform: "capitalize" } }, persona.role)));
+        h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-sm)", textTransform: "capitalize" } }, persona.role)),
+      h("div", { ref: this.sentinelRef, "aria-hidden": true, style: { position: "absolute", left: 0, bottom: 0, height: 1, width: 1 } }));
     const profileCard = section(null, [row("account-circle-outline", "My profile", () => this.go("/my/profile"), 0)]);
     const dataCard = section("My data", this.H.personalData.map((d, i) => row(d.icon, d.name, () => this.go("/my/data/" + d.id), i)));
     const settingsCards = groups.map((g) => section(g.title, g.items.map((it, i) => row(it.icon, it.label, () => this.setState({ settingsSel: it.id, cloudSub: null, titleCollapsed: false }), i))));

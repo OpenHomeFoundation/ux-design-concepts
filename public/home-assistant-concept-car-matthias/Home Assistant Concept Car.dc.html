@@ -47,8 +47,8 @@
   <style>
     html, body { margin: 0; padding: 0; background: #18181a; }
     *, *::before, *::after { box-sizing: border-box; }
-    #cc-app { height: 100vh; height: 100dvh; width: 100%; }
-    .cc-loading { height: 100vh; height: 100dvh; display: flex; align-items: center; justify-content: center; color: #6a6974; font-family: 'Inter', system-ui, sans-serif; font-size: 15px; }
+    #cc-app { height: 100dvh; width: 100%; }
+    .cc-loading { height: 100dvh; display: flex; align-items: center; justify-content: center; color: #6a6974; font-family: 'Inter', system-ui, sans-serif; font-size: 15px; }
     /* Bookmark rail active state: neutral white highlight, not blue */
     .ha-bnav__item { color: var(--color-text-tertiary) !important; }
     .ha-bnav__item[aria-current="page"] { background: transparent !important; color: var(--color-text-primary) !important; }
@@ -520,7 +520,7 @@ class Component extends DCLogic {
     const panelContent = this.renderPanel(route, persona);
     const frame = this.renderFrame(page, persona, bp, { items, activeId, onNavigate, panelContent });
     const forced = (this.props.breakpoint && this.props.breakpoint !== "auto") ? this.props.breakpoint : null;
-    const root = h("div", { className: "cc-bp-" + bp, style: { height: forced ? "100%" : "100vh", fontSize: persona.calibrated === "accessibility" ? "18px" : undefined } },
+    const root = h("div", { className: "cc-bp-" + bp, style: { height: forced ? "100%" : "100dvh", fontSize: persona.calibrated === "accessibility" ? "18px" : undefined } },
       frame,
       this.state.menu ? h("div", { onClick: () => this.setState({ menu: null }), style: { position: "fixed", inset: 0, zIndex: 900 } }) : null,
       this.renderSearch(bp),
@@ -552,7 +552,7 @@ class Component extends DCLogic {
       const bar = h(BookmarkNav, { items: navItems, activeId: ctx.activeId, orientation: "horizontal", onNavigate: ctx.onNavigate, moreId: "more" });
       return h("div", { style: { display: "flex", flexDirection: "column", height: "100%", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", position: "relative" } },
         topbar, scroller, this.selectActionBar(bp),
-        h("nav", { "aria-label": "Bookmarks", style: { flex: "none", height: 64, boxSizing: "content-box", paddingBottom: "env(safe-area-inset-bottom)", background: "var(--color-surface)", borderTop: "1px solid var(--color-border-subtle)" } }, bar),
+        h("nav", { "aria-label": "Bookmarks", style: { flex: "none", height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "var(--color-surface)", borderTop: "1px solid var(--color-border-subtle)" } }, bar),
         this.renderMobileFab(persona));
     }
     const railNav = h(BookmarkNav, { items: ctx.items, activeId: ctx.activeId, orientation: "vertical", onNavigate: ctx.onNavigate, moreId: "more" });
@@ -842,7 +842,7 @@ class Component extends DCLogic {
 
   renderMobileSwitcher(persona) {
     const h = React.createElement;
-    return h("div", { style: { position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom))", right: "16px", zIndex: 1000 } },
+    return h("div", { style: { position: "fixed", bottom: "72px", right: "16px", zIndex: 1000 } },
       this.avatarButton(persona));
   }
 

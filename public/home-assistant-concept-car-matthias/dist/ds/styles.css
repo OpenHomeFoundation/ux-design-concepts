@@ -1,6 +1,0 @@
-/* =========================================================================
-   HA Concept Car — Global stylesheet entry point.
-   Consumers link THIS one file. It only @imports — keep it that way.
-   ========================================================================= */
-@import "./fonts.css";
-@import "./design-tokens.css";

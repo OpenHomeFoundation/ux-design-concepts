@@ -248,13 +248,45 @@
 <div id="cc-app">{{ app }}</div>
 
 <template id="__bundler_thumbnail">
-  <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-    <rect width="512" height="512" rx="96" fill="#18181a"></rect>
-    <g transform="translate(256 256)">
-      <path d="M0 -96 L112 16 L80 16 L80 96 L24 96 L24 36 L-24 36 L-24 96 L-80 96 L-80 16 L-112 16 Z" fill="none" stroke="#18BCF2" stroke-width="18" stroke-linejoin="round"></path>
-      <circle cx="0" cy="-8" r="14" fill="#18BCF2"></circle>
-    </g>
-  </svg>
+  <style>
+    #__bundler_loading { display: none !important; }
+    #__bundler_thumbnail { background: #18181a !important; padding: 0 !important; display: block !important; }
+    .ccsk { position: absolute; inset: 0; display: flex; background: #18181a; font-size: 0; }
+    .ccsk__rail { flex: none; width: 80px; height: 100%; background: #18181a; display: flex; flex-direction: column; align-items: center; padding: 16px 0; box-sizing: border-box; gap: 14px; }
+    .ccsk__rail i { display: block; width: 36px; height: 36px; border-radius: 10px; background: #222226; }
+    .ccsk__rail .ccsk__sp { flex: 1; }
+    .ccsk__main { flex: 1; min-width: 0; padding: 40px 40px 24px; box-sizing: border-box; }
+    .ccsk__title { width: 240px; height: 38px; border-radius: 10px; background: #2c2c32; }
+    .ccsk__tabs { display: flex; gap: 12px; margin-top: 28px; }
+    .ccsk__tabs i { display: block; width: 96px; height: 36px; border-radius: 999px; background: #222226; }
+    .ccsk__tabs i:first-child { background: #2c2c32; }
+    .ccsk__lbl { width: 110px; height: 14px; border-radius: 6px; background: #222226; margin: 36px 0 16px; }
+    .ccsk__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .ccsk__grid i { display: block; height: 116px; border-radius: 12px; background: #222226; }
+    .ccsk__bar { display: none; }
+    @media (max-width: 1023px) { .ccsk__grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 767px) {
+      .ccsk__rail { display: none; }
+      .ccsk__main { padding: 24px 20px 0; }
+      .ccsk__title { width: 60%; }
+      .ccsk__grid { grid-template-columns: repeat(2, 1fr); }
+      .ccsk { flex-direction: column; }
+      .ccsk__bar { display: flex; flex: none; height: 64px; width: 100%; background: #222226; border-top: 1px solid #2a2a30; align-items: center; justify-content: space-around; padding: 0 8px; box-sizing: border-box; }
+      .ccsk__bar i { display: block; width: 28px; height: 28px; border-radius: 8px; background: #36363e; }
+    }
+  </style>
+  <div class="ccsk">
+    <div class="ccsk__rail">
+      <i></i><i style="margin-top:8px"></i><i></i><i></i><i></i><div class="ccsk__sp"></div><i style="border-radius:8px"></i>
+    </div>
+    <div class="ccsk__main">
+      <div class="ccsk__title"></div>
+      <div class="ccsk__tabs"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="ccsk__lbl"></div>
+      <div class="ccsk__grid"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="ccsk__bar"><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
 </template>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:896},&quot;person&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;daan&quot;,&quot;sofie&quot;,&quot;tess&quot;,&quot;lars&quot;,&quot;greet&quot;,&quot;nour&quot;],&quot;default&quot;:&quot;daan&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;breakpoint&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;mobile&quot;,&quot;tablet&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
@@ -616,7 +648,7 @@ class Component extends DCLogic {
 
   renderMain(page, persona, bp, panelContent) {
     const h = React.createElement;
-    const padX = bp === "mobile" ? "var(--space-5)" : "var(--space-8)";
+    const padX = bp === "mobile" ? "var(--space-4)" : "var(--space-8)";
     // Settings family caps at a narrow 760; every other page (home, automations,
     // people, lists…) caps at 1320. Both centered.
     const route = this.state.route;
@@ -688,7 +720,7 @@ class Component extends DCLogic {
     const h = React.createElement;
     const collapsed = this.state.titleCollapsed;
     const dur = this.reduceMotion() ? "0ms" : "200ms";
-    const padX = bp === "mobile" ? "var(--space-5)" : "var(--space-8)";
+    const padX = bp === "mobile" ? "var(--space-4)" : "var(--space-8)";
     const showMark = false;
     const mark = showMark
       ? h("button", { onClick: () => this.go("/home"), "aria-label": "Home", title: "Home", style: { display: "inline-flex", alignItems: "center", flex: "none", padding: 0, paddingLeft: "var(--space-5)", paddingRight: "var(--space-2)", background: "transparent", border: "none", cursor: "pointer" } },
@@ -751,7 +783,7 @@ class Component extends DCLogic {
     }
     const avatarBtn = (bp === "mobile" && !page.accountLanding && (route || "").indexOf("/my") !== 0) ? h("button", { type: "button", "aria-label": "Your account", title: persona.name, onClick: () => this.go("/my/settings"),
       style: { border: "none", background: "transparent", padding: 0, cursor: "pointer", lineHeight: 0, flex: "none", marginLeft: "var(--space-1)" } },
-      h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "md", style: { borderRadius: "50%" } })) : null;
+      h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "md", style: { borderRadius: "50%", width: "var(--button-height-touch, 44px)", height: "var(--button-height-touch, 44px)" } })) : null;
     const actions = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-1)", flex: "none", paddingRight: padX, position: "relative" } },
       bp !== "mobile" ? selectBtn : null,
       !selecting && page.cta ? h("div", { style: { marginLeft: "var(--space-1)" } }, page.cta) : null,
@@ -942,7 +974,7 @@ class Component extends DCLogic {
   homeTabs() { return [{ id: "overview", label: "Overview", icon: "view-dashboard" }, { id: "lights", label: "Lights", icon: "lightbulb" }, { id: "climate", label: "Climate", icon: "thermometer" }, { id: "security", label: "Security", icon: "lock" }, { id: "media", label: "Media", icon: "play-box-multiple" }]; }
   renderTabs(activeId, bp) {
     const h = React.createElement; const { Icon } = this.C;
-    const padX = bp === "mobile" ? "var(--space-5)" : "var(--space-8)";
+    const padX = bp === "mobile" ? "var(--space-4)" : "var(--space-8)";
     const onTab = (id) => this.go(id === "overview" ? "/home" : "/home/" + id);
     return h("div", { role: "tablist", style: { display: "flex", gap: "var(--space-3)", flexWrap: "nowrap", overflowX: "auto", marginLeft: "calc(-1 * " + padX + ")", marginRight: "calc(-1 * " + padX + ")", paddingLeft: padX, paddingRight: padX } },
       this.homeTabs().map((t) => {

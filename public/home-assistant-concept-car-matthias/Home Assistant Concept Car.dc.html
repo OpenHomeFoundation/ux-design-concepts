@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -552,7 +552,7 @@ class Component extends DCLogic {
       const bar = h(BookmarkNav, { items: navItems, activeId: ctx.activeId, orientation: "horizontal", onNavigate: ctx.onNavigate, moreId: "more" });
       return h("div", { style: { display: "flex", flexDirection: "column", height: "100%", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", position: "relative" } },
         topbar, scroller, this.selectActionBar(bp),
-        h("nav", { "aria-label": "Bookmarks", style: { flex: "none", height: 64, background: "var(--color-surface)", borderTop: "1px solid var(--color-border-subtle)" } }, bar),
+        h("nav", { "aria-label": "Bookmarks", style: { flex: "none", height: 64, boxSizing: "content-box", paddingBottom: "env(safe-area-inset-bottom)", background: "var(--color-surface)", borderTop: "1px solid var(--color-border-subtle)" } }, bar),
         this.renderMobileFab(persona));
     }
     const railNav = h(BookmarkNav, { items: ctx.items, activeId: ctx.activeId, orientation: "vertical", onNavigate: ctx.onNavigate, moreId: "more" });
@@ -812,7 +812,7 @@ class Component extends DCLogic {
         boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
         transition: "background-color " + dur + " var(--easing-out)" } },
       h(Icon, { name: fab.icon, size: "lg" }));
-    return h("div", { style: { position: "absolute", right: "var(--space-5)", bottom: "calc(64px + var(--space-4))", zIndex: menuOpen ? 1000 : 60,
+    return h("div", { style: { position: "absolute", right: "var(--space-5)", bottom: "calc(64px + var(--space-4) + env(safe-area-inset-bottom))", zIndex: menuOpen ? 1000 : 60,
         display: "flex", flexDirection: "column", alignItems: "flex-end",
         opacity: hidden ? 0 : 1, pointerEvents: hidden ? "none" : "auto",
         transition: "opacity " + dur + " var(--easing-out)" } },
@@ -842,7 +842,7 @@ class Component extends DCLogic {
 
   renderMobileSwitcher(persona) {
     const h = React.createElement;
-    return h("div", { style: { position: "fixed", bottom: "72px", right: "16px", zIndex: 1000 } },
+    return h("div", { style: { position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom))", right: "16px", zIndex: 1000 } },
       this.avatarButton(persona));
   }
 

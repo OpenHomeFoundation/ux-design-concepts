@@ -43,7 +43,7 @@ export const household = {
       note: "Calibrated child. Limited controls, still has a Personal space.",
     },
     greet: {
-      id: "greet", name: "Greet", role: "resident", initials: "Gr", calibrated: "accessibility",
+      id: "greet", name: "Elizabeth", role: "resident", initials: "El", calibrated: "accessibility",
       spaces: ["shared", "personal"], homeArea: "annex",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["greet_ceiling", "greet_lamp"],
@@ -77,8 +77,8 @@ export const household = {
     "tess-room":    { id: "tess-room", name: "Tess's room", floor: "first", icon: "bed", temp: 20.2, humidity: 47, lights: 2, lightsOn: 0 },
     "lars-room":    { id: "lars-room", name: "Lars's room", floor: "first", icon: "teddy-bear", temp: 20.5, humidity: 48, lights: 1, lightsOn: 1 },
     "bathroom":     { id: "bathroom", name: "Bathroom", floor: "first", icon: "shower", temp: 21.0, humidity: 64, lights: 2, lightsOn: 0 },
-    "greet-room":   { id: "greet-room", name: "Greet's room", floor: "annex", icon: "bed", temp: 22.6, humidity: 45, lights: 2, lightsOn: 1 },
-    "greet-ensuite":{ id: "greet-ensuite", name: "Greet's ensuite", floor: "annex", icon: "toilet", temp: 22.0, humidity: 58, lights: 1, lightsOn: 0 },
+    "greet-room":   { id: "greet-room", name: "Elizabeth's room", floor: "annex", icon: "bed", temp: 22.6, humidity: 45, lights: 2, lightsOn: 1 },
+    "greet-ensuite":{ id: "greet-ensuite", name: "Elizabeth's ensuite", floor: "annex", icon: "toilet", temp: 22.0, humidity: 58, lights: 1, lightsOn: 0 },
     "garden":       { id: "garden", name: "Garden", floor: "outside", icon: "tree", lights: 1, lightsOn: 0 },
     "driveway":     { id: "driveway", name: "Driveway", floor: "outside", icon: "car", lights: 1, lightsOn: 0 },
   },
@@ -128,7 +128,7 @@ export const household = {
     { id: "bathroom_ceiling", name: "Ceiling", type: "light", area: "bathroom", icon: "ceiling-light", on: false },
     { id: "bathroom_mirror", name: "Mirror", type: "light", area: "bathroom", icon: "mirror", on: false },
     { id: "bathroom_humidity", name: "Humidity", type: "sensor", area: "bathroom", icon: "water-percent", state: "64%", devType: "Humidity", mono: true, battery: 55 },
-    // Annex (Greet)
+    // Annex (Elizabeth)
     { id: "greet_ceiling", name: "Ceiling", type: "light", area: "greet-room", icon: "ceiling-light", on: true },
     { id: "greet_lamp", name: "Bedside lamp", type: "light", area: "greet-room", icon: "lamp", on: false },
     { id: "greet_thermostat", name: "Thermostat", type: "climate", area: "greet-room", icon: "thermostat", mode: "Heat", current: 22.6, target: 22.5 },
@@ -143,17 +143,17 @@ export const household = {
 
   // ---- Home routines ---------------------------------------------------
   automations: [
-    { id: "morning-routine", name: "Weekday morning routine", description: "Turns on the hallway lights and heating at 6:30 on weekdays when someone is home", space: "shared", enabled: true, lastTriggered: "today 6:32", creator: "Daan", area: "hallway", affects: ["greet", "all"], category: "Routines" },
+    { id: "morning-routine", name: "Weekday morning routine", description: "Turns on the hallway lights and heating at 6:30 on weekdays when someone is home", space: "shared", enabled: true, lastTriggered: "today 6:32", creator: "Daan", area: "hallway", affects: ["greet", "all"], category: "Routines", presencePeople: ["anyone"] },
     { id: "hallway-motion", name: "Turn hallway lights on when there is motion", description: "Switches the hallway lights on when motion is detected, on weekdays between 6:00 and 23:00", space: "shared", enabled: true, lastTriggered: "today 7:48", creator: "Home Assistant", area: "hallway", category: "Lighting" },
-    { id: "unoccupied-off", name: "Turn lights off when the home is unoccupied", description: "Switches every light off once the last person leaves", space: "shared", enabled: false, lastTriggered: "yesterday 9:10", creator: "Daan", category: "Lighting" },
-    { id: "heating-occupied", name: "Turn heating on when the home is occupied", description: "Brings the heating to the target temperature when anyone is home", space: "shared", enabled: true, lastTriggered: "today 7:02", creator: "Home Assistant", category: "Climate" },
+    { id: "unoccupied-off", name: "Turn lights off when the home is unoccupied", description: "Switches every light off once the last person leaves", space: "shared", enabled: false, lastTriggered: "yesterday 9:10", creator: "Daan", category: "Lighting", presencePeople: ["anyone"] },
+    { id: "heating-occupied", name: "Turn heating on when the home is occupied", description: "Brings the heating to the target temperature when anyone is home", space: "shared", enabled: true, lastTriggered: "today 7:02", creator: "Home Assistant", category: "Climate", presencePeople: ["anyone"] },
     { id: "boost-ac", name: "Boost AC when the panic button is pressed", description: "Runs the living room AC at full for ten minutes when the panic button is pressed", space: "shared", enabled: false, lastTriggered: "never", creator: "Daan", area: "living-room", category: "Climate" },
     { id: "sunset-lights", name: "Sunset lights", description: "Fades the garden and living room lights on at sunset", space: "shared", enabled: true, lastTriggered: "yesterday 20:14", creator: "Daan", category: "Lighting" },
-    { id: "away-lock", name: "Lock the doors when everyone leaves", description: "Locks the front door, garage and annex once the home is empty", space: "shared", enabled: true, lastTriggered: "today 8:20", creator: "Daan", category: "Security" },
+    { id: "away-lock", name: "Lock the doors when everyone leaves", description: "Locks the front door, garage and annex once the home is empty", space: "shared", enabled: true, lastTriggered: "today 8:20", creator: "Daan", category: "Security", presencePeople: ["anyone"] },
     { id: "lars-bedtime", name: "Lars's bedtime lamp", description: "Dims Lars's lamp to warm at 19:30 and off at 20:00", space: "shared", enabled: true, lastTriggered: "yesterday 20:00", creator: "Daan", area: "lars-room", affects: ["lars"], category: "Lighting" },
-    { id: "annex-night", name: "Annex night light", description: "Keeps Greet's hallway softly lit between 22:00 and 6:00", space: "shared", enabled: true, lastTriggered: "today 6:00", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Lighting" },
+    { id: "annex-night", name: "Annex night light", description: "Keeps Elizabeth's hallway softly lit between 22:00 and 6:00", space: "shared", enabled: true, lastTriggered: "today 6:00", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Lighting" },
     { id: "annex-heating", name: "Annex comfort heating", description: "Holds the annex at 22.5 degrees through the day", space: "shared", enabled: true, lastTriggered: "today 7:05", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Climate" },
-    { id: "annex-morning", name: "Annex morning routine", description: "Opens Greet's blinds and warms the room at 7:30", space: "shared", enabled: true, lastTriggered: "today 7:30", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Routines" },
+    { id: "annex-morning", name: "Annex morning routine", description: "Opens Elizabeth's blinds and warms the room at 7:30", space: "shared", enabled: true, lastTriggered: "today 7:30", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Routines" },
   ],
 
   scenes: [
@@ -201,7 +201,7 @@ export const household = {
     { id: "sofie", name: "Sofie", role: "Resident", presence: "home", initials: "So", avatar: "ds/assets/sofie.png" },
     { id: "tess", name: "Tess", role: "Resident", presence: "away", initials: "Te" },
     { id: "lars", name: "Lars", role: "Resident", presence: "home", initials: "La" },
-    { id: "greet", name: "Greet", role: "Resident", presence: "home", initials: "Gr" },
+    { id: "greet", name: "Elizabeth", role: "Resident", presence: "home", initials: "El" },
     { id: "nour", name: "Nour", role: "Non-resident", presence: "away", initials: "No", scoped: true },
   ],
 
@@ -227,7 +227,7 @@ export const household = {
 
   // ---- Personal data (Sofie's data autonomy view) ----------------------
   personalData: [
-    { id: "presence", name: "Presence", icon: "home-account", access: "shared", description: "Whether you are home or away", usedBy: "Lights and heating routines respond to who is home" },
+    { id: "presence", name: "Location", icon: "map-marker", access: "shared", description: "Whether you are home or away", usedBy: "Lights and heating routines respond to who is home" },
     { id: "health", name: "Health", icon: "heart-pulse", access: "private", description: "Activity and sleep from your connected watch", usedBy: "Not shared with anyone" },
     { id: "calendar", name: "Calendar", icon: "calendar", access: "shared", description: "Your events on the family calendar", usedBy: "Shown on the shared family calendar" },
   ],
@@ -324,7 +324,7 @@ export const household = {
       { id: "wh_delivery", name: "Parcel delivered", target: "Hallway light pulse", target_kind: "automation" },
       { id: "wh_ifttt_away", name: "IFTTT set away", target: "Away mode", target_kind: "scene" },
       { id: "wh_solar", name: "Solar surplus", target: "Charge the car", target_kind: "script" },
-      { id: "wh_calendar", name: "Calendar sync", target: "Greet's agenda", target_kind: "automation" },
+      { id: "wh_calendar", name: "Calendar sync", target: "Elizabeth's agenda", target_kind: "automation" },
       { id: "wh_garden", name: "Rain forecast", target: "Skip irrigation", target_kind: "automation" },
       { id: "wh_presence", name: "Phone presence", target: "Front door unlock", target_kind: "automation" },
     ],
@@ -352,11 +352,13 @@ export const directory = [
   // Shared, discovery
   { id: "devices", label: "Devices", icon: "devices", space: "shared", route: "/devices" },
   { id: "people", label: "People", icon: "account-group", space: "shared", route: "/people" },
+  { id: "map", label: "Map", icon: "map", space: "shared", route: "/map" },
   // Shared, home routines
   { id: "automations", label: "Automations", icon: "robot", space: "shared", route: "/automations" },
   { id: "scenes", label: "Scenes", icon: "palette", space: "shared", route: "/scenes" },
   { id: "scripts", label: "Scripts", icon: "script-text", space: "shared", route: "/scripts" },
   // Shared, analytics
+  { id: "energy", label: "Energy", icon: "lightning-bolt", space: "shared", route: "/energy" },
   { id: "history", label: "History", icon: "history", space: "shared", route: "/history" },
   { id: "activity", label: "Activity", icon: "timeline-text", space: "shared", route: "/activity" },
   // Personal
@@ -380,6 +382,37 @@ export const bookmarkExtras = [
   { id: "front-door", label: "Front door", icon: "door", route: "/home/area/hallway" },
 ];
 
+// ---- World map (person + zone locations, for the /map page) ------------
+// Home sits in Utrecht (matching the Home information map). People are placed
+// at home (clustered with small offsets so pins stay legible) or at the zone
+// they are currently in. Presence comes from `people` above.
+export const mapData = {
+  center: { lat: 52.0825, lon: 5.1437 },
+  zoom: 14,
+  zones: [
+    { id: "zone-home", name: "Home", kind: "zone", icon: "home-variant", color: "#2e9e5b", lat: 52.0825, lon: 5.1437, radius: 55 },
+    { id: "zone-school", name: "School", kind: "zone", icon: "school", color: "#e0a32e", lat: 52.0982, lon: 5.1402, radius: 90 },
+    { id: "zone-work", name: "Daan's office", kind: "zone", icon: "briefcase-variant", color: "#2aa6b3", lat: 52.0836, lon: 5.1486, radius: 90 },
+    { id: "zone-sofie-work", name: "Sofie's work", kind: "zone", icon: "briefcase-variant", color: "#a855f7", lat: 52.3146, lon: 4.9533, radius: 90 },
+    { id: "zone-park", name: "Wilhelminapark", kind: "zone", icon: "tree", color: "#1f6e42", lat: 52.0882, lon: 5.1404, polygon: [
+      [52.0908, 5.1401], [52.0893, 5.1423], [52.0875, 5.1428], [52.0863, 5.1416],
+      [52.0856, 5.1398], [52.0865, 5.1385], [52.0885, 5.1383], [52.0900, 5.1388],
+    ] },
+    { id: "zone-cartesius", name: "Hof van Cartesius", kind: "zone", icon: "sprout", color: "#d6492f", lat: 52.1011, lon: 5.0934, polygon: [
+      [52.1022, 5.0921], [52.1025, 5.0946], [52.1011, 5.0953], [52.0998, 5.0945],
+      [52.0997, 5.0924], [52.1008, 5.0914],
+    ] },
+  ],
+  people: [
+    { id: "daan", name: "Daan", initials: "Da", avatar: "ds/assets/daan.png", presence: "away", at: "Utrecht city center", updated: "2 min ago", zone: null, lat: 52.09083, lon: 5.12142, visibility: "everyone" },
+    { id: "sofie", name: "Sofie", initials: "So", avatar: "ds/assets/sofie.png", presence: "away", at: "Sofie's work", updated: "6 min ago", zone: "zone-sofie-work", lat: 52.31460, lon: 4.95330, visibility: "everyone" },
+    { id: "lars", name: "Lars", initials: "La", presence: "home", at: "Home", updated: "11 min ago", zone: "zone-home", lat: 52.08252, lon: 5.14378, visibility: "everyone" },
+    { id: "greet", name: "Elizabeth", initials: "El", presence: "home", at: "Home", updated: "3 min ago", zone: "zone-home", lat: 52.08243, lon: 5.14357, visibility: "everyone" },
+    { id: "tess", name: "Tess", initials: "Te", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
+    { id: "nour", name: "Nour", initials: "No", presence: "away", at: "Away", updated: "1 hr ago", zone: null, lat: 52.0762, lon: 5.1012, visibility: "private" },
+  ],
+};
+
 // ---- Home extensions store categories ----------------------------------
 export const extensionCategories = [
   { label: "Custom dashboards", icon: "view-dashboard-variant" },
@@ -402,7 +435,7 @@ export function areaList() {
   return Object.values(household.areas);
 }
 
-// Which floors a persona can see (Greet collapses to annex first; Nour scoped).
+// Which floors a persona can see (Elizabeth collapses to annex first; Nour scoped).
 export function visibleFloors(persona) {
   if (persona.scoped) {
     return household.floors.filter((f) => persona.scoped.includes(f.id));
@@ -441,12 +474,117 @@ export function bookmarksFor(persona) {
   return items;
 }
 
+// ---- Energy data --------------------------------------------------------
+// Deterministic pseudo-data for the Energy page. energyFor(period, offset)
+// returns the meters and series for a period ("now" | "day" | "week" |
+// "month" | "year"), offset 0 = current, negative = earlier. Rates are flat
+// NL-ish tariffs; numbers are demo data, stated as raw strings in the UI.
+const RATE = { import: 0.28, feedIn: 0.09, gas: 1.18 }; // EUR per kWh / m3
+
+function _seed(s) { let x = Math.sin(s) * 10000; return x - Math.floor(x); }
+function _series(n, base, spread, seed, floor) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const r = _seed(seed * 97 + i * 13.7);
+    const r2 = _seed(seed * 53 + i * 7.3);
+    let v = base + (r - 0.5) * spread + (r2 - 0.5) * spread * 0.5;
+    if (floor != null) v = Math.max(floor, v);
+    out.push(v);
+  }
+  return out;
+}
+const _mon = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const _dow = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function _round(v, d) { const m = Math.pow(10, d || 0); return Math.round(v * m) / m; }
+function _sum(a) { return a.reduce((x, y) => x + y, 0); }
+
+export function energyFor(period, offset) {
+  offset = offset || 0;
+  const seed = (period.length * 11) + Math.abs(offset) * 3 + 1;
+  let label, eLabels, eVals, gVals, sVals, unitNote;
+
+  if (period === "now") {
+    // Live: last 60 minutes of power draw in kW.
+    eLabels = [];
+    for (let i = 60; i >= 0; i -= 10) eLabels.push(i === 0 ? "now" : "-" + i + "m");
+    eVals = _series(25, 0.78, 1.4, seed, 0.12).map((v) => _round(v, 2));
+    sVals = _series(25, 1.1, 1.6, seed + 4, 0).map((v) => _round(v, 2));
+    gVals = _series(25, 0.0, 0.02, seed + 7, 0).map((v) => _round(v, 3));
+    label = "Live, last hour";
+    unitNote = "kW";
+  } else if (period === "day") {
+    eLabels = ["00", "03", "06", "09", "12", "15", "18", "21"];
+    eVals = _series(24, 0.55, 0.9, seed, 0.05);
+    // morning + evening peaks
+    eVals = eVals.map((v, i) => v + (i >= 6 && i <= 8 ? 0.7 : 0) + (i >= 17 && i <= 21 ? 1.1 : 0));
+    sVals = _series(24, 0, 0, seed + 4, 0).map((_, i) => {
+      const sun = Math.max(0, Math.sin(((i - 6) / 12) * Math.PI));
+      return _round(sun * (2.6 + _seed(seed + i) * 0.8), 2);
+    });
+    gVals = _series(24, 0.02, 0.06, seed + 7, 0).map((v, i) => _round(v + (i >= 6 && i <= 8 ? 0.05 : 0), 3));
+    label = offset === 0 ? "Today" : (offset === -1 ? "Yesterday" : Math.abs(offset) + " days ago");
+    unitNote = "kWh";
+  } else if (period === "week") {
+    eLabels = _dow;
+    eVals = _series(7, 13.4, 6, seed, 4);
+    sVals = _series(7, 11, 7, seed + 4, 0.5);
+    gVals = _series(7, 1.2, 1.1, seed + 7, 0.1);
+    label = offset === 0 ? "This week" : (offset === -1 ? "Last week" : Math.abs(offset) + " weeks ago");
+    unitNote = "kWh";
+  } else if (period === "month") {
+    const days = 30; eLabels = ["1", "5", "10", "15", "20", "25", "30"];
+    eVals = _series(days, 13.4, 7, seed, 3);
+    sVals = _series(days, 10.5, 8, seed + 4, 0);
+    gVals = _series(days, 1.1, 1.0, seed + 7, 0.05);
+    label = offset === 0 ? "This month" : (offset === -1 ? "Last month" : Math.abs(offset) + " months ago");
+    unitNote = "kWh";
+  } else { // year
+    eLabels = _mon;
+    eVals = _mon.map((_, i) => { const winter = Math.cos((i / 12) * 2 * Math.PI) * 80 + 320; return winter + (_seed(seed + i) - 0.5) * 90; });
+    sVals = _mon.map((_, i) => { const summer = Math.max(40, Math.sin(((i - 2) / 12) * Math.PI) * 380 + 90); return summer + (_seed(seed + i + 9) - 0.5) * 60; });
+    gVals = _mon.map((_, i) => { const winter = Math.max(2, Math.cos((i / 12) * 2 * Math.PI) * 110 + 130); return winter + (_seed(seed + i + 3) - 0.5) * 30; });
+    label = offset === 0 ? "This year" : String(2025 + offset);
+    unitNote = "kWh";
+  }
+
+  const isPower = period === "now";
+  const eTotal = isPower ? eVals[eVals.length - 1] : _sum(eVals);
+  const sTotal = isPower ? sVals[sVals.length - 1] : _sum(sVals);
+  const gTotal = isPower ? gVals[gVals.length - 1] : _sum(gVals);
+  // Returned to grid: surplus solar not used directly (~40% of solar).
+  const returned = sTotal * 0.42;
+  const fromGrid = eTotal; // grid import (what the electricity meter card shows)
+  const selfUse = sTotal - returned;
+  const totalConsumed = fromGrid + selfUse;
+  const selfSuff = totalConsumed > 0 ? Math.round((selfUse / totalConsumed) * 100) : 0;
+
+  const eCost = fromGrid * RATE.import - returned * RATE.feedIn;
+  const gCost = gTotal * RATE.gas;
+  const co2 = _round((fromGrid * 0.31) - (returned * 0.31), 0); // kg, grid mix offset by export
+
+  const fmt = (v, d) => _round(v, d == null ? (isPower ? 2 : 1) : d);
+  return {
+    period, offset, label, unitNote, isPower,
+    canForward: offset < 0,
+    electricity: { value: fmt(fromGrid), unit: isPower ? "kW" : "kWh", cost: _round(eCost, 2), labels: eLabels, points: eVals.map((v) => fmt(v)) },
+    solar: { value: fmt(sTotal), unit: isPower ? "kW" : "kWh", labels: eLabels, points: sVals.map((v) => fmt(v)) },
+    returned: { value: fmt(returned), unit: isPower ? "kW" : "kWh", cost: _round(returned * RATE.feedIn, 2) },
+    gas: { value: fmt(gTotal, isPower ? 3 : 1), unit: isPower ? "m\u00b3/h" : "m\u00b3", cost: _round(gCost, 2), labels: eLabels, points: gVals.map((v) => _round(v, isPower ? 3 : 1)) },
+    selfSufficiency: selfSuff,
+    co2: Math.abs(co2),
+    co2Sign: co2 <= 0 ? "saved" : "emitted",
+    netCost: _round(eCost + gCost, 2),
+    peakLabel: isPower ? null : eLabels[Math.floor(eVals.indexOf(Math.max.apply(null, eVals)) / eVals.length * eLabels.length)],
+  };
+}
+
 // Expose the module's exports on a global so the single-file bundle (which can't
 // rewrite the dynamic `import("./household.js")`) can still reach them. When
 // served normally as siblings, the dynamic import works too; this is belt-and-braces.
 if (typeof window !== "undefined") {
   window.__HH_MOD = {
-    household, directory, bookmarkExtras, extensionCategories,
-    getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor,
+    household, directory, bookmarkExtras, extensionCategories, mapData,
+    getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, energyFor,
   };
 }

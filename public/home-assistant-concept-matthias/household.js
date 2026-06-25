@@ -28,6 +28,7 @@ export const household = {
     },
     tess: {
       id: "tess", name: "Tess", role: "resident", initials: "Te",
+      avatar: "ds/assets/tess.png",
       spaces: ["shared", "personal"], calibrated: "teen",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["tess_ceiling", "tess_lamp", "living_room_lamp"],
@@ -36,6 +37,7 @@ export const household = {
     },
     lars: {
       id: "lars", name: "Lars", role: "resident", initials: "La", calibrated: "child",
+      avatar: "ds/assets/lars.png",
       spaces: ["shared", "personal"],
       bookmarks: ["home", "my-stuff"],
       favorites: ["lars_lamp"],
@@ -199,8 +201,8 @@ export const household = {
   people: [
     { id: "daan", name: "Daan", role: "Maintainer", presence: "home", initials: "Da", avatar: "ds/assets/daan.png" },
     { id: "sofie", name: "Sofie", role: "Resident", presence: "home", initials: "So", avatar: "ds/assets/sofie.png" },
-    { id: "tess", name: "Tess", role: "Resident", presence: "away", initials: "Te" },
-    { id: "lars", name: "Lars", role: "Resident", presence: "home", initials: "La" },
+    { id: "tess", name: "Tess", role: "Resident", presence: "away", initials: "Te", avatar: "ds/assets/tess.png" },
+    { id: "lars", name: "Lars", role: "Resident", presence: "home", initials: "La", avatar: "ds/assets/lars.png" },
     { id: "greet", name: "Elizabeth", role: "Resident", presence: "home", initials: "El" },
     { id: "nour", name: "Nour", role: "Non-resident", presence: "away", initials: "No", scoped: true },
   ],
@@ -406,9 +408,9 @@ export const mapData = {
   people: [
     { id: "daan", name: "Daan", initials: "Da", avatar: "ds/assets/daan.png", presence: "away", at: "Utrecht city center", updated: "2 min ago", zone: null, lat: 52.09083, lon: 5.12142, visibility: "everyone" },
     { id: "sofie", name: "Sofie", initials: "So", avatar: "ds/assets/sofie.png", presence: "away", at: "Sofie's work", updated: "6 min ago", zone: "zone-sofie-work", lat: 52.31460, lon: 4.95330, visibility: "everyone" },
-    { id: "lars", name: "Lars", initials: "La", presence: "home", at: "Home", updated: "11 min ago", zone: "zone-home", lat: 52.08252, lon: 5.14378, visibility: "everyone" },
+    { id: "lars", name: "Lars", initials: "La", avatar: "ds/assets/lars.png", presence: "home", at: "Home", updated: "11 min ago", zone: "zone-home", lat: 52.08252, lon: 5.14378, visibility: "everyone" },
     { id: "greet", name: "Elizabeth", initials: "El", presence: "home", at: "Home", updated: "3 min ago", zone: "zone-home", lat: 52.08243, lon: 5.14357, visibility: "everyone" },
-    { id: "tess", name: "Tess", initials: "Te", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
+    { id: "tess", name: "Tess", initials: "Te", avatar: "ds/assets/tess.png", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
     { id: "nour", name: "Nour", initials: "No", presence: "away", at: "Away", updated: "1 hr ago", zone: null, lat: 52.0762, lon: 5.1012, visibility: "private" },
   ],
 };

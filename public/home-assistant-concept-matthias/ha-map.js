@@ -23,7 +23,7 @@
   function personHtml(p) {
     var inner = p.avatar
       ? '<img src="' + esc(p.avatar) + '" alt="" />'
-      : '<span>' + esc(p.initials || (p.name || "?").slice(0, 2)) + '</span>';
+      : '<span>' + esc((p.initials || (p.name || "?").slice(0, 2)).toUpperCase()) + '</span>';
     return '<div class="cc-pin__av"' + (p.ghost ? ' style="opacity:0.45"' : '') + '>' + inner + '</div>';
   }
   function fgFor(hex) {
@@ -43,7 +43,7 @@
     var avs = shown.map(function (p) {
       var inner = p.avatar
         ? '<img src="' + esc(p.avatar) + '" alt="" />'
-        : '<span>' + esc(p.initials || (p.name || "?").slice(0, 2)) + '</span>';
+        : '<span>' + esc((p.initials || (p.name || "?").slice(0, 2)).toUpperCase()) + '</span>';
       return '<button type="button" class="cc-cl__av" data-person="' + esc(p.id) + '" title="' + esc(p.name) + '"' + (p.ghost ? ' style="opacity:0.45"' : '') + '>' + inner + '</button>';
     }).join("");
     var over = overflow > 0 ? '<span class="cc-cl__more">+' + overflow + '</span>' : "";

@@ -34,3 +34,33 @@ picker on the Presence page and every Region select on the Home information page
 Settings and My-account pages hide the large in-page title and always show the
 small title in the topbar. Driven by `forceTopbarTitle(route)`
 (`/settings`, `/extensions`, `/my/profile|data|settings`).
+
+### Overlays: sheets, dialogs, confirmations
+One engine, two presentations: **bottom sheet `< 768px`, centered dialog
+`>= 768px`**. Full rules and rationale in `docs/overlays.md`; the visual spec is
+`Overlays Spec.dc.html`. Out of scope: popovers / overflow menus.
+
+- Scrim is always `--color-scrim`, **no blur**; omit it only when the surface
+  behind must stay live (Map). The Map sheet adds a scrim only at its **biggest
+  detent** (`scrimAtMax`; tap it to collapse). Sheets and dialogs use
+  `--color-surface` (matches the tab bar); inner preview tiles raise to
+  `--color-surface-raised`. `--color-overlay` is reserved for the compact
+  confirm and search dialogs.
+- Bottom sheets always use detents and **open at max** height. Dismissible
+  sheets have a **single biggest detent** (no resize; drag down to close); only
+  the persistent Map sheet has multiple detents and opens at the **smallest**.
+  Drag works from the whole surface, not just the handle.
+- Close affordance: dismissible sheet = X, no handle; persistent sheet (Map) =
+  handle, no X; dialog = X + Escape + scrim tap; **confirmation = no X**, closes
+  through its buttons. The close X is the **leading (top-left)** control; in a
+  sub-step the **back arrow takes the left slot and the X is dropped** (no
+  trailing right-side X).
+- Optional primary action: full-width pinned bottom on the sheet, right-aligned
+  on the dialog. Omit when changes apply live. Destructive = `danger` variant.
+- Z-index uses the `--z-*` scale (`docs/overlays.md`); JS inline styles use the
+  numeric literals (`1000` scrim / `1001` panel), not `var()`.
+
+Reference implementations: `renderSheet` (sheet engine), `fyScrim` (desktop
+dialog frame), `askConfirm` + `renderConfirm` (confirmation, wired on Sign out
+and Remove widget). The FAB "Add" sheet keeps its anchored behavior but adopts
+the shared styling tokens.

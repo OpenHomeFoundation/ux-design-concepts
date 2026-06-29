@@ -383,3 +383,146 @@ search, account, per-page actions) and the avatar stops floating.
 - **Clicking the logo** (rail/topbar HA mark) should go to that **personal
   landing page** (the user's chosen entry), not hard-wired to `/home`. Not yet
   built; documented here as the intended behavior.
+
+## Smart widget stack ("For you") — BUILT
+
+Upgrade the existing `/home` "For you" column (`forYouColumn` / `fyWidgetCard`)
+from a static-order + manual-drag list into a **fixed + suggested** stack modelled
+on the Apple Watch Smart Stack. Builds on what's already there (edit mode,
+drag-reorder FLIP glide, add/remove, config overlay). One file:
+`Home Assistant Concept Car.dc.html`.
+
+### Fixed vs suggested model (current)
+
+Two distinct classes of widget, both ordered purely by the relevance engine
+(no pinning, no manual drag):
+
+- **Fixed widgets** = the user's configured set (`fyConfigured` = per-persona
+  `widgets` defaults + added extras, minus removed). Relevance-sorted by
+  `fyScore` (`fyActive`). This is the only set shown in the **edit view**, where
+  each card carries a single delete button.
+- **Suggested widgets** (`fySuggested`) = catalog widgets the persona may see,
+  **not** in the fixed set, not removed, currently `fyVisible`, and scoring at or
+  above the "relevant now" bar (`fySuggestThreshold` = 65). Ephemeral and
+  context-driven. Shown when the global **Suggested widgets** toggle is on
+  (`fySuggestOn`, **on by default**, persisted per persona in `cc-fy-*`
+  alongside removed/extra).
+
+- **Read view:** fixed + suggested are **fully interleaved by relevance score**
+  into one stack. A high-scoring suggestion (media playing, power spike, an admin
+  update) can rank to the very top. One clean stack, no headers, no pins.
+- **Edit view:** fixed widgets only (relevance-sorted, delete button per card),
+  then the **Suggested** section: the toggle, then the currently-suggested
+  widget cards (each with a "+" to promote into the fixed set).
+- **Promote a suggestion:** every suggested card (read view and the edit-mode
+  Suggested section) has a "+" in the same top-right corner the delete button
+  uses; it calls `fyAdd` to move the widget into the fixed set.
+- **No pinning, no manual ordering.** Removed `fyPinned` / `fyTogglePin` /
+  `fyDragOver` and the pin button + drag handlers. Ordering is entirely
+  `fyScore`-driven, so switching the demo scenario re-sorts the whole stack
+  (fixed and suggested alike).
+- **Per-persona defaults are minimal** (`household.js` `widgets`): most personas
+  carry 1-2 fixed widgets (e.g. Sofie weather+calendar, Lars weather only);
+  **Daan, the experienced maintainer, keeps a fuller fixed set** (weather,
+  calendar, energy, activity, todo). The state-driven widgets (media,
+  alert-power, system-update, discovered) were **removed from defaults** and now
+  surface purely as suggestions when their condition fires.
+- **Gallery is per persona.** The Add-widget gallery (`addWidgetOverlay`) is
+  role-gated via `fyAllowed`, so admin-only widgets (software update, discovered)
+  appear only for admin personas. Suggestion-driven widgets are also addable from
+  the gallery, so a suggestion can be promoted to fixed there as well.
+
+### Decisions (agreed)
+
+- **Context source:** a **demo scenario switcher** exposed as a root-DC prop
+  (Tweaks panel). One enum drives the whole `ctx` so reviewers can watch the
+  stack re-sort.
+- **Ordering:** **pure relevance.** All widgets (fixed and suggested) are sorted
+  by `fyScore`; there is no pinning and no manual drag ordering.
+- **Persistence:** removed / extra / suggested-toggle persist **per persona** in
+  sessionStorage (same pattern as personas/bookmarks).
+- **Scope:** Travel and Getting started are **removed and not shown.** State-
+  driven widgets (media, alert-power, system-update, discovered) are not in the
+  default fixed set; they surface as **suggestions** when relevant. (Scoring
+  functions stay general so a promoted widget still ranks correctly.)
+- **Affordance:** in edit mode, each fixed card has a single **delete** button
+  in the top-right corner; suggested cards have a **"+"** in that same corner.
+- **Breakpoints:** mobile and desktop equally.
+
+### Layer 0 — per-persona widget sets and role gating
+
+The home page is per persona, so its widgets are too. Two mechanisms:
+
+- **Per-persona default stack.** Add a `widgets` field per persona in
+  `household.js` (analogous to the existing `bookmarks` / `favorites`), giving
+  each persona its own default ordered widget set. `fyDefault()` becomes
+  `fyDefaultFor(persona)` and reads it, falling back to a sensible base set when
+  a persona declares none.
+- **Role-gated catalog.** Each catalog entry may declare a `requires` gate
+  (e.g. `requires: "admin"` for the space, or a role/calibration check). A
+  widget the current persona isn't allowed to see is never added, never scored,
+  and never offered in the Add-widget catalog. `fyAllowed(id, persona)` is the
+  single gate consulted by `fyDefaultFor`, `fyActive`, and the add catalog.
+- **Role-specific extras (examples to wire):**
+  - **Admin / maintainer (Daan):** a system/update widget — "Update available"
+    (HA 2025.11.0), gated `requires: "admin"`, visible only when an update
+    exists (ties Idea 1's "only when there is something to show" to a role).
+    Optionally a backups / system-health widget.
+  - **Residents (Sofie, Tess, Greet, etc.):** presence/people + media feeds; no
+    system widgets.
+  - **Scoped / calibrated personas (Nour nanny, Lars child):** only widgets
+    relevant to their access (e.g. no admin or whole-home energy widgets).
+- **State is already per-persona** (persistence decision): `fyPinned`,
+  `fyRemoved`, and order are stored keyed by persona id, so switching persona
+  loads that person's arrangement and switching back restores it.
+
+### Layer 1 — pinning (REMOVED)
+
+Pinning was built and later removed in favour of pure relevance ordering. There
+is no `fyPinned` / `fyTogglePin` / `fyDragOver` and no pin button or drag
+handlers. Edit-mode cards carry only a delete button; suggested cards carry a
+"+". See "Fixed vs suggested model (current)" above.
+
+### Layer 2 — relevance engine (orders the whole stack)
+
+**Principle (from the old For-you "ideas", now the core of this work): widgets
+are rankable and time-aware, and only show when there is something to show.**
+Energy rises in the evening, the activity card rises just after something
+happens, and state-driven widgets (media, high power, the admin update alert)
+appear only when their condition is true and sit at the top when they do.
+
+- `fyContext()` builds `ctx` from the demo-scenario prop: `{ hour, minute,
+  isWeekday, mediaPlaying, powerAnomaly, minutesToNextEvent,
+  minutesSinceActivity }`.
+- `fyVisible(id, ctx)` — hide rules: `media` hidden unless `mediaPlaying`;
+  `alert-power` hidden unless `powerAnomaly`; `getting-started` hidden once
+  dismissed (inert, not in default set). All others always visible.
+- `fyScore(id, ctx)` → higher = nearer top. Targets:
+  - media: 100 when playing (else hidden)
+  - alert-power: 95 when anomalous (else hidden)
+  - calendar: 90 if next event <= 120 min, else 40
+  - activity: 85 if last activity <= 30 min, else 25
+  - weather: ~70 (always near top)
+  - energy: ~45 default, ~75 in the evening (>= 17:00)
+  - todo: ~50 steady mid-stack
+  - travel (if re-added): ~80 weekday 07:00 to 09:30, ~15 evenings/weekends
+  - getting-started (if re-added): always last
+- `fyActive()`: configured fixed set minus removed, filtered by `fyVisible`,
+  sorted by `fyScore` desc (stable tiebreak on default order). No pinned split.
+  The read view then interleaves `fySuggested` into this by score.
+
+### Layer 3 — demo switcher (Tweaks)
+
+- Root-DC enum prop `demoScenario` (default "Quiet afternoon"):
+  Quiet afternoon, Weekday morning, Evening, Media playing, Power spike,
+  Calendar soon, Weekend. Each preset sets the `ctx` flags. Read via
+  `this.props.demoScenario ?? "Quiet afternoon"`.
+
+### Verification
+
+- Switch scenarios in Tweaks → the whole stack re-sorts; media/power/update
+  suggestions appear and disappear and can rank to the top. Toggle Suggested
+  widgets off → only fixed widgets remain. Add a suggestion via its "+" → it
+  joins the fixed set; delete a fixed widget → it leaves. Reload → removed /
+  extra / suggested-toggle restored for that persona; switch persona → that
+  persona's arrangement loads. Mobile + desktop both correct.

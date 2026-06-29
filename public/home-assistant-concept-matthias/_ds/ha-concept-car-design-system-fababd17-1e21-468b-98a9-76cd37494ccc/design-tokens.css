@@ -73,6 +73,15 @@
   /* Scrim — sheet & modal backdrops */
   --color-scrim:          rgba(0, 0, 0, 0.55);
 
+  /* Z-index scale — one ladder for every stacking layer. Overlays read these
+     instead of ad-hoc numbers so sheets/dialogs never collide. */
+  --z-base:    0;
+  --z-nav:     100;   /* app shell, sticky headers, bookmark rail/bar */
+  --z-popover: 500;   /* overflow menus, dropdowns, the FAB quick-add */
+  --z-scrim:   1000;  /* the modal/sheet backdrop */
+  --z-modal:   1001;  /* the sheet panel / dialog card sitting on the scrim */
+  --z-toast:   1100;  /* transient notifications, above everything */
+
   /* ----------------------------------------------------------------------
      TYPOGRAPHY
      Inter Tight for display, Inter for body/UI, JetBrains Mono for data.

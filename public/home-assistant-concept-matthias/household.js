@@ -14,6 +14,7 @@ export const household = {
       spaces: ["shared", "personal", "admin"],
       bookmarks: ["home", "automations", "devices"],
       favorites: ["living_room_ceiling", "kitchen_ceiling", "main_bed_lamp", "hallway_ceiling", "garden_string", "garage_ceiling"],
+      widgets: ["weather", "calendar", "energy", "activity", "todo"],
       presence: "home",
       note: "All access. The maintainer doing the invisible labor.",
     },
@@ -23,6 +24,7 @@ export const household = {
       spaces: ["shared", "personal"],
       bookmarks: ["home", "my-dashboard", "my-data", "activity"],
       favorites: ["living_room_lamp", "main_bed_lamp", "kitchen_ceiling"],
+      widgets: ["weather", "calendar"],
       presence: "home",
       note: "Never configured anything. Has her own dashboard and private data.",
     },
@@ -32,6 +34,7 @@ export const household = {
       spaces: ["shared", "personal"], calibrated: "teen",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["tess_ceiling", "tess_lamp", "living_room_lamp"],
+      widgets: ["weather", "todo"],
       presence: "away",
       note: "Calibrated teen. Access expands over time.",
     },
@@ -41,14 +44,16 @@ export const household = {
       spaces: ["shared", "personal"],
       bookmarks: ["home", "my-stuff"],
       favorites: ["lars_lamp"],
+      widgets: ["weather"],
       presence: "home",
       note: "Calibrated child. Limited controls, still has a Personal space.",
     },
     greet: {
       id: "greet", name: "Elizabeth", role: "resident", initials: "El", calibrated: "accessibility",
-      spaces: ["shared", "personal"], homeArea: "annex",
+      spaces: ["shared", "personal"], homeArea: "greet-room",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["greet_ceiling", "greet_lamp"],
+      widgets: ["weather", "activity"],
       presence: "home",
       note: "Calibrated for accessibility, larger type. Lives in the annex.",
     },
@@ -57,32 +62,55 @@ export const household = {
       spaces: ["shared"], scoped: ["ground", "front_door"], expiresAt: "18:00",
       bookmarks: ["home", "front-door"],
       favorites: ["hallway_ceiling", "kitchen_ceiling"],
+      widgets: ["weather", "activity"],
       presence: "away",
       note: "Nanny. Scoped, time-limited access to the ground floor and front door.",
     },
   },
 
   // ---- Structure -------------------------------------------------------
-  floors: [
-    { id: "ground", name: "Ground floor", icon: "home-floor-g", areas: ["living-room", "kitchen", "hallway", "garage"] },
-    { id: "first", name: "First floor", icon: "home-floor-1", areas: ["main-bedroom", "tess-room", "lars-room", "bathroom"] },
-    { id: "annex", name: "Annex", icon: "home-floor-a", areas: ["greet-room", "greet-ensuite"] },
-    { id: "outside", name: "Outside", icon: "tree", areas: ["garden", "driveway"] },
+  // The home is one building of floors, plus an "Outside" group of outdoor
+  // areas that have no floor (HA models these as floorless areas). A building
+  // exists so the 3D view can anchor the stack and, if a home ever has more
+  // than one structure, render them separately; with a single building it
+  // stays invisible in the UI.
+  property: { id: "property", name: "Abbey Road", icon: "home-city-outline" },
+
+  buildings: [
+    { id: "main-house", name: "House", icon: "home-outline", floors: ["basement", "ground", "first"] },
   ],
+
+  // Floors carry an `order` (drag to reorder in settings), no numeric storey.
+  // One floor is the ground floor (`isGround`): it tells the 3D view where the
+  // house meets the ground plane, so homes whose entrance is not at the bottom
+  // of the stack (e.g. built on a slope) still sit correctly. Floors above
+  // ground render upward, floors below downward.
+  floors: [
+    { id: "basement", name: "Basement", building: "main-house", order: 0, icon: "home-floor-negative-1", areas: ["utility"] },
+    { id: "ground", name: "Ground floor", building: "main-house", order: 1, isGround: true, icon: "home-floor-g", areas: ["living-room", "kitchen", "hallway", "garage", "greet-room", "greet-ensuite"] },
+    { id: "first", name: "First floor", building: "main-house", order: 2, icon: "home-floor-1", areas: ["main-bedroom", "tess-room", "lars-room", "bathroom"] },
+  ],
+
+  // Outdoor areas: no floor, placed directly outside. The garage here is an
+  // integrated garage (a floor area inside the house); the driveway outside is
+  // the outdoor counterpart.
+  outdoorAreas: ["garden", "driveway", "patio"],
 
   areas: {
     "living-room":  { id: "living-room", name: "Living room", floor: "ground", icon: "sofa", temp: 21.4, humidity: 52, lights: 3, lightsOn: 2 },
     "kitchen":      { id: "kitchen", name: "Kitchen", floor: "ground", icon: "fridge", temp: 22.1, humidity: 48, lights: 4, lightsOn: 0 },
     "hallway":      { id: "hallway", name: "Hallway", floor: "ground", icon: "coat-rack", temp: 20.8, humidity: 50, lights: 2, lightsOn: 1 },
     "garage":       { id: "garage", name: "Garage", floor: "ground", icon: "garage", temp: 16.2, humidity: 61, lights: 2, lightsOn: 1 },
+    "utility":      { id: "utility", name: "Utility room", floor: "basement", icon: "water-pump", temp: 17.4, humidity: 56, lights: 1, lightsOn: 0 },
     "main-bedroom": { id: "main-bedroom", name: "Main bedroom", floor: "first", icon: "bed-king", temp: 19.6, humidity: 49, lights: 3, lightsOn: 1 },
     "tess-room":    { id: "tess-room", name: "Tess's room", floor: "first", icon: "bed", temp: 20.2, humidity: 47, lights: 2, lightsOn: 0 },
     "lars-room":    { id: "lars-room", name: "Lars's room", floor: "first", icon: "teddy-bear", temp: 20.5, humidity: 48, lights: 1, lightsOn: 1 },
     "bathroom":     { id: "bathroom", name: "Bathroom", floor: "first", icon: "shower", temp: 21.0, humidity: 64, lights: 2, lightsOn: 0 },
-    "greet-room":   { id: "greet-room", name: "Elizabeth's room", floor: "annex", icon: "bed", temp: 22.6, humidity: 45, lights: 2, lightsOn: 1 },
-    "greet-ensuite":{ id: "greet-ensuite", name: "Elizabeth's ensuite", floor: "annex", icon: "toilet", temp: 22.0, humidity: 58, lights: 1, lightsOn: 0 },
-    "garden":       { id: "garden", name: "Garden", floor: "outside", icon: "tree", lights: 1, lightsOn: 0 },
-    "driveway":     { id: "driveway", name: "Driveway", floor: "outside", icon: "car", lights: 1, lightsOn: 0 },
+    "greet-room":   { id: "greet-room", name: "Elizabeth's room", floor: "ground", icon: "bed", temp: 22.6, humidity: 45, lights: 2, lightsOn: 1 },
+    "greet-ensuite":{ id: "greet-ensuite", name: "Elizabeth's ensuite", floor: "ground", icon: "toilet", temp: 22.0, humidity: 58, lights: 1, lightsOn: 0 },
+    "garden":       { id: "garden", name: "Garden", outdoor: true, icon: "tree", lights: 1, lightsOn: 0 },
+    "driveway":     { id: "driveway", name: "Driveway", outdoor: true, icon: "car", lights: 1, lightsOn: 0 },
+    "patio":        { id: "patio", name: "Patio", outdoor: true, icon: "grill-outline", lights: 1, lightsOn: 0 },
   },
 
   // ---- Entities (flat; filtered per area/type by the views) ------------
@@ -136,11 +164,17 @@ export const household = {
     { id: "greet_thermostat", name: "Thermostat", type: "climate", area: "greet-room", icon: "thermostat", mode: "Heat", current: 22.6, target: 22.5 },
     { id: "greet_ensuite_ceiling", name: "Ceiling", type: "light", area: "greet-ensuite", icon: "ceiling-light", on: false },
     { id: "annex_lock", name: "Annex door", type: "lock", area: "greet-room", icon: "lock", state: "Locked", locked: true, battery: 72 },
+    // Utility room (basement)
+    { id: "utility_light", name: "Ceiling", type: "light", area: "utility", icon: "ceiling-light", on: false },
+    { id: "utility_leak", name: "Water leak", type: "sensor", area: "utility", icon: "water-alert-outline", state: "Dry", devType: "Leak", battery: 88 },
+    { id: "utility_boiler", name: "Boiler", type: "climate", area: "utility", icon: "water-boiler", mode: "Automatic", current: 17.4, target: 17.0 },
     // Outside
     { id: "garden_string", name: "String lights", type: "light", area: "garden", icon: "string-lights", on: false },
     { id: "garden_cam", name: "Garden", type: "camera", area: "garden", icon: "cctv", live: true },
     { id: "driveway_flood", name: "Floodlight", type: "light", area: "driveway", icon: "track-light", on: false },
     { id: "driveway_cam", name: "Driveway", type: "camera", area: "driveway", icon: "cctv", live: true },
+    { id: "patio_lights", name: "Patio lights", type: "light", area: "patio", icon: "outdoor-lamp", on: false },
+    { id: "patio_temp", name: "Outdoor temperature", type: "sensor", area: "patio", icon: "thermometer", state: "14.2\u00b0C", devType: "Temperature", battery: 76 },
   ],
 
   // ---- Home routines ---------------------------------------------------
@@ -215,16 +249,17 @@ export const household = {
     { id: "todo", name: "Family to-do", icon: "format-list-checks", state: "4 open tasks" },
   ],
 
-  // ---- Home overview "For you" widgets ---------------------------------
-  forYou: [
-    { id: "update", type: "alert", title: "Home Assistant 2025.11.0", label: "Update available", dismissable: true, adminOnly: true },
-    { id: "lights-on", type: "summary", label: "Light", title: "3 areas have lights on", action: "Turn off" },
-    { id: "climate", type: "data-point", label: "Climate", title: "Heating to 22.5", value: "extra" },
-    { id: "security", type: "summary", label: "Security", title: "1 door unlocked", action: "Lock" },
-    { id: "media", type: "media", label: "Media playing", title: "Abbey Road, The Beatles" },
-    { id: "energy", type: "data-point", label: "Energy", title: "High consumption today", data: "4.3 kWh" },
-    { id: "weather", type: "data-point", label: "Weather of today", title: "Rain", data: "15°" },
-    { id: "people", type: "people", label: "People", title: "Daan just arrived home", people: ["Daan", "Sofie"] },
+  // ---- Home overview: software update (drives the admin "system-update"
+  // widget; the widget only shows when available is true) -----------------
+  update: { version: "2025.11.0", available: true, current: "2025.10.2" },
+
+  // ---- Home overview: devices found on the network, waiting for a
+  // maintainer to set them up (drives the admin "discovered" widget; only
+  // shows while the list is non-empty) ------------------------------------
+  discovered: [
+    { id: "disc-tv", name: "Samsung Frame TV", via: "Network discovery", icon: "television" },
+    { id: "disc-hue", name: "Hue motion sensor", via: "Zigbee", icon: "motion-sensor" },
+    { id: "disc-plug", name: "TApo smart plug", via: "Network discovery", icon: "power-socket-eu" },
   ],
 
   // ---- Personal data (Sofie's data autonomy view) ----------------------
@@ -239,20 +274,15 @@ export const household = {
   // IA sub-destinations as links on the main page (Remote access children,
   // protocol settings, account/guest, etc.), rather than as separate nav rows.
   settingsNav: [
-    { title: "Connectivity and accounts", items: [
+    { items: [
       { id: "ha-cloud", label: "Home Assistant Cloud", icon: "cloud", links: [
         { label: "Remote UI access", icon: "remote-desktop" },
         { label: "Cloud backup", icon: "cloud-upload" },
         { label: "Cloud webhooks", icon: "webhook" },
         { label: "Account and subscription", icon: "card-account-details" },
       ]},
-      { id: "remote-access", label: "Remote access", icon: "web", links: [
-        { label: "Voice assistant STT and TTS", icon: "text-to-speech" },
-        { label: "Google Assistant", icon: "google-assistant" },
-        { label: "Amazon Alexa", icon: "microphone" },
-        { label: "AI agent", icon: "robot-happy" },
-        { label: "Backup location", icon: "cloud-upload" },
-      ]},
+    ]},
+    { items: [
       { id: "integrations", label: "Integrations", icon: "power-plug" },
       { id: "apps", label: "Apps", icon: "puzzle" },
       { id: "protocols", label: "Protocols", icon: "lan", links: [
@@ -264,39 +294,56 @@ export const household = {
         { label: "KNX", icon: "lan-connect" },
         { label: "Insteon", icon: "lan-connect" },
       ]},
-      { id: "credentials", label: "Credential management", icon: "key", links: [
+      { id: "ai-tasks", label: "AI tasks", icon: "robot-happy" },
+    ]},
+    { items: [
+      { id: "labs", label: "Labs", icon: "flask" },
+    ]},
+    { items: [
+      { id: "general", label: "Home information", icon: "home" },
+      { id: "floors-areas", label: "Floors and areas", icon: "layers-outline" },
+      { id: "appearance", label: "Appearance", icon: "palette" },
+      { id: "labels", label: "Labels", icon: "label" },
+    ]},
+    { items: [
+      { id: "credentials", label: "Users", icon: "key", links: [
         { label: "Account", icon: "account" },
         { label: "Guest", icon: "account-clock" },
       ]},
-      { id: "ai-tasks", label: "AI tasks", icon: "robot-happy" },
+      { id: "remote-access", label: "Remote access", icon: "web", links: [
+        { label: "Voice assistant STT and TTS", icon: "text-to-speech" },
+        { label: "Google Assistant", icon: "google-assistant" },
+        { label: "Amazon Alexa", icon: "microphone" },
+        { label: "AI agent", icon: "robot-happy" },
+        { label: "Backup location", icon: "cloud-upload" },
+      ]},
     ]},
-    { title: "Home information", items: [
-      { id: "floors-areas", label: "Floors and areas", icon: "floor-plan" },
-      { id: "general", label: "Home information", icon: "home" },
-      { id: "appearance", label: "Appearance", icon: "palette" },
-      { id: "labels", label: "Labels", icon: "label" },
-      { id: "analytics", label: "Analytics", icon: "chart-box" },
-      { id: "labs", label: "Labs", icon: "flask" },
-    ]},
-    { title: "System", items: [
+    { items: [
       { id: "updates", label: "Updates", icon: "update" },
       { id: "repairs", label: "Repairs", icon: "wrench" },
-      { id: "statistics", label: "Statistics", icon: "chart-line" },
-      { id: "yaml", label: "YAML", icon: "code-braces" },
-      { id: "backups", label: "Backups", icon: "backup-restore" },
-      { id: "network", label: "Network", icon: "wifi" },
-      { id: "storage", label: "Storage", icon: "harddisk" },
+    ]},
+    { items: [
       { id: "hardware", label: "Hardware", icon: "chip" },
+      { id: "storage", label: "Storage", icon: "harddisk" },
+      { id: "backups", label: "Backups", icon: "backup-restore" },
+      { id: "yaml", label: "YAML", icon: "code-braces" },
+      { id: "network", label: "Network", icon: "wifi" },
+    ]},
+    { items: [
+      { id: "analytics", label: "Analytics", icon: "chart-box" },
+      { id: "statistics", label: "Statistics", icon: "chart-line" },
     ]},
   ],
 
   // Personal settings nav (from the IA personal space)
   personalSettingsNav: [
+    { title: "Security", items: [
+      { id: "p-security", label: "Security", icon: "shield-account" },
+    ]},
     { title: "Personal", items: [
       { id: "p-appearance", label: "Appearance", icon: "palette" },
       { id: "p-accessibility", label: "Accessibility", icon: "human" },
       { id: "p-notifications", label: "Notifications", icon: "bell" },
-      { id: "p-security", label: "Security", icon: "shield-account" },
     ]},
   ],
 
@@ -350,7 +397,7 @@ export const directory = [
   // Shared, home perspective. Note: Lights / Climate / Security / Media are not
   // listed here. They are perspectives within Home, reached through the home
   // tab bar, not standalone destinations in the dock or the More directory.
-  { id: "home", label: "Home", icon: "home-variant", space: "shared", route: "/home" },
+  { id: "home", label: "Home", icon: "home", space: "shared", route: "/home" },
   // Shared, discovery
   { id: "devices", label: "Devices", icon: "devices", space: "shared", route: "/devices" },
   { id: "people", label: "People", icon: "account-group", space: "shared", route: "/people" },
@@ -392,24 +439,28 @@ export const mapData = {
   center: { lat: 52.0825, lon: 5.1437 },
   zoom: 14,
   zones: [
-    { id: "zone-home", name: "Home", kind: "zone", icon: "home-variant", color: "#2e9e5b", lat: 52.0825, lon: 5.1437, radius: 55 },
+    { id: "zone-home", name: "Abbey Road", kind: "zone", icon: "home-variant", color: "#2e9e5b", lat: 52.08445, lon: 5.14354, radius: 55 },
     { id: "zone-school", name: "School", kind: "zone", icon: "school", color: "#e0a32e", lat: 52.0982, lon: 5.1402, radius: 90 },
     { id: "zone-work", name: "Daan's office", kind: "zone", icon: "briefcase-variant", color: "#2aa6b3", lat: 52.0836, lon: 5.1486, radius: 90 },
     { id: "zone-sofie-work", name: "Sofie's work", kind: "zone", icon: "briefcase-variant", color: "#a855f7", lat: 52.3146, lon: 4.9533, radius: 90 },
-    { id: "zone-park", name: "Wilhelminapark", kind: "zone", icon: "tree", color: "#1f6e42", lat: 52.0882, lon: 5.1404, polygon: [
-      [52.0908, 5.1401], [52.0893, 5.1423], [52.0875, 5.1428], [52.0863, 5.1416],
-      [52.0856, 5.1398], [52.0865, 5.1385], [52.0885, 5.1383], [52.0900, 5.1388],
+    { id: "zone-park", name: "Wilhelminapark", kind: "zone", icon: "tree", color: "#1f6e42", lat: 52.08806, lon: 5.14028, polygon: [
+      [52.09084, 5.14119], [52.09053, 5.14141], [52.08934, 5.14205], [52.08844, 5.14234],
+      [52.08758, 5.14238], [52.08690, 5.14220], [52.08635, 5.14175], [52.08583, 5.14085],
+      [52.08552, 5.13975], [52.08575, 5.13943], [52.08595, 5.13904], [52.08630, 5.13884],
+      [52.08664, 5.13901], [52.08719, 5.13898], [52.08788, 5.13866], [52.08827, 5.13869],
+      [52.08848, 5.13890], [52.08871, 5.13959], [52.08924, 5.14008], [52.08994, 5.14025],
+      [52.09062, 5.14077],
     ] },
-    { id: "zone-cartesius", name: "Hof van Cartesius", kind: "zone", icon: "sprout", color: "#d6492f", lat: 52.1011, lon: 5.0934, polygon: [
-      [52.1022, 5.0921], [52.1025, 5.0946], [52.1011, 5.0953], [52.0998, 5.0945],
-      [52.0997, 5.0924], [52.1008, 5.0914],
+    { id: "zone-cartesius", name: "Hof van Cartesius", kind: "zone", icon: "sprout", color: "#d6492f", lat: 52.10102, lon: 5.09338, polygon: [
+      [52.10526, 5.08585], [52.10556, 5.08835], [52.10416, 5.08905], [52.10286, 5.08825],
+      [52.10276, 5.08615], [52.10386, 5.08515],
     ] },
   ],
   people: [
     { id: "daan", name: "Daan", initials: "Da", avatar: "ds/assets/daan.png", presence: "away", at: "Utrecht city center", updated: "2 min ago", zone: null, lat: 52.09083, lon: 5.12142, visibility: "everyone" },
     { id: "sofie", name: "Sofie", initials: "So", avatar: "ds/assets/sofie.png", presence: "away", at: "Sofie's work", updated: "6 min ago", zone: "zone-sofie-work", lat: 52.31460, lon: 4.95330, visibility: "everyone" },
-    { id: "lars", name: "Lars", initials: "La", avatar: "ds/assets/lars.png", presence: "home", at: "Home", updated: "11 min ago", zone: "zone-home", lat: 52.08252, lon: 5.14378, visibility: "everyone" },
-    { id: "greet", name: "Elizabeth", initials: "El", presence: "home", at: "Home", updated: "3 min ago", zone: "zone-home", lat: 52.08243, lon: 5.14357, visibility: "everyone" },
+    { id: "lars", name: "Lars", initials: "La", avatar: "ds/assets/lars.png", presence: "home", at: "Abbey Road", updated: "11 min ago", zone: "zone-home", lat: 52.08456, lon: 5.14374, visibility: "everyone" },
+    { id: "greet", name: "Elizabeth", initials: "El", presence: "home", at: "Abbey Road", updated: "3 min ago", zone: "zone-home", lat: 52.08435, lon: 5.14336, visibility: "everyone" },
     { id: "tess", name: "Tess", initials: "Te", avatar: "ds/assets/tess.png", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
     { id: "nour", name: "Nour", initials: "No", presence: "away", at: "Away", updated: "1 hr ago", zone: null, lat: 52.0762, lon: 5.1012, visibility: "private" },
   ],
@@ -437,6 +488,70 @@ export function areaList() {
   return Object.values(household.areas);
 }
 
+// ---- Structure: property / buildings / floors / outdoor -----------------
+// Backward-compatibility migration. Older data had bare floors (one of them a
+// pseudo "outside" floor) and no buildings. normalizeStructure() upgrades any
+// such object in place: it folds every real floor into a default building,
+// derives `order` from array position, marks the first floor of each building
+// as the ground floor when none is set, and lifts a legacy "outside" floor's
+// areas into `outdoorAreas` (tagging those areas `outdoor: true`). Running it on
+// already-migrated data is a no-op.
+export function normalizeStructure(hh) {
+  if (!hh || !Array.isArray(hh.floors)) return hh;
+  if (!hh.property) hh.property = { id: "property", name: hh.name || "Home", icon: "home-city-outline" };
+  if (!Array.isArray(hh.outdoorAreas)) hh.outdoorAreas = [];
+
+  // Lift a legacy "outside" floor (or any floor flagged outdoor) into outdoorAreas.
+  hh.floors = hh.floors.filter((f) => {
+    if (f.id === "outside" || f.outdoor) {
+      (f.areas || []).forEach((aid) => {
+        if (hh.outdoorAreas.indexOf(aid) < 0) hh.outdoorAreas.push(aid);
+        const a = hh.areas[aid];
+        if (a) { a.outdoor = true; delete a.floor; }
+      });
+      return false;
+    }
+    return true;
+  });
+  hh.outdoorAreas.forEach((aid) => { const a = hh.areas[aid]; if (a) { a.outdoor = true; delete a.floor; } });
+
+  // Ensure a building set. If none, drop every remaining floor into one default.
+  if (!Array.isArray(hh.buildings) || !hh.buildings.length) {
+    hh.buildings = [{ id: "main-building", name: "Main building", icon: "home-outline", floors: hh.floors.map((f) => f.id) }];
+  }
+
+  // Per-building: attach building id + order; guarantee one ground floor.
+  hh.buildings.forEach((b) => {
+    const fs = b.floors.map((id) => hh.floors.find((f) => f.id === id)).filter(Boolean);
+    fs.forEach((f, i) => { f.building = b.id; if (typeof f.order !== "number") f.order = i; });
+    if (!fs.some((f) => f.isGround) && fs.length) {
+      // Lowest-ordered floor becomes ground by default.
+      fs.slice().sort((a, c) => a.order - c.order)[0].isGround = true;
+    }
+  });
+  return hh;
+}
+normalizeStructure(household);
+
+// Floors of a building, in stacking order (lowest first).
+export function floorsOfBuilding(buildingId) {
+  return household.floors.filter((f) => f.building === buildingId).sort((a, b) => a.order - b.order);
+}
+// The ground floor of a building (where it meets the ground plane), or null.
+export function groundFloorOf(buildingId) {
+  return household.floors.find((f) => f.building === buildingId && f.isGround) || null;
+}
+// Outdoor area objects on the property.
+export function outdoorAreaList() {
+  return (household.outdoorAreas || []).map((id) => household.areas[id]).filter(Boolean);
+}
+
+// Buildings a persona can see (those with at least one visible floor).
+export function visibleBuildings(persona) {
+  const fids = new Set(visibleFloors(persona).map((f) => f.id));
+  return household.buildings.filter((b) => b.floors.some((id) => fids.has(id)));
+}
+
 // Which floors a persona can see (Elizabeth collapses to annex first; Nour scoped).
 export function visibleFloors(persona) {
   if (persona.scoped) {
@@ -450,6 +565,8 @@ export function canAccessArea(persona, areaId) {
   if (!persona.scoped) return true;
   const area = household.areas[areaId];
   if (!area) return persona.scoped.includes(areaId);
+  // Outdoor areas have no floor; reach them only by an explicit area scope.
+  if (area.outdoor) return persona.scoped.includes(areaId);
   return persona.scoped.includes(area.floor) || persona.scoped.includes(areaId);
 }
 
@@ -588,5 +705,6 @@ if (typeof window !== "undefined") {
   window.__HH_MOD = {
     household, directory, bookmarkExtras, extensionCategories, mapData,
     getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, energyFor,
+    normalizeStructure, floorsOfBuilding, groundFloorOf, outdoorAreaList, visibleBuildings,
   };
 }

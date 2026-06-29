@@ -116,6 +116,11 @@
         }
       } catch (e) { /* skip any layer that rejects an override */ }
     });
+    // Force a repaint so the recolored background (and any already-parsed layers)
+    // paint immediately. Without this, MapLibre keeps showing its stale first
+    // frame, the light "bright" base, until tiles stream in, which reads as a
+    // cream flash before the dark theme appears.
+    try { map.triggerRepaint(); } catch (e) {}
   };
 
   // Hide POI clutter. This is a presence map, not a places map: the little

@@ -2,6 +2,8 @@
 
 Design concepts for the Open Home Foundation. Only the `public/` folder is deployed (as a static site on Cloudflare Pages), each concept lives in its own folder inside it. Nothing here is production software.
 
+Public link is: [https://ux-design-concepts.openhomefoundation.org](https://ux-design-concepts.openhomefoundation.org)
+
 ## How to operate
 
 **Add a new design:** create a folder inside `public/` (e.g. `public/concept1/`) and drop the whole design export in it. It must contain an `index.html`. The page `<title>` becomes the concept name on the landing page, and an optional `<meta name="description">` becomes its blurb.

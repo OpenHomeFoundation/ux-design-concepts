@@ -227,21 +227,23 @@ const LAYOUTS = {
   1: [["deviceInfo", "controls", "sensors", "events", "diagnostic", "related", "activity"]],
 };
 
-function Masonry({ cards }) {
+function Masonry({ cards, forceCols }) {
   const ref = React.useRef(null);
-  const [cols, setCols] = React.useState(3);
+  const [autoCols, setAutoCols] = React.useState(3);
   React.useEffect(() => {
+    if (forceCols) return;
     const el = ref.current;
     if (!el) return;
     const measure = () => {
       const w = el.clientWidth;
-      setCols(w >= 900 ? 3 : w >= 600 ? 2 : 1);
+      setAutoCols(w >= 900 ? 3 : w >= 600 ? 2 : 1);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [forceCols]);
+  const cols = forceCols || autoCols;
   const layout = LAYOUTS[cols];
   return (
     <div className="masonry" ref={ref} data-cols={cols}>
@@ -281,6 +283,9 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // Device widths used by the "Viewport" tweak to preview the responsive shell.
 const VP_SIZES = { desktop: 1280, tablet: 820, mobile: 390 };
 const VP_LABELS = { desktop: "Desktop", tablet: "Tablet", mobile: "Mobile" };
+// Column counts the masonry should use at each framed width (media queries /
+// ResizeObserver key off the real browser window, so we drive these explicitly).
+const VP_COLS = { desktop: 3, tablet: 2, mobile: 1 };
 
 function App() {
   const [t, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
@@ -326,7 +331,7 @@ function App() {
 
             <ProxyBanner statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)}></ProxyBanner>
 
-            <Masonry cards={cards}></Masonry>
+            <Masonry cards={cards} forceCols={constrained ? VP_COLS[vp] : undefined}></Masonry>
           </div>
         </div>
       </div>

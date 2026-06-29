@@ -238,8 +238,9 @@
   }
 
   /* class-driven equivalents of the viewport media queries */
+  .ha-app[data-vp="desktop"] .sidebar { display: flex !important; }
   .ha-app[data-vp="tablet"] .sidebar,
-  .ha-app[data-vp="mobile"] .sidebar { display: none; }
+  .ha-app[data-vp="mobile"] .sidebar { display: none !important; }
   .ha-app[data-vp="tablet"] .proxy-banner,
   .ha-app[data-vp="mobile"] .proxy-banner { grid-template-columns: 1fr; gap: 22px; }
   .ha-app[data-vp="mobile"] .proxy-banner__pips { grid-template-columns: 1fr; }

@@ -1,10 +1,10 @@
-# Home Assistant Concept Car, build plan
+# Home Assistant for the whole household, build plan
 
 The shared reference for every session. Keep it updated as the build progresses.
 
 ## What this is
 
-A navigable, interactive prototype of the Home Assistant "Concept Car": one
+A navigable, interactive prototype of Home Assistant for the whole household: one
 shared home seen by many people, organised around who lives in it rather than
 how the tech works. It pressure-tests the information architecture, the access
 model (Maintainer vs Resident, four content spaces), and the dock + More
@@ -21,7 +21,7 @@ redefining tokens or components.
   environment builds **Design Components**, and the design system ships as
   **React components** on `window.HAConceptCarDesignSystem_fababd` (light DOM,
   same tokens). So we build **one Design Component**,
-  `Home Assistant Concept Car.dc.html`, that composes those React components,
+  `Home Assistant for the whole household.dc.html`, that composes those React components,
   with hash routing and persona state inside it. The IA, routes, personas,
   data model, and access rules from the prompt are preserved exactly; only the
   file layout differs.
@@ -66,7 +66,7 @@ no marketing, no exclamation, no emoji. "You" not "I". Mono font for data
 | greet | Greet | resident | shared, personal | accessibility, annex |
 | nour | Nour | non-resident (nanny) | shared (scoped) | ground floor + front door, expires 18:00 |
 
-Persona switch is a fixed corner control, clearly separate from concept UI.
+Persona switch is a fixed corner control, clearly separate from prototype UI.
 It changes the bookmark set, hides Admin items for residents, scopes Nour,
 simplifies Lars. Stored in sessionStorage, restored on reload.
 
@@ -182,7 +182,7 @@ A new top row sits above the shell columns. The shell becomes a vertical stack:
   right; large-title block and collapse behave identically. This replaces the
   current inline `PageHeader` on mobile.
 
-### Code touch points (one file: Home Assistant Concept Car.dc.html)
+### Code touch points (one file: Home Assistant for the whole household.dc.html)
 
 - New `renderTopbar(page, persona, bp)` (mark, back, collapsed title, action
   icons).
@@ -390,7 +390,7 @@ Upgrade the existing `/home` "For you" column (`forYouColumn` / `fyWidgetCard`)
 from a static-order + manual-drag list into a **fixed + suggested** stack modelled
 on the Apple Watch Smart Stack. Builds on what's already there (edit mode,
 drag-reorder FLIP glide, add/remove, config overlay). One file:
-`Home Assistant Concept Car.dc.html`.
+`Home Assistant for the whole household.dc.html`.
 
 ### Fixed vs suggested model (current)
 

@@ -1,4 +1,4 @@
-// household.js — Janssen household demo data for the HA Concept Car prototype.
+// household.js — Janssen household demo data for the Home Assistant whole-household prototype.
 // Demo scaffolding only: this is prototype infrastructure, not a spec for how
 // the real product stores data. All pages read from this object.
 
@@ -285,7 +285,7 @@ export const household = {
     { items: [
       { id: "integrations", label: "Integrations", icon: "power-plug" },
       { id: "apps", label: "Apps", icon: "puzzle" },
-      { id: "protocols", label: "Protocols", icon: "lan", links: [
+      { id: "protocols", label: "Connectivity", icon: "lan", links: [
         { label: "Bluetooth", icon: "bluetooth" },
         { label: "Matter", icon: "lan" },
         { label: "Thread", icon: "vector-triangle" },

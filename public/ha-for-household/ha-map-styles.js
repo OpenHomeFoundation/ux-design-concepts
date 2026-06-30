@@ -1,4 +1,4 @@
-/* HA Concept Car — MapLibre vector map theming.
+/* Home Assistant for the whole household — MapLibre vector map theming.
 
    Rather than hand-authoring an OpenMapTiles layer stack (a single mis-typed
    layer can abort tile parsing at high zoom and blank the map), we build on

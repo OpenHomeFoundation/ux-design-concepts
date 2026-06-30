@@ -1,6 +1,6 @@
 # 3D Home — improvement plan
 
-The `home3dCard` scene (in `Home Assistant Concept Car.dc.html`) currently reads
+The `home3dCard` scene (in `Home Assistant for the whole household.dc.html`) currently reads
 as a house hanging under a floating plane. This documents what's wrong and the
 plan to make it feel like a premium, orbitable model of the home in its world
 (references: Tesla in-car 3D car model + HA frontend PR #52769 "solar scene").

@@ -1,6 +1,6 @@
 # Overlays: sheets and dialogs
 
-Rules for every modal surface in the Concept Car. **In scope:** bottom sheets,
+Rules for every modal surface in this prototype. **In scope:** bottom sheets,
 dialogs, confirmations. **Out of scope:** popovers and overflow/contextual menus
 (a tap target spawning a small anchored list) — those are not modal and follow
 their own pattern.
@@ -136,7 +136,7 @@ never collide:
 
 ## Implementation map (current build)
 
-All paths live in `Home Assistant Concept Car.dc.html`.
+All paths live in `Home Assistant for the whole household.dc.html`.
 
 - **`renderSheet(spec, bp)`** — the bottom-sheet engine. Detents, drag, handle/X,
   `bg`, `footer`, two-level filter drill-down. Scrim `--color-scrim` @ `z 1000`,

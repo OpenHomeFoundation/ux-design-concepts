@@ -1,4 +1,4 @@
-# Home Assistant Concept Car, project notes
+# Home Assistant for the whole household, project notes
 
 ## Copy rules
 - **Never use the "&" sign in UI copy.** Always write "and" ("Home and away",

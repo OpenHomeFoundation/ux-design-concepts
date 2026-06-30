@@ -8,8 +8,8 @@
 <body>
 <x-dc>
 <helmet>
-  <title>Home Assistant Concept Matthias</title>
-  <meta name="description" content="A navigable prototype of the Home Assistant Concept Car: one shared home seen by many people, organised around who lives in it rather than how the tech works. It pressure-tests the access model (Maintainer and Resident, four content spaces) and the navigation across six demo personas.">
+  <title>Home Assistant for the whole household</title>
+  <meta name="description" content="A navigable prototype of Home Assistant for the whole household: one shared home seen by many people, organised around who lives in it rather than how the tech works. It pressure-tests the two roles (Maintainer and Resident) and four spaces (Shared, Personal, Admin, Unresolved), and the navigation across six demo personas.">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="apple-touch-icon" href="assets/favicon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -177,7 +177,6 @@
     /* Borderless inputs/selects in the toolbar, matching the toolbar buttons */
     .cc-toolbar .ha-input, .cc-toolbar .ha-select { border-color: transparent !important; }
     .cc-msearch .ha-input { border-color: transparent !important; }
-    .cc-bp-mobile .ha-input--search { border-radius: var(--radius-full) !important; }
     .cc-msearch .ha-input:hover { background: var(--color-surface-raised) !important; color: var(--color-text-primary) !important; }
     .cc-toolbar .ha-input { color: var(--color-text-secondary) !important; }
     .cc-toolbar .ha-input:hover { background: var(--color-surface-raised) !important; color: var(--color-text-primary) !important; }
@@ -228,15 +227,23 @@
     .cc-list .ha-lrow__meta, .cc-list .ha-lhead__meta { width: 150px; text-align: left; flex: none; justify-content: flex-start; }
     .cc-list .ha-lrow__meta { overflow: hidden; text-overflow: ellipsis; }
     /* Search clear (x): thin custom glyph, always visible while there is a value */
-    .ha-input--search::-webkit-search-cancel-button {
-      -webkit-appearance: none; appearance: none;
-      width: 14px; height: 14px; margin-left: 6px; cursor: pointer; opacity: 1;
-      background-color: var(--color-text-tertiary);
-      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
-              mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+    /* The native search clear button (::-webkit-search-cancel-button) is a
+       browser-controlled widget: it anchors to the text baseline, not the
+       field's vertical center, and clips custom masks, so it drifts to the
+       bottom-right on tall fields. Hide it everywhere and use our own,
+       reliably-centered clear button (.cc-search__clear) instead. */
+    .ha-input--search::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+    .cc-search { position: relative; width: 100%; }
+    .ha-input.cc-input-clear { padding-right: 38px !important; }
+    .cc-search__clear {
+      position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; padding: 0; border: none; cursor: pointer;
+      background: transparent; color: var(--color-text-tertiary);
+      border-radius: var(--radius-full);
+      transition: background-color 150ms ease-out, color 150ms ease-out;
     }
-    .ha-input--search:hover::-webkit-search-cancel-button { background-color: var(--color-text-secondary); }
-    .ha-input--search:placeholder-shown::-webkit-search-cancel-button { display: none; }
+    .cc-search__clear:hover { color: var(--color-text-primary); }
     /* Self-contained multi-column routine table (does not depend on DS ListRow CSS injection) */
     .cc-thead { display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px; margin-bottom: 8px; border-left: 3px solid transparent; }
     .cc-thead__before { flex: none; width: 20px; }
@@ -985,6 +992,29 @@ class Component extends DCLogic {
   isCollectionRoute(route) { return ["/devices", "/people", "/automations", "/scenes", "/scripts", "/history", "/activity", "/logs", "/my/data", "/my/dashboard"].indexOf(route || "") !== -1; }
   forceTopbarTitle(route) { route = route || this.state.route || ""; if (/^\/extensions(\/|$)/.test(route)) return true; if (this.effBp() !== "mobile" && (/^\/my(\/|$)/.test(route) || /^\/settings(\/|$)/.test(route))) return true; return false; }
   isSettingsLanding(route) { route = route || this.state.route || ""; return this.effBp() === "mobile" && /^\/settings(\/|$)/.test(route) && !this.state.settingsSel; }
+  // Search field with a reliably-centered custom clear (X) button. Replaces
+  // reliance on the native ::-webkit-search-cancel-button (which mis-positions
+  // on tall fields). Pass the same props you would give the DS search Input
+  // (value, placeholder, onChange, aria-label, autoFocus, className). Clearing
+  // calls onChange with an empty-value synthetic event.
+  ccSearch(p) {
+    const h = React.createElement; const { Input, Icon } = this.C;
+    p = p || {};
+    const val = p.value || "";
+    const has = val.length > 0;
+    const onChange = p.onChange;
+    const inputProps = Object.assign({}, p, {
+      variant: "search",
+      className: (p.className ? p.className + " " : "") + (has ? "cc-input-clear" : ""),
+    });
+    return h("div", { className: "cc-search" },
+      h(Input, inputProps),
+      has ? h("button", { type: "button", className: "cc-search__clear", "aria-label": "Clear search",
+        onMouseDown: (e) => e.preventDefault(),
+        onClick: () => { if (onChange) onChange({ target: { value: "" } }); } },
+        h(Icon, { name: "close", size: "sm" })) : null);
+  }
+
   ccOverlaySelect(menuKey, value, options, onChange, o) {
     o = o || {};
     const h = React.createElement; const { Icon } = this.C;
@@ -1249,15 +1279,15 @@ class Component extends DCLogic {
     const noAnim = this.reduceMotion();
     return h("div", { onClick: () => this.setState({ searchOpen: false }), style: { position: "fixed", inset: 0, zIndex: 1000, background: "var(--color-scrim)", display: "flex", justifyContent: "center", alignItems: "flex-start", paddingTop: "12vh", animation: noAnim ? "none" : "cc-scrim-in 180ms ease" } },
       h("div", { onClick: (e) => e.stopPropagation(), style: { width: "min(560px, 92vw)", background: "var(--color-overlay)", borderRadius: "var(--radius-xl)", padding: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)", animation: noAnim ? "none" : "cc-dialog-in 200ms var(--easing-out)" } },
-        h(Input, { variant: "search", className: "ha-input--noborder", placeholder: "Search the home", autoFocus: true, "aria-label": "Search the home" }),
-        h("div", { style: { color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)", padding: "0 var(--space-1)" } }, "Search is a concept placeholder in this build.")));
+        this.ccSearch({ className: "ha-input--noborder", placeholder: "Search the home", autoFocus: true, "aria-label": "Search the home", value: this.state.searchQuery || "", onChange: (e) => this.setState({ searchQuery: e.target.value }) }),
+        h("div", { style: { color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)", padding: "0 var(--space-1)" } }, "Search is a placeholder in this prototype.")));
   }
 
   searchPageBody(persona, bp) {
     const h = React.createElement; const { Input } = this.C;
     return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)", maxWidth: 640 } },
-      h(Input, { variant: "search", className: "ha-input--noborder", placeholder: "Search the home", autoFocus: true, "aria-label": "Search the home" }),
-      h("div", { style: { color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)" } }, "Search across areas, devices, automations, and people. This is a concept placeholder in this build."));
+      this.ccSearch({ className: "ha-input--noborder", placeholder: "Search the home", autoFocus: true, "aria-label": "Search the home", value: this.state.searchQuery || "", onChange: (e) => this.setState({ searchQuery: e.target.value }) }),
+      h("div", { style: { color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)" } }, "Search across areas, devices, automations, and people. This is a placeholder in this prototype."));
   }
 
   renderMobileSwitcher(persona) {
@@ -2075,7 +2105,7 @@ class Component extends DCLogic {
     const dense = this.effBp() !== "desktop";
     const filterBtn = h("button", { type: "button", className: "cc-tbtn" + (this.state.showFilters ? " cc-tbtn--on" : "") + ((dense && !spec.filterCount) ? " cc-tbtn--icon" : ""), "aria-label": "Filters", style: (dense && spec.filterCount) ? { padding: "0 var(--space-3)" } : undefined, onClick: () => this.setState({ showFilters: !this.state.showFilters }) },
       h(Icon, { name: "filter-variant", size: "md" }), dense ? null : h("span", null, "Filters"), spec.filterCount ? h("span", { className: "cc-tbtn__count" }, spec.filterCount) : null);
-    const search = spec.search ? h("div", { className: "cc-toolbar__search" }, h(Input, { variant: "search", value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })) : h("div", { style: { flex: 1 } });
+    const search = spec.search ? h("div", { className: "cc-toolbar__search" }, this.ccSearch({ value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })) : h("div", { style: { flex: 1 } });
     const groupSel = (spec.selects || []).find((s) => s.key === "group");
     const sortSel = (spec.selects || []).find((s) => s.key === "sort");
     const groupEl = groupSel ? this.ccSelect(spec, groupSel, "Group by") : null;
@@ -2216,7 +2246,7 @@ class Component extends DCLogic {
     const accordion = !!opts.accordion;
     const blocks = [];
     if (opts.includeSearch !== false && !opts.filtersOnly && spec.search) {
-      blocks.push(h("div", { key: "search" }, h(Input, { variant: "search", value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })));
+      blocks.push(h("div", { key: "search" }, this.ccSearch({ value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })));
     }
     (spec.chipGroups || []).forEach((fg) => {
       if (fg.slider) {
@@ -2245,7 +2275,7 @@ class Component extends DCLogic {
         const treeKids = {};
         if (fg.tree) { let cur = null; fg.options.forEach((o) => { if (o.child) { if (cur) treeKids[cur].push(o.value); } else { cur = o.value; treeKids[cur] = []; } }); }
         content = h("div", { style: { marginTop: "var(--space-2)", display: "flex", flexDirection: "column", gap: "var(--space-2)" } },
-          manyOpts ? h(Input, { variant: "search", value: this.filterSearchVal(spec.id, fg.key), placeholder: "Search", "aria-label": "Search " + fg.label, onChange: (e) => this.setFilterSearch(spec.id, fg.key, e.target.value) }) : null,
+          manyOpts ? this.ccSearch({ value: this.filterSearchVal(spec.id, fg.key), placeholder: "Search", "aria-label": "Search " + fg.label, onChange: (e) => this.setFilterSearch(spec.id, fg.key, e.target.value) }) : null,
           h("div", { style: Object.assign({ maxHeight: 220, overflowY: "auto", display: "flex", flexDirection: "column", gap: "var(--space-2)" }, overflowing ? { border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius-md)", padding: "var(--space-3)" } : {}) },
             shown.length ? shown.map((op) => {
               if (fg.tree && op.child) {
@@ -2376,7 +2406,7 @@ class Component extends DCLogic {
     if (bp === "mobile") {
       const sheetOpen = this.state.filtersSheet === id;
       const bar = spec.search ? h("div", { className: "cc-msearch", style: { paddingBottom: "var(--space-2)" } },
-        h(Input, { variant: "search", value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })) : null;
+        this.ccSearch({ value: spec.search.value, placeholder: spec.search.placeholder, onChange: spec.search.onChange })) : null;
       let sheet = null;
       if (sheetOpen) {
         if (this.state.customizeId === id) {
@@ -3088,7 +3118,7 @@ class Component extends DCLogic {
     const h = React.createElement; const { Icon } = this.C;
     const item = this.settingsItem(groups, sel);
     const intro = h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-6)", color: "var(--color-text-secondary)", maxWidth: "62ch" } },
-      "This section is part of the concept information architecture. The detailed screen is a placeholder in this build.");
+      "This section is part of the proposed information architecture. The detailed screen is a placeholder in this prototype.");
     if (!item || !item.links || !item.links.length) return intro;
     const rows = item.links.map((lk, idx) => h("button", {
       key: idx, type: "button",
@@ -3107,7 +3137,7 @@ class Component extends DCLogic {
     const h = React.createElement;
     const c = cats.find((x) => x.id === sel) || cats[0];
     return h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-6)", color: "var(--color-text-secondary)", fontSize: "var(--text-base)", maxWidth: "62ch" } },
-      "Browse and install " + c.label.toLowerCase() + " shared by the community. This catalogue is part of the concept information architecture and is a placeholder in this build.");
+      "Browse and install " + c.label.toLowerCase() + " shared by the community. This catalogue is part of the proposed information architecture and is a placeholder in this prototype.");
   }
   extensionsPage(bp, wrap) {
     const h = React.createElement; const { Submenu } = this.C;
@@ -3711,7 +3741,7 @@ class Component extends DCLogic {
       (!dim && spec.onClear && spec.hasActiveFilters) ? h("button", { type: "button", onClick: spec.onClear, style: { background: "none", border: "none", color: "var(--color-accent)", fontSize: bp === "desktop" ? "var(--text-sm)" : "var(--text-base)", fontFamily: "var(--font-body)", cursor: "pointer", padding: "6px 4px", flex: "none" } }, "Clear all") : null);
 
     const searchRow = (dim && dim.searchable) ? h("div", { onPointerDown: (e) => e.stopPropagation(), style: { padding: "0 var(--space-4) var(--space-2)", flex: "none" } },
-      h(Input, { variant: "search", value: this.state.sheetSearch, placeholder: "Search " + dim.label.toLowerCase(), "aria-label": "Search " + dim.label.toLowerCase(), onChange: (e) => this.setState({ sheetSearch: e.target.value }) })) : null;
+      this.ccSearch({ value: this.state.sheetSearch, placeholder: "Search " + dim.label.toLowerCase(), "aria-label": "Search " + dim.label.toLowerCase(), onChange: (e) => this.setState({ sheetSearch: e.target.value }) })) : null;
 
     const body = dim ? dim.render(this.state.sheetSearch) : spec.rootBody;
     const footer = (!dim && spec.footer) ? spec.footer : null;
@@ -3854,7 +3884,7 @@ class Component extends DCLogic {
         notifItems.length ? h("div", { style: { display: "flex", flexDirection: "column" } }, notifItems) : null,
         addLink));
     // History + Activity (inspired by the Home Assistant person detail): a
-    // presence timeline bar and a recent detection log. Concept data.
+    // presence timeline bar and a recent detection log. Sample data.
     const sectionHead = (icon, label, onMore) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "0 var(--space-3) var(--space-2)", color: "var(--color-text-secondary)" } },
       h(Icon, { name: icon, size: "sm" }),
       h("span", { style: { fontSize: "var(--text-sm)", flex: 1 } }, label),
@@ -4073,7 +4103,7 @@ class Component extends DCLogic {
       ? "Drag the center to move, drag a point to reshape. Tap a midpoint to add a point, tap a point to remove it."
       : "Drag the center to move the zone, drag the white handle to change the radius.";
     const hintEl = h("p", { style: { margin: 0, fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, hint);
-    // Address search: a concept geocoder over a few local places. Picking one
+    // Address search: a sample geocoder over a few local places. Picking one
     // recenters the zone (an alternative to dragging the center).
     const PLACES = [
       { label: "Frans Halsstraat 12, Utrecht", lat: 52.08445, lon: 5.14354 },
@@ -4992,7 +5022,7 @@ class Component extends DCLogic {
 
   // ---- Relevance engine -------------------------------------------------
   // The demo scenario (Tweaks prop) drives every contextual condition so the
-  // stack visibly re-sorts. There is no live sensor data in the concept car.
+  // stack visibly re-sorts. There is no live sensor data in this prototype.
   fyScenarios() {
     return {
       "Quiet afternoon": { hour: 14, minute: 20, isWeekday: true, mediaPlaying: false, powerAnomaly: false, minutesToNextEvent: 360, minutesSinceActivity: 130 },

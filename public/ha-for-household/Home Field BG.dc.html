@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/fonts.css">
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css">
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/styles.css">
+<script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+</helmet>
+
+<div style="position:relative; width:100%; height:100%; overflow:hidden; background:var(--color-bg);">
+  <canvas data-field="bg" style="display:block; width:100%; height:100%;"></canvas>
+  <div data-overlay="bg" style="position:absolute; inset:0; pointer-events:none;"></div>
+  <div data-grain="1" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:soft-light; opacity:0.45; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E&quot;);"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:760},&quot;scenario&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Evening&quot;,&quot;options&quot;:[&quot;Quiet afternoon&quot;,&quot;Weekday morning&quot;,&quot;Evening&quot;,&quot;Media playing&quot;,&quot;Power spike&quot;,&quot;Calendar soon&quot;,&quot;Weekend&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Field&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;auto&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;dark&quot;,&quot;light&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;paintIn&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0,&quot;max&quot;:2,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Animation&quot;,&quot;unit&quot;:&quot;x&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:4,&quot;min&quot;:1,&quot;max&quot;:5,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Field&quot;},&quot;softness&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.6,&quot;max&quot;:1.6,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Field&quot;,&quot;unit&quot;:&quot;x&quot;},&quot;grain&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.45,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Texture&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+
+  // demo scenarios -> field profile (the same scenario names this prototype uses)
+  scenarioField(name) {
+    const S = {
+      "Quiet afternoon": { seed: 3120, intensity: 0.7, tension: 0.22, act: { base: 0.17, bumps: [[13, 3, 0.2]] }, out: { base: 0.22, cold: 0.18 }, now: 14.3, events: [], data: ['sensor.house_power 0.6 kW', 'presence living', 'temp in 21.4 out 19.0'] },
+      "Weekday morning": { seed: 5710, intensity: 1.0, tension: 0.5, act: { base: 0.1, bumps: [[7.5, 1.7, 0.7]] }, out: { base: 0.34, cold: 0.34 }, now: 7.8, events: [{ t: 7.2, x: 0.45, big: true, label: 'wake' }], data: ['light.kitchen on 70%', 'presence kitchen hall', 'temp in 20.6 out 8.2'] },
+      "Evening": { seed: 8821, intensity: 1.25, tension: 1.0, act: { base: 0.22, bumps: [[20, 3, 0.85], [8, 1.6, 0.3]] }, out: { base: 0.42, cold: 0.45 }, now: 20.2, events: [{ t: 20, x: 0.44, big: true, label: 'everyone home' }, { t: 18, x: 0.58, big: false, label: 'heating 21' }], data: ['light.* on 5', 'presence living kitchen hall', 'temp in 22.0 out 11.0'] },
+      "Media playing": { seed: 2042, intensity: 1.1, tension: 0.7, act: { base: 0.18, bumps: [[21, 2.4, 0.72]] }, out: { base: 0.4, cold: 0.42 }, now: 21.3, events: [{ t: 21, x: 0.5, big: true, label: 'media' }], data: ['media_player.living playing', 'light.living on 40%', 'temp in 21.5 out 12.0'] },
+      "Power spike": { seed: 9303, intensity: 1.4, tension: 1.2, act: { base: 0.3, bumps: [[18.3, 1.2, 0.95]] }, out: { base: 0.45, cold: 0.4 }, now: 18.4, events: [{ t: 18.3, x: 0.5, big: true, label: '4.8 kW' }], data: ['sensor.house_power 4.8 kW', 'oven on, kettle on', 'temp in 22.3 out 10.5'] },
+      "Calendar soon": { seed: 6650, intensity: 0.85, tension: 0.45, act: { base: 0.12, bumps: [[8.7, 1.8, 0.5]] }, out: { base: 0.3, cold: 0.3 }, now: 9.0, events: [{ t: 9, x: 0.5, big: true, label: 'event 09:30' }], data: ['calendar.family 09:30', 'presence kitchen', 'temp in 20.3 out 13.2'] },
+      "Weekend": { seed: 4413, intensity: 0.8, tension: 0.3, act: { base: 0.16, bumps: [[10.5, 3, 0.45]] }, out: { base: 0.26, cold: 0.2 }, now: 11.2, events: [], data: ['sensor.house_power 0.9 kW', 'presence living kitchen', 'temp in 21.0 out 17.0'] }
+    };
+    return S[name] || S["Quiet afternoon"];
+  }
+
+  // ---------- math ----------
+  cl(v) { return Math.max(0, Math.min(255, v)); }
+  mix(a, b, m) { return [a[0] * (1 - m) + b[0] * m, a[1] * (1 - m) + b[1] * m, a[2] * (1 - m) + b[2] * m]; }
+  mul(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  hash(x, y) { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
+  vnoise(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const tl = this.hash(xi, yi), tr = this.hash(xi + 1, yi), bl = this.hash(xi, yi + 1), br = this.hash(xi + 1, yi + 1);
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return tl * (1 - u) * (1 - v) + tr * u * (1 - v) + bl * (1 - u) * v + br * u * v;
+  }
+  coldFactor(t) { return 0.5 * (1 + Math.cos((t / 24) * 2 * Math.PI)); }
+  daylight(t) { return Math.max(0, Math.sin(((t - 6) / 12) * Math.PI)); }
+  activityAt(st, t) { let v = st.act.base; for (const b of st.act.bumps) v += b[2] * Math.exp(-Math.pow((t - b[0]) / b[1], 2)); return v; }
+  outsideAt(st, t) { return st.out.base + st.out.cold * this.coldFactor(t); }
+  clockAt(now, f) { let c = (now - (1 - f) * 24) % 24; if (c < 0) c += 24; return c; }
+  warmColor(I) { return this.mix([255, 132, 32], [255, 236, 194], Math.min(1, I) * 0.62); }
+  coolColor(O, t) { const dl = this.daylight(t); return this.mix([22, 94, 214], [98, 200, 222], dl * 0.6); }
+
+  parseColor(s) {
+    s = (s || '').trim();
+    if (s[0] === '#') {
+      if (s.length === 7) return [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
+      if (s.length === 4) return [17 * parseInt(s[1], 16), 17 * parseInt(s[2], 16), 17 * parseInt(s[3], 16)];
+    }
+    const m = s.match(/(\d+)[ ,]+(\d+)[ ,]+(\d+)/);
+    return m ? [+m[1], +m[2], +m[3]] : null;
+  }
+  isDark() {
+    const t = this.props.theme || 'auto';
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    try { const c = this.parseColor(getComputedStyle(document.documentElement).getPropertyValue('--color-bg')); if (c) return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) < 128; } catch (e) {}
+    return true;
+  }
+  toneStops(dark) {
+    return dark
+      ? [[0, [22, 22, 25]], [0.22, [34, 28, 30]], [0.3, [40, 33, 33]], [0.5, [44, 46, 54]], [0.7, [40, 33, 32]], [0.78, [34, 27, 28]], [1, [22, 22, 25]]]
+      : [[0, [223, 224, 230]], [0.22, [233, 226, 217]], [0.3, [240, 234, 226]], [0.5, [247, 247, 244]], [0.7, [240, 232, 223]], [0.78, [233, 226, 218]], [1, [223, 224, 230]]];
+  }
+  toneAt(x, dark) {
+    const s = this.toneStops(dark);
+    for (let i = 1; i < s.length; i++) { if (x <= s[i][0]) { const a = s[i - 1], b = s[i]; const f = (x - a[0]) / (b[0] - a[0] || 1); return this.mix(a[1], b[1], f); } }
+    return s[s.length - 1][1];
+  }
+  bgGradient(ctx, W, H, now, dark) {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    for (let i = 0; i <= 24; i++) { const f = i / 24, c = this.toneAt(this.clockAt(now, f) / 24, dark); g.addColorStop(f, 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')'); }
+    return g;
+  }
+
+  // ---------- build ----------
+  buildRenderer(canvas, st) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    const W = canvas.clientWidth || 1200, H = canvas.clientHeight || 800;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const maxd = Math.max(W, H);
+    const density = this.props.density != null ? this.props.density : 4;
+    const budget = Math.round((900 + st.intensity * 520) * (0.4 + 0.13 * density));
+    const cap = Math.round(budget * 0.72);
+    const rnd = this.mul(st.seed);
+    const seeds = [];
+    let tries = 0;
+    while (tries < budget && seeds.length < cap) {
+      tries++;
+      const x = rnd() * W, y = rnd() * H, u = x / W, v = y / H;
+      const tf = (u + v) / 2;
+      const t = this.clockAt(st.now, tf);
+      const I = this.activityAt(st, t), O = this.outsideAt(st, t);
+      const q = u - v, dc = Math.min(1, Math.abs(q));
+      const rIn = 0.12 + 0.62 * Math.min(1.2, I), rOut = 0.6 * Math.min(1.2, O);
+      const warm = Math.max(0, rIn - dc), cool = Math.max(0, dc - (1 - rOut));
+      const wm = warm * I * 1.5, cm = cool * O * 1.3, mag = wm + cm;
+      if (mag < 0.05) continue;
+      const isWarm = wm >= cm;
+      let c = isWarm ? this.warmColor(I) : this.coolColor(O, t);
+      const j = (rnd() - 0.5) * 24;
+      c = [this.cl(c[0] + j), this.cl(c[1] + j), this.cl(c[2] + j)];
+      const sd = q >= 0 ? 1 : -1;
+      const baseAngle = isWarm ? Math.atan2(-sd, sd) : Math.atan2(sd, -sd);
+      seeds.push({ x, y, tf, side: sd, col: { r: c[0] | 0, g: c[1] | 0, b: c[2] | 0 }, baseAngle,
+        len: 0.4 + (isWarm ? I : O) * 0.9, radius: Math.min(64, 24 + mag * 34),
+        alpha: Math.min(0.17, (0.022 + 0.07 * mag)) * st.intensity });
+    }
+    const L = seeds.filter(s => s.side < 0).sort((a, b) => a.tf - b.tf);
+    const R = seeds.filter(s => s.side >= 0).sort((a, b) => a.tf - b.tf);
+    seeds.length = 0;
+    for (let i = 0, m = Math.max(L.length, R.length); i < m; i++) { if (i < L.length) seeds.push(L[i]); if (i < R.length) seeds.push(R[i]); }
+    const events = st.events.map(e => { const tf = (((e.t - st.now) % 24 + 24) % 24); const f = 1 - tf / 24, off = (e.x - 0.5) * 0.4; return { x: (f + off) * W, y: (f - off) * H, strength: e.big ? 1.0 : 0.55, radius: maxd * 0.16 }; });
+    return { canvas, W, H, ctx, seeds, st, t: 0, now: st.now, scale: 1.8 / maxd, step: maxd / 64, steps: 16, tension: st.tension, events };
+  }
+
+  walk(r, x, y, steps, dir, baseAngle) {
+    const pts = []; let cx = x, cy = y;
+    for (let i = 0; i < steps; i++) {
+      let vx = Math.cos(baseAngle), vy = Math.sin(baseAngle);
+      const nz = this.vnoise(cx * r.scale + 7 + r.t, cy * r.scale) - 0.5;
+      const pa = nz * (0.7 + r.tension * 1.7), ca = Math.cos(pa), sa = Math.sin(pa);
+      const rx = vx * ca - vy * sa, ry = vx * sa + vy * ca; vx = rx; vy = ry;
+      for (const e of r.events) { const ddx = e.x - cx, ddy = e.y - cy, d = Math.hypot(ddx, ddy) + 1, w = e.strength * Math.exp(-d / e.radius); vx += (ddx / d) * w * 0.5 + (-ddy / d) * w * r.tension * 1.2; vy += (ddy / d) * w * 0.5 + (ddx / d) * w * r.tension * 1.2; }
+      const ang = Math.atan2(vy, vx);
+      cx += Math.cos(ang) * r.step * dir; cy += Math.sin(ang) * r.step * dir;
+      pts.push({ x: cx, y: cy });
+      if (cx < -80 || cx > r.W + 80 || cy < -80 || cy > r.H + 80) break;
+    }
+    return pts;
+  }
+  trace(r, sd) {
+    const steps = Math.round(r.steps * sd.len);
+    const fwd = this.walk(r, sd.x, sd.y, steps, 1, sd.baseAngle);
+    const bwd = this.walk(r, sd.x, sd.y, Math.round(steps * 0.6), -1, sd.baseAngle);
+    return bwd.reverse().concat([{ x: sd.x, y: sd.y }], fwd);
+  }
+  ensureSprite() {
+    if (this._sprite) return;
+    const s = document.createElement('canvas'); s.width = 64; s.height = 64;
+    const c = s.getContext('2d');
+    const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.45, 'rgba(255,255,255,0.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+    this._sprite = s; this._tint = {};
+  }
+  getTinted(r, g, b) {
+    const key = (r >> 4) + '_' + (g >> 4) + '_' + (b >> 4);
+    if (this._tint[key]) return this._tint[key];
+    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+    const cx = cv.getContext('2d');
+    cx.drawImage(this._sprite, 0, 0); cx.globalCompositeOperation = 'source-in';
+    cx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')'; cx.fillRect(0, 0, 64, 64);
+    this._tint[key] = cv; return cv;
+  }
+  drawSeed(r, sd) {
+    const soft = this.props.softness != null ? this.props.softness : 1;
+    const pts = this.trace(r, sd), sprite = this.getTinted(sd.col.r | 0, sd.col.g | 0, sd.col.b | 0), n = pts.length, ctx = r.ctx;
+    for (let i = 0; i < n; i++) {
+      const taper = Math.sin((i / (n - 1)) * Math.PI), rr = r.radius0 = sd.radius * (0.45 + 0.7 * taper) * soft;
+      ctx.globalAlpha = sd.alpha * (0.45 + 0.55 * taper);
+      const p = pts[i]; ctx.drawImage(sprite, p.x - rr, p.y - rr, rr * 2, rr * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+  drawBase(r) {
+    const ctx = r.ctx, W = r.W, H = r.H, dark = this.isDark();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = this.bgGradient(ctx, W, H, r.st.now, dark);
+    ctx.fillRect(0, 0, W, H);
+    // faint time grid perpendicular to the diagonal
+    ctx.strokeStyle = dark ? 'rgba(150,153,176,0.06)' : 'rgba(60,62,76,0.07)';
+    ctx.lineWidth = 0.5;
+    for (let i = 1; i < 12; i++) {
+      const Sx = (i / 12) * 2;
+      const p1 = Sx <= 1 ? [Sx, 0] : [1, Sx - 1];
+      const p2 = Sx <= 1 ? [0, Sx] : [Sx - 1, 1];
+      ctx.beginPath(); ctx.moveTo(p1[0] * W, p1[1] * H); ctx.lineTo(p2[0] * W, p2[1] * H); ctx.stroke();
+    }
+    // the timeline itself: top-left -> bottom-right
+    ctx.strokeStyle = dark ? 'rgba(150,153,176,0.08)' : 'rgba(60,62,76,0.1)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, H); ctx.stroke();
+  }
+  buildOverlay(host, st) {
+    if (!host) return;
+    host.innerHTML = '';
+    const dark = this.isDark();
+    const faint = dark ? 'rgba(170,174,196,0.16)' : 'rgba(64,68,84,0.2)';
+    const hourInk = dark ? 'rgba(108,110,128,0.42)' : 'rgba(86,90,106,0.46)';
+    const ink = dark ? 'rgba(184,188,206,0.5)' : 'rgba(58,62,76,0.6)';
+    const mk = (css, txt) => { const d = document.createElement('div'); d.style.cssText = 'position:absolute;' + css; if (txt != null) d.textContent = txt; host.appendChild(d); return d; };
+    if (st.data) {
+      mk('bottom:18px;right:16px;text-align:right;font:8px/1.7 var(--font-mono);color:' + faint + ';white-space:pre;max-width:46%', st.data.join('\n'));
+    }
+    for (const e of (st.events || [])) {
+      const ha = ((st.now - e.t) % 24 + 24) % 24, f = 1 - ha / 24;
+      const cx = ((f + (e.x - 0.5) * 0.4) * 100).toFixed(2) + '%', cy = ((f - (e.x - 0.5) * 0.4) * 100).toFixed(2) + '%';
+      if (e.big) { const d = mk('left:' + cx + ';top:' + cy + ';transform:translate(-50%,-50%);width:26px;height:26px;border:1px solid ' + ink + ';border-radius:50%;'); d.innerHTML = '<div style="position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:' + ink + '"></div>'; }
+      else mk('left:' + cx + ';top:' + cy + ';transform:translate(-50%,-50%);width:7px;height:7px;border-radius:50%;background:' + ink + ';');
+      if (e.label) mk('left:' + cx + ';top:calc(' + cy + ' - 16px);transform:translateX(-50%);font:9px var(--font-mono);color:' + ink + ';white-space:nowrap', e.label);
+    }
+    const axis = [[0.05, '-24h'], [0.28, '-18h'], [0.5, '-12h'], [0.72, '-6h'], [0.95, 'now']];
+    for (const a of axis) mk('left:' + (a[0] * 100).toFixed(2) + '%;top:' + (a[0] * 100).toFixed(2) + '%;transform:translate(-118%,-60%);font:9px var(--font-mono);color:' + hourInk + ';letter-spacing:0.04em;white-space:nowrap', a[1]);
+  }
+  tick(r) { this.drawBase(r); for (const sd of r.seeds) this.drawSeed(r, sd); }
+  paintFull() { if (this.r) this.tick(this.r); this._painted = true; }
+
+  applyGrain() {
+    const root = this.anchor || document;
+    const op = this.props.grain != null ? this.props.grain : 0.45;
+    (root.querySelectorAll ? root : document).querySelectorAll('[data-grain]').forEach(e => { e.style.opacity = op; });
+  }
+
+  build() {
+    const canvas = (this.anchor || document).querySelector('canvas[data-field]');
+    if (!canvas) { this._retry = requestAnimationFrame(() => this.build()); return; }
+    this.canvas = canvas;
+    const root = canvas.parentElement;
+    this._lastSize = root.clientWidth + 'x' + root.clientHeight;
+    if (window.ResizeObserver && !this._ro) {
+      this._ro = new ResizeObserver(() => { const cur = root.clientWidth + 'x' + root.clientHeight; if (cur === this._lastSize) return; this._lastSize = cur; this._onResize(); });
+      this._ro.observe(root);
+    }
+    this.ensureSprite();
+    this.r = this.buildRenderer(canvas, this.scenarioField(this.props.scenario));
+    this.buildOverlay(canvas.parentElement.querySelector('[data-overlay]'), this.r.st);
+    this.applyGrain();
+    this.startLoop();
+  }
+  startLoop() {
+    cancelAnimationFrame(this._raf); clearTimeout(this._fallback);
+    if (!this.r) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const speed = this.props.paintIn != null ? this.props.paintIn : 1;
+    this._painted = false;
+    if (reduce || speed <= 0) { this.paintFull(); return; }
+    this.drawBase(this.r); this.r.drawn = 0;
+    const dur = 2000 / Math.max(0.25, speed);
+    let startT = null;
+    const loop = (ts) => {
+      if (this._painted) return;
+      if (startT == null) startT = ts;
+      const f = Math.min(1, (ts - startT) / dur);
+      const target = Math.round(f * this.r.seeds.length);
+      for (let i = this.r.drawn; i < target; i++) this.drawSeed(this.r, this.r.seeds[i]);
+      this.r.drawn = target;
+      if (f >= 1) { this._painted = true; return; }
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+    this._fallback = setTimeout(() => { if (!this._painted) this.paintFull(); }, dur + 900);
+  }
+
+  componentDidMount() {
+    this._onResize = () => { clearTimeout(this._rz); this._rz = setTimeout(() => { if (this.canvas) { this.r = this.buildRenderer(this.canvas, this.scenarioField(this.props.scenario)); this.buildOverlay(this.canvas.parentElement.querySelector('[data-overlay]'), this.r.st); this.paintFull(); } }, 180); };
+    window.addEventListener('resize', this._onResize);
+    this.build();
+  }
+  componentWillUnmount() { cancelAnimationFrame(this._raf); cancelAnimationFrame(this._retry); clearTimeout(this._fallback); window.removeEventListener('resize', this._onResize); if (this._ro) this._ro.disconnect(); }
+  componentDidUpdate(prev) {
+    if (!this.r) return;
+    this.applyGrain();
+    const changed = !prev || prev.scenario !== this.props.scenario || prev.theme !== this.props.theme || prev.density !== this.props.density || prev.softness !== this.props.softness;
+    if (changed) { this.r = this.buildRenderer(this.canvas, this.scenarioField(this.props.scenario)); this.buildOverlay(this.canvas.parentElement.querySelector('[data-overlay]'), this.r.st); this.startLoop(); }
+  }
+}
+</script>
+</body>
+</html>

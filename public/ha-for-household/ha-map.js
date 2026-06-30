@@ -1,4 +1,4 @@
-/* HA Concept Car — vector map custom elements (MapLibre GL + OpenFreeMap).
+/* Home Assistant for the whole household — vector map custom elements (MapLibre GL + OpenFreeMap).
    <ha-carto-map>  static, non-interactive preview with a single marker.
    <ha-world-map>  interactive people/zones map with clustering and focus.
    Both switch between purpose-built light/dark vector styles (window.HA_MAP_STYLE)

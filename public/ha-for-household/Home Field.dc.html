@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/fonts.css">
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css">
+<link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/styles.css">
+<script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+</helmet>
+
+<div data-drags-parent="1" style="position:absolute; left:0; top:0; width:980px;">
+  <div style="font-family:var(--font-display); font-size:30px; font-weight:600; letter-spacing:-0.02em; color:#f0eff8;">Home field</div>
+  <div style="font-family:var(--font-body); font-size:15px; line-height:1.55; color:#9e9daa; margin-top:8px; max-width:840px;">Two forces painted as one image, in the spirit of Zeh Fernandes' GenCup posters. Inside (heating, light, occupancy, activity) blooms from the center outward; outside (temperature delta, wind, weather, natural light) presses inward from the edges. The vertical axis is the home's last 24 hours, and the sun's arc tones the canvas. A large inside-to-outside delta makes the field dense and tense; near equilibrium it softens and thins; nobody home leaves a dead zone. Painted once, like a poster, from the home's own data.</div>
+</div>
+
+<div data-drags-parent="1" style="position:absolute; left:0; top:210px; width:440px;">
+  <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; color:#6a6974; margin-bottom:10px;">01 / empty home, away all day</div>
+  <div style="width:440px; border-radius:6px; overflow:hidden; background:#0a0c16; box-shadow:0 1px 4px rgba(0,0,0,0.45);">
+    <div style="position:relative; width:440px; height:620px;">
+      <canvas data-field="0" style="display:block; width:440px; height:620px;"></canvas>
+      <div data-overlay="0" style="position:absolute; inset:0; pointer-events:none;"></div>
+      <div data-grain="1" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:soft-light; opacity:0.5; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E&quot;);"></div>
+    </div>
+    <div style="padding:18px 20px 20px; background:var(--color-surface);">
+      <div style="font-family:var(--font-body); font-size:15px; line-height:1.5; color:#c9c8d4;">Nobody home for a day. Heating and lights off, so inside and outside drift into equilibrium. The field thins to almost nothing, a dead zone, leaving the sun's arc and the bare grid.</div>
+    </div>
+  </div>
+</div>
+
+<div data-drags-parent="1" style="position:absolute; left:520px; top:210px; width:440px;">
+  <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; color:#6a6974; margin-bottom:10px;">02 / one person, evening in</div>
+  <div style="width:440px; border-radius:6px; overflow:hidden; background:#15101a; box-shadow:0 1px 4px rgba(0,0,0,0.45);">
+    <div style="position:relative; width:440px; height:620px;">
+      <canvas data-field="1" style="display:block; width:440px; height:620px;"></canvas>
+      <div data-overlay="1" style="position:absolute; inset:0; pointer-events:none;"></div>
+      <div data-grain="1" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:soft-light; opacity:0.5; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E&quot;);"></div>
+    </div>
+    <div style="padding:18px 20px 20px; background:var(--color-surface);">
+      <div style="font-family:var(--font-body); font-size:15px; line-height:1.5; color:#c9c8d4;">A quiet day, one person home after dark. Warmth blooms from the center through the evening, a small contested pocket against the cool pressing in. Calm the rest of the day.</div>
+    </div>
+  </div>
+</div>
+
+<div data-drags-parent="1" style="position:absolute; left:0; top:1070px; width:440px;">
+  <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; color:#6a6974; margin-bottom:10px;">03 / full house, crowded evening</div>
+  <div style="width:440px; border-radius:6px; overflow:hidden; background:#16100f; box-shadow:0 1px 4px rgba(0,0,0,0.45);">
+    <div style="position:relative; width:440px; height:620px;">
+      <canvas data-field="2" style="display:block; width:440px; height:620px;"></canvas>
+      <div data-overlay="2" style="position:absolute; inset:0; pointer-events:none;"></div>
+      <div data-grain="1" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:soft-light; opacity:0.5; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E&quot;);"></div>
+    </div>
+    <div style="padding:18px 20px 20px; background:var(--color-surface);">
+      <div style="font-family:var(--font-body); font-size:15px; line-height:1.5; color:#c9c8d4;">A busy day building to a crowded evening. Heating and lights drive a wide, tense band low on the day; the large inside-to-outside delta makes the strokes dense and swirling.</div>
+    </div>
+  </div>
+</div>
+
+<div data-drags-parent="1" style="position:absolute; left:520px; top:1070px; width:440px;">
+  <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.04em; color:#6a6974; margin-bottom:10px;">04 / quiet Sunday morning</div>
+  <div style="width:440px; border-radius:6px; overflow:hidden; background:#243038; box-shadow:0 1px 4px rgba(0,0,0,0.45);">
+    <div style="position:relative; width:440px; height:620px;">
+      <canvas data-field="3" style="display:block; width:440px; height:620px;"></canvas>
+      <div data-overlay="3" style="position:absolute; inset:0; pointer-events:none;"></div>
+      <div data-grain="1" style="position:absolute; inset:0; pointer-events:none; mix-blend-mode:soft-light; opacity:0.5; background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E&quot;);"></div>
+    </div>
+    <div style="padding:18px 20px 20px; background:var(--color-surface);">
+      <div style="font-family:var(--font-body); font-size:15px; line-height:1.5; color:#c9c8d4;">A gentle morning, mild outside. Inside and outside sit near balance, so the field stays soft and thin, a warm rise through the late morning over a cool, bright canvas.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:1860},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;auto&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;dark&quot;,&quot;light&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;paintIn&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0,&quot;max&quot;:2,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Animation&quot;,&quot;unit&quot;:&quot;x&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:5,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Field&quot;},&quot;softness&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.6,&quot;max&quot;:1.6,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Field&quot;,&quot;unit&quot;:&quot;x&quot;},&quot;grain&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.45,&quot;min&quot;:0,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Texture&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return {}; }
+
+  // ---------- the four scenarios (a full 24h day each) ----------
+  states() {
+    return [
+      { seed: 1207, intensity: 0.7, tension: 0.05,
+        act: { base: 0.03, bumps: [] },
+        out: { base: 0.16, cold: 0.18 },
+        events: [],
+        box: { l1: 'occupancy 0', l2: 'delta 0.4 deg', tag: 'AWAY', date: '03:14' }, now: 3.23,
+        marks: [],
+        dataA: ['sun.sun below_horizon', 'elevation -38.2', 'light.* off', 'climate.* off', 'lock.front_door locked'],
+        dataB: ['sensor.house_power 0.31 kW', 'person.* away', 'temp in 17.4 out 17.0', 'binary_sensor.* clear'] },
+      { seed: 4413, intensity: 1.0, tension: 0.5,
+        act: { base: 0.05, bumps: [[19.5, 2.4, 0.5]] },
+        out: { base: 0.3, cold: 0.3 },
+        events: [{ t: 19.5, x: 0.5, label: 'kitchen light', big: true }, { t: 20.4, x: 0.56, label: 'cooking', big: false }],
+        box: { l1: 'occupancy 1', l2: 'delta 6.2 deg', tag: 'EVE', date: '19:42' }, now: 19.7,
+        marks: [],
+        dataA: ['light.kitchen on 85%', 'color_temp 2700K', 'binary_sensor.kitchen on'],
+        dataB: ['sensor.house_power 1.62 kW', 'person.sofie home', 'temp in 21.1 out 14.9', 'elevation -4.1'] },
+      { seed: 8821, intensity: 1.25, tension: 1.0,
+        act: { base: 0.22, bumps: [[20, 3.0, 0.85], [8, 1.6, 0.35], [13, 2.0, 0.25]] },
+        out: { base: 0.42, cold: 0.45 },
+        events: [{ t: 20, x: 0.44, label: 'everyone home', big: true }, { t: 18, x: 0.58, label: 'heating 21 deg', big: false }, { t: 8, x: 0.48, label: 'wake', big: false }],
+        box: { l1: 'occupancy 4', l2: 'delta 11.0 deg', tag: 'EVE', date: '20:10' }, now: 20.17,
+        marks: [],
+        dataA: ['light.living on 100%', 'light.kitchen on 70%', 'light.hall on 60%', 'color_temp 2900K'],
+        dataB: ['sensor.house_power 4.24 kW', 'presence living kitchen hall', 'temp in 22.0 out 11.0', 'elevation -7.0'] },
+      { seed: 6650, intensity: 0.9, tension: 0.35,
+        act: { base: 0.07, bumps: [[9.5, 2.6, 0.5]] },
+        out: { base: 0.26, cold: 0.22 },
+        events: [{ t: 9.5, x: 0.46, label: 'morning', big: true }],
+        box: { l1: 'occupancy 2', l2: 'delta 3.1 deg', tag: 'AM', date: '08:30' }, now: 8.5,
+        marks: [],
+        dataA: ['light.living on 30%', 'color_temp 4200K', 'cover.garden_window open'],
+        dataB: ['sensor.house_power 0.91 kW', 'presence living kitchen', 'temp in 20.3 out 17.2', 'elevation +12.4'] }
+    ];
+  }
+
+  // ---------- math helpers ----------
+  cl(v) { return Math.max(0, Math.min(255, v)); }
+  mix(a, b, m) { return [a[0] * (1 - m) + b[0] * m, a[1] * (1 - m) + b[1] * m, a[2] * (1 - m) + b[2] * m]; }
+  mul(a) { return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  hash(x, y) { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
+  vnoise(x, y) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const tl = this.hash(xi, yi), tr = this.hash(xi + 1, yi), bl = this.hash(xi, yi + 1), br = this.hash(xi + 1, yi + 1);
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return tl * (1 - u) * (1 - v) + tr * u * (1 - v) + bl * (1 - u) * v + br * u * v;
+  }
+
+  coldFactor(t) { return 0.5 * (1 + Math.cos((t / 24) * 2 * Math.PI)); }   // 1 at midnight, 0 at noon
+  daylight(t) { return Math.max(0, Math.sin(((t - 6) / 12) * Math.PI)); }   // sun-up factor
+  activityAt(st, t) { let v = st.act.base; for (const b of st.act.bumps) v += b[2] * Math.exp(-Math.pow((t - b[0]) / b[1], 2)); return v; }
+  outsideAt(st, t) { return st.out.base + st.out.cold * this.coldFactor(t); }
+  clockAt(now, f) { let c = (now - (1 - f) * 24) % 24; if (c < 0) c += 24; return c; }   // row frac -> clock hour
+  clockF(now, et) { let ha = ((now - et) % 24 + 24) % 24; return 1 - ha / 24; }            // clock hour -> row frac
+
+  warmColor(I) { return this.mix([255, 132, 32], [255, 236, 194], Math.min(1, I) * 0.62); }
+  coolColor(O, t) { const dl = this.daylight(t); return this.mix([22, 94, 214], [98, 200, 222], dl * 0.6); }
+
+  // canvas follows the app theme: always dark in dark mode, always light in
+  // light mode. The sun's clock arc only modulates tone gently WITHIN the theme.
+  parseColor(s) {
+    s = (s || '').trim();
+    if (s[0] === '#') {
+      if (s.length === 7) return [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
+      if (s.length === 4) return [17 * parseInt(s[1], 16), 17 * parseInt(s[2], 16), 17 * parseInt(s[3], 16)];
+    }
+    const m = s.match(/(\d+)[ ,]+(\d+)[ ,]+(\d+)/);
+    return m ? [+m[1], +m[2], +m[3]] : null;
+  }
+  isDark() {
+    const t = this.props.theme || 'auto';
+    if (t === 'dark') return true;
+    if (t === 'light') return false;
+    // auto: follow the design-system page background (--color-bg)
+    try {
+      const c = this.parseColor(getComputedStyle(document.documentElement).getPropertyValue('--color-bg'));
+      if (c) return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) < 128;
+    } catch (e) {}
+    return true; // dark-first default
+  }
+  toneStops(dark) {
+    return dark
+      ? [[0, [22, 22, 25]], [0.22, [34, 28, 30]], [0.3, [40, 33, 33]], [0.5, [44, 46, 54]], [0.7, [40, 33, 32]], [0.78, [34, 27, 28]], [1, [22, 22, 25]]]
+      : [[0, [223, 224, 230]], [0.22, [233, 226, 217]], [0.3, [240, 234, 226]], [0.5, [247, 247, 244]], [0.7, [240, 232, 223]], [0.78, [233, 226, 218]], [1, [223, 224, 230]]];
+  }
+  toneAt(x, dark) {
+    const s = this.toneStops(dark);
+    for (let i = 1; i < s.length; i++) { if (x <= s[i][0]) { const a = s[i - 1], b = s[i]; const f = (x - a[0]) / (b[0] - a[0] || 1); return this.mix(a[1], b[1], f); } }
+    return s[s.length - 1][1];
+  }
+  bgGradient(ctx, W, H, now, dark) {
+    const g = ctx.createLinearGradient(0, 0, W, H); // top-left -> bottom-right
+    const N = 24;
+    for (let i = 0; i <= N; i++) {
+      const f = i / N, clock = this.clockAt(now, f) / 24, c = this.toneAt(clock, dark);
+      g.addColorStop(f, 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')');
+    }
+    return g;
+  }
+
+  // ---------- build one renderer ----------
+  buildRenderer(canvas, st, idx) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    const W = canvas.clientWidth || 440, H = canvas.clientHeight || 620;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const maxd = Math.max(W, H);
+
+    const density = this.props.density != null ? this.props.density : 5;
+    const budget = Math.round((900 + st.intensity * 520) * (0.4 + 0.13 * density));
+    const cap = Math.round(budget * 0.72);
+    const rnd = this.mul(st.seed);
+    const seeds = [];
+    let tries = 0;
+    while (tries < budget && seeds.length < cap) {
+      tries++;
+      const x = rnd() * W, y = rnd() * H;
+      const u = x / W, v = y / H;
+      const tf = (u + v) / 2;            // time along the top-left -> bottom-right diagonal
+      const t = this.clockAt(st.now, tf);
+      const I = this.activityAt(st, t), O = this.outsideAt(st, t);
+      const q = u - v;                   // signed distance from the diagonal (-1..1)
+      const dc = Math.min(1, Math.abs(q));
+      const rIn = 0.12 + 0.62 * Math.min(1.2, I), rOut = 0.6 * Math.min(1.2, O);
+      const warm = Math.max(0, rIn - dc), cool = Math.max(0, dc - (1 - rOut));
+      const wm = warm * I * 1.5, cm = cool * O * 1.3, mag = wm + cm;
+      if (mag < 0.05) continue;
+      const isWarm = wm >= cm;
+      let c = isWarm ? this.warmColor(I) : this.coolColor(O, t);
+      const j = (rnd() - 0.5) * 24;
+      c = [this.cl(c[0] + j), this.cl(c[1] + j), this.cl(c[2] + j)];
+      const sd = q >= 0 ? 1 : -1;        // off-diagonal side (top-right vs bottom-left)
+      // warm flows outward off the diagonal; cool presses inward toward it
+      const baseAngle = isWarm ? Math.atan2(-sd, sd) : Math.atan2(sd, -sd);
+      seeds.push({ x, y, tf, side: sd, col: { r: c[0] | 0, g: c[1] | 0, b: c[2] | 0 }, baseAngle,
+        len: 0.4 + (isWarm ? I : O) * 0.9, radius: Math.min(64, 24 + mag * 34),
+        alpha: Math.min(0.17, (0.022 + 0.07 * mag)) * st.intensity });
+    }
+
+    // alternate left then right then left... so the paint-in reads as the two
+    // forces leaning into each other, one brush stroke at a time
+    const L = seeds.filter(s => s.side < 0).sort((a, b) => a.tf - b.tf);
+    const R = seeds.filter(s => s.side >= 0).sort((a, b) => a.tf - b.tf);
+    seeds.length = 0;
+    for (let i = 0, m = Math.max(L.length, R.length); i < m; i++) { if (i < L.length) seeds.push(L[i]); if (i < R.length) seeds.push(R[i]); }
+    const events = st.events.map(e => {
+      const tf = this.clockF(st.now, e.t), off = (e.x - 0.5) * 0.4;
+      return { x: (tf + off) * W, y: (tf - off) * H, strength: e.big ? 1.0 : 0.55, radius: maxd * 0.16 };
+    });
+    return { canvas, idx, W, H, ctx, seeds, events, seedVal: st.seed, st, t: 0, now: st.now, progress: 1,
+      scale: 1.8 / maxd, step: maxd / 64, steps: 16, tension: st.tension };
+  }
+
+  // ---------- field trace ----------
+  walk(r, x, y, steps, dir, baseAngle) {
+    const pts = []; let cx = x, cy = y;
+    for (let i = 0; i < steps; i++) {
+      let vx = Math.cos(baseAngle), vy = Math.sin(baseAngle);
+      const nz = this.vnoise(cx * r.scale + 7 + r.t, cy * r.scale) - 0.5;
+      const pa = nz * (0.7 + r.tension * 1.7);
+      const ca = Math.cos(pa), sa = Math.sin(pa);
+      const rx = vx * ca - vy * sa, ry = vx * sa + vy * ca; vx = rx; vy = ry;
+      for (const e of r.events) {
+        const ddx = e.x - cx, ddy = e.y - cy, d = Math.hypot(ddx, ddy) + 1;
+        const w = e.strength * Math.exp(-d / e.radius);
+        vx += (ddx / d) * w * 0.5 + (-ddy / d) * w * r.tension * 1.2;
+        vy += (ddy / d) * w * 0.5 + (ddx / d) * w * r.tension * 1.2;
+      }
+      const ang = Math.atan2(vy, vx);
+      cx += Math.cos(ang) * r.step * dir; cy += Math.sin(ang) * r.step * dir;
+      pts.push({ x: cx, y: cy });
+      if (cx < -80 || cx > r.W + 80 || cy < -80 || cy > r.H + 80) break;
+    }
+    return pts;
+  }
+  trace(r, sd) {
+    const steps = Math.round(r.steps * sd.len);
+    const fwd = this.walk(r, sd.x, sd.y, steps, 1, sd.baseAngle);
+    const bwd = this.walk(r, sd.x, sd.y, Math.round(steps * 0.6), -1, sd.baseAngle);
+    return bwd.reverse().concat([{ x: sd.x, y: sd.y }], fwd);
+  }
+
+  // soft round brush sprite, tinted on demand (drawImage is far cheaper than
+  // per-stamp gradients, so the field can animate smoothly)
+  ensureSprite() {
+    if (this._sprite) return;
+    const s = document.createElement('canvas'); s.width = 64; s.height = 64;
+    const c = s.getContext('2d');
+    const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0.5)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = g; c.fillRect(0, 0, 64, 64);
+    this._sprite = s; this._tint = {};
+  }
+  getTinted(r, g, b) {
+    const key = (r >> 4) + '_' + (g >> 4) + '_' + (b >> 4);
+    let t = this._tint[key];
+    if (t) return t;
+    const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64;
+    const cx = cv.getContext('2d');
+    cx.drawImage(this._sprite, 0, 0);
+    cx.globalCompositeOperation = 'source-in';
+    cx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+    cx.fillRect(0, 0, 64, 64);
+    this._tint[key] = cv; return cv;
+  }
+  stampStroke(ctx, pts, radius, col, alpha) {
+    const soft = this.props.softness != null ? this.props.softness : 1;
+    const sprite = this.getTinted(col.r | 0, col.g | 0, col.b | 0);
+    const n = pts.length;
+    for (let i = 0; i < n; i++) {
+      const taper = Math.sin((i / (n - 1)) * Math.PI);
+      const rr = radius * (0.45 + 0.7 * taper) * soft;
+      ctx.globalAlpha = alpha * (0.45 + 0.55 * taper);
+      const p = pts[i];
+      ctx.drawImage(sprite, p.x - rr, p.y - rr, rr * 2, rr * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---------- paint ----------
+  drawBase(r) {
+    const ctx = r.ctx, W = r.W, H = r.H, dark = this.isDark();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = this.bgGradient(ctx, W, H, r.st.now, dark);
+    ctx.fillRect(0, 0, W, H);
+    // faint grid backbone: time lines perpendicular to the diagonal
+    ctx.strokeStyle = dark ? 'rgba(150,153,176,0.07)' : 'rgba(60,62,76,0.08)';
+    ctx.lineWidth = 0.5;
+    for (let i = 1; i < 12; i++) {
+      const S = (i / 12) * 2; // u + v = S
+      const p1 = S <= 1 ? [S, 0] : [1, S - 1];
+      const p2 = S <= 1 ? [0, S] : [S - 1, 1];
+      ctx.beginPath(); ctx.moveTo(p1[0] * W, p1[1] * H); ctx.lineTo(p2[0] * W, p2[1] * H); ctx.stroke();
+    }
+    // the timeline itself: top-left -> bottom-right
+    ctx.strokeStyle = dark ? 'rgba(150,153,176,0.08)' : 'rgba(60,62,76,0.1)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, H); ctx.stroke();
+  }
+  drawSeed(r, sd) { const pts = this.trace(r, sd); this.stampStroke(r.ctx, pts, sd.radius, sd.col, sd.alpha); }
+  tick(r) { this.drawBase(r); for (const sd of r.seeds) this.drawSeed(r, sd); }
+
+  // ---------- crisp typography overlay ----------
+  buildOverlay(host, st, r) {
+    host.innerHTML = '';
+    const mk = (css, html) => { const d = document.createElement('div'); d.style.cssText = 'position:absolute;' + css; d.innerHTML = html || ''; host.appendChild(d); return d; };
+    const fmt = (h) => { let hh = Math.floor(h), mm = Math.floor((h - hh) * 60); if (mm >= 60) { mm = 0; hh++; } return (hh < 10 ? '0' + hh : hh) + ':' + (mm < 10 ? '0' + mm : mm); };
+    const dark = this.isDark();
+    const ink = dark ? 'rgba(184,188,206,0.62)' : 'rgba(58,62,76,0.72)';
+    const faint = dark ? 'rgba(170,174,196,0.16)' : 'rgba(64,68,84,0.2)';
+    const hourInk = dark ? 'rgba(108,110,128,0.42)' : 'rgba(86,90,106,0.46)';
+
+    // born-from-data text (left column, both ends)
+    mk('top:10px;left:10px;font:8px/1.6 var(--font-mono);color:' + faint + ';white-space:pre;max-width:54%', st.dataA.join('\n'));
+    mk('bottom:14px;left:10px;font:8px/1.6 var(--font-mono);color:' + faint + ';white-space:pre;max-width:54%', st.dataB.join('\n'));
+
+    // event markers + labels
+    for (const e of st.events) {
+      const cx = (e.x * 100).toFixed(2) + '%', cy = (this.clockF(st.now, e.t) * 100).toFixed(2) + '%';
+      if (e.big) {
+        mk('left:' + cx + ';top:' + cy + ';transform:translate(-50%,-50%);width:26px;height:26px;border:1px solid ' + ink + ';border-radius:50%;', '<div style="position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:' + ink + '"></div>');
+      } else {
+        mk('left:' + cx + ';top:' + cy + ';transform:translate(-50%,-50%);width:7px;height:7px;border-radius:50%;background:' + ink + ';');
+      }
+      mk('left:' + cx + ';top:calc(' + cy + ' - 16px);transform:translateX(-50%);font:9px var(--font-mono);color:' + ink + ';white-space:nowrap', e.label);
+    }
+
+    // time axis along the diagonal: -24h at top-left, now at bottom-right
+    const axis = [[0.05, '-24h'], [0.28, '-18h'], [0.5, '-12h'], [0.72, '-6h'], [0.95, 'now']];
+    for (const a of axis) {
+      mk('left:' + (a[0] * 100).toFixed(2) + '%;top:' + (a[0] * 100).toFixed(2) + '%;transform:translate(-118%,-60%);font:9px var(--font-mono);color:' + hourInk + ';letter-spacing:0.04em;white-space:nowrap', a[1]);
+    }
+  }
+
+  applyGrain() {
+    const root = this.anchor ? this.anchor.parentElement : document;
+    const op = this.props.grain != null ? this.props.grain : 0.45;
+    (root.querySelectorAll ? root : document).querySelectorAll('[data-grain]').forEach(e => { e.style.opacity = op; });
+  }
+
+  start() {
+    const cs = document.querySelectorAll('canvas[data-field]');
+    if (!cs.length) { this._retry = requestAnimationFrame(() => this.start()); return; }
+    const states = this.states();
+    this.renderers = [];
+    cs.forEach(c => {
+      const i = +c.getAttribute('data-field');
+      const r = this.buildRenderer(c, states[i], i);
+      this.renderers.push(r);
+      const host = c.parentElement.querySelector('[data-overlay]');
+      if (host) this.buildOverlay(host, states[i], r);
+    });
+    this._lastDensity = this.props.density;
+    this._lastSoft = this.props.softness;
+    this._lastPaint = this.props.paintIn;
+    this._lastTheme = this.props.theme;
+    this.ensureSprite();
+    this.applyGrain();
+    this.startLoop();
+  }
+  paintAll() { if (this.renderers) for (const r of this.renderers) this.tick(r); }
+  rebuildOverlays() {
+    if (!this.renderers) return;
+    const states = this.states();
+    for (const r of this.renderers) {
+      const host = r.canvas.parentElement.querySelector('[data-overlay]');
+      if (host) this.buildOverlay(host, states[r.idx], r);
+    }
+  }
+  // paint the field in once from blank, then hold (stationary)
+  paintFull() { this.paintAll(); this._painted = true; }
+  // paint the field in one brush stroke at a time, alternating left / right,
+  // then hold. A timeout fallback guarantees the finished painting even if rAF
+  // is throttled (e.g. a backgrounded tab).
+  startLoop() {
+    cancelAnimationFrame(this._raf);
+    clearTimeout(this._fallback);
+    if (!this.renderers || !this.renderers.length) return;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const speed = this.props.paintIn != null ? this.props.paintIn : 1;
+    this._painted = false;
+    if (reduce || speed <= 0) { this.paintFull(); return; }
+    for (const r of this.renderers) { this.drawBase(r); r.drawn = 0; }
+    const dur = 2000 / Math.max(0.25, speed); // always ~2s (scaled by paintIn)
+    let startT = null;
+    const loop = (ts) => {
+      if (this._painted) return;
+      if (startT == null) startT = ts;
+      const f = Math.min(1, (ts - startT) / dur);
+      let done = true;
+      for (const r of this.renderers) {
+        const target = Math.round(f * r.seeds.length);
+        for (let i = r.drawn; i < target; i++) this.drawSeed(r, r.seeds[i]);
+        r.drawn = target;
+        if (r.drawn < r.seeds.length) done = false;
+      }
+      if (f >= 1 && done) { this._painted = true; return; }
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+    this._fallback = setTimeout(() => { if (!this._painted) this.paintFull(); }, dur + 900);
+  }
+
+  componentDidMount() { this.start(); }
+  componentWillUnmount() { cancelAnimationFrame(this._retry); cancelAnimationFrame(this._raf); clearTimeout(this._fallback); }
+  componentDidUpdate() {
+    if (!this.renderers) return;
+    this.applyGrain();
+    if (this._lastDensity !== this.props.density || this._lastSoft !== this.props.softness) {
+      this._lastDensity = this.props.density;
+      this._lastSoft = this.props.softness;
+      const states = this.states();
+      this.renderers = this.renderers.map(r => { const nr = this.buildRenderer(r.canvas, states[r.idx], r.idx); nr.t = r.t; nr.now = r.now; return nr; });
+      this.rebuildOverlays();
+      this.paintAll();
+    }
+    if (this._lastTheme !== this.props.theme) { this._lastTheme = this.props.theme; this.rebuildOverlays(); this.paintAll(); }
+    if (this._lastPaint !== this.props.paintIn) { this._lastPaint = this.props.paintIn; this.startLoop(); }
+  }
+}
+</script>
+</body>
+</html>

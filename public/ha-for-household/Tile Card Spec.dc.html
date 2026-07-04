@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Tile card — Flat and outline</title>
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/fonts.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/styles.css">
+  <script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-bg); }
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
+  </style>
+</helmet>
+{{ app }}
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  get C() { return (typeof window !== "undefined" && window.HAConceptCarDesignSystem_fababd) || {}; }
+
+  constructor(props) {
+    super(props);
+    if (typeof window !== "undefined" && !window.React) window.React = React;
+    this.state = { on: {}, val: {}, pick: {}, info: null, bgMode: "none", colorMode: "class" };
+    this.DOM = {
+      light:      { icon: "lightbulb",           off: "lightbulb-outline",     color: "#e0a32e", shape: "circle", toggle: true },
+      switch:     { icon: "light-switch",        off: "light-switch-off",      color: "#2f80ed", shape: "circle", toggle: true },
+      fan:        { icon: "fan",                 off: "fan-off",               color: "#2aa6b3", shape: "circle", toggle: true },
+      thermostat: { icon: "thermostat",          off: "thermostat",            color: "#e0662e", shape: "none",   toggle: false },
+      garage:     { icon: "garage-open-variant", off: "garage-variant",        color: "#7c5ab8", shape: "circle", toggle: false },
+      blind:      { icon: "roller-shade",        off: "roller-shade-closed",   color: "#7c5ab8", shape: "circle", toggle: false },
+      lock:       { icon: "lock",                off: "lock-open-variant",     color: "#2e9e5b", shape: "circle", toggle: false },
+      tv:         { icon: "television",          off: "television-off",        color: "#2f80ed", shape: "circle", toggle: true },
+      speaker:    { icon: "speaker",             off: "speaker-off",           color: "#2f80ed", shape: "circle", toggle: true },
+      vacuum:     { icon: "robot-vacuum",        off: "robot-vacuum",          color: "#2e9e5b", shape: "circle", toggle: false },
+      person:     { icon: "account",             off: "account-outline",       color: "#2f80ed", shape: "circle", toggle: false },
+      temperature:{ icon: "thermometer",         off: "thermometer",           color: "#e0662e", shape: "none",   toggle: false },
+      humidity:   { icon: "water-percent",       off: "water-percent",         color: "#2f80ed", shape: "none",   toggle: false },
+    };
+    // Domains with a genuine on/off. Only these get the tinted background and a tap-to-toggle icon.
+    this.ONOFF = new Set(["light", "switch", "fan", "tv", "speaker", "humidifier"]);
+    Object.assign(this.DOM, {
+      humidifier:   { icon: "air-humidifier",        off: "air-humidifier-off",     color: "#2f80ed", shape: "circle", toggle: true },
+      water_heater: { icon: "water-boiler",          off: "water-boiler-off",       color: "#e0662e", shape: "none",   toggle: false },
+      valve:        { icon: "pipe-valve",            off: "pipe-valve",             color: "#7c5ab8", shape: "none",   toggle: false },
+      lawn_mower:   { icon: "robot-mower",           off: "robot-mower-off",        color: "#2e9e5b", shape: "none",   toggle: false },
+      alarm:        { icon: "shield-home",           off: "shield-off",             color: "#2e9e5b", shape: "none",   toggle: false },
+      motion:       { icon: "motion-sensor",         off: "motion-sensor-off",      color: "#2f80ed", shape: "none",   toggle: false },
+      door:         { icon: "door-open",             off: "door-closed",            color: "#e0662e", shape: "none",   toggle: false },
+      smoke:        { icon: "smoke-detector-variant",off: "smoke-detector-variant", color: "#2f80ed", shape: "none",   toggle: false },
+      battery:      { icon: "battery-charging-70",   off: "battery-70",             color: "#2e9e5b", shape: "none",   toggle: false },
+      sun:          { icon: "weather-sunny",         off: "weather-night",          color: "#e0a32e", shape: "none",   toggle: false },
+      number:       { icon: "counter",               off: "counter",                color: "#2f80ed", shape: "none",   toggle: false },
+      select:       { icon: "format-list-bulleted",  off: "format-list-bulleted",   color: "#2f80ed", shape: "none",   toggle: false },
+      scene:        { icon: "palette",               off: "palette",                color: "#e0a32e", shape: "none",   toggle: false },
+      script:       { icon: "script-text",           off: "script-text",            color: "#2f80ed", shape: "none",   toggle: false },
+      buttonEntity: { icon: "gesture-tap-button",    off: "gesture-tap-button",     color: "#2f80ed", shape: "none",   toggle: false },
+      automation:   { icon: "robot",                 off: "robot-off",              color: "#2f80ed", shape: "none",   toggle: false },
+      update:       { icon: "package-up",            off: "package",                color: "#2f80ed", shape: "none",   toggle: false },
+      dateE:        { icon: "calendar",              off: "calendar",               color: "#2f80ed", shape: "none",   toggle: false },
+    });
+  }
+
+  componentDidMount() {
+    try { document.documentElement.setAttribute("data-theme", "dark"); } catch (e) {}
+    this._onKey = (e) => { if (e.key === "Escape" && this.state.info) this.setState({ info: null }); };
+    window.addEventListener("keydown", this._onKey);
+  }
+  componentWillUnmount() { window.removeEventListener("keydown", this._onKey); }
+
+  // ---- helpers ----
+  tint(hex, a) { const m = hex.replace("#", ""); const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16); return "rgba(" + r + "," + g + "," + b + "," + a + ")"; }
+  getOn(id, def) { const v = this.state.on[id]; return v === undefined ? def : v; }
+  setOn(id, v) { this.setState((s) => ({ on: { ...s.on, [id]: v } })); }
+  getVal(id, def) { const v = this.state.val[id]; return v === undefined ? def : v; }
+  setVal(id, v) { this.setState((s) => ({ val: { ...s.val, [id]: Math.max(0, Math.min(100, Math.round(v))) } })); }
+  getPick(id, def) { const v = this.state.pick[id]; return v === undefined ? def : v; }
+  setPick(id, v) { this.setState((s) => ({ pick: { ...s.pick, [id]: v } })); }
+
+  colorFor(spec) {
+    if (!spec.active) return "var(--color-inactive)";
+    if (spec.domain === "lock") return spec.state === "unlocked" ? "#d1453b" : "#2e9e5b";
+    return this.DOM[spec.domain].color;
+  }
+  rawColor(spec) {
+    if (spec.domain === "lock") return spec.state === "unlocked" ? "#d1453b" : "#2e9e5b";
+    return this.DOM[spec.domain].color;
+  }
+  cardTint(spec) {
+    if (this.state.bgMode === "none" || !spec.active || spec.unavail || !this.ONOFF.has(spec.domain)) return "var(--color-surface)";
+    return this.tint(this.rawColor(spec), this.state.bgMode === "strong" ? 0.16 : 0.07);
+  }
+
+  // ---- icon shape ----
+  shapeEl(spec) {
+    const h = React.createElement; const { Icon } = this.C;
+    const dom = this.DOM[spec.domain];
+    const box = { width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", flex: "none", transition: "background-color 200ms ease-out, color 200ms ease-out" };
+    let inner;
+    if (spec.unavail) {
+      inner = h("div", { style: box }, h(Icon, { name: dom.off || dom.icon, size: 22, style: { color: "var(--color-text-disabled)" } }));
+    } else {
+      const colored = spec.active;
+      const color = this.colorFor(spec);
+      const iconName = colored ? (spec.iconOn || dom.icon) : (dom.off || dom.icon);
+      const hasCircle = this.ONOFF.has(spec.domain) && !spec.noCircle;
+      const circleBg = hasCircle ? (colored ? this.tint(this.rawColor(spec), 0.22) : "var(--color-surface-raised)") : "transparent";
+      inner = h("div", { style: { ...box, borderRadius: "var(--radius-full)", background: circleBg, color } }, h(Icon, { name: iconName, size: 22 }));
+    }
+    if (spec.onToggle && !spec.unavail) {
+      return h("button", { type: "button", "aria-label": spec.name, onClick: (e) => { e.stopPropagation(); spec.onToggle(); }, style: { border: "none", background: "transparent", padding: 0, margin: 0, cursor: "pointer", borderRadius: "var(--radius-full)", flex: "none", lineHeight: 0 } }, inner);
+    }
+    return inner;
+  }
+
+  // ---- person avatar (photo instead of the account glyph) ----
+  avatarEl(spec) {
+    const h = React.createElement; const { ProfileAvatar } = this.C;
+    return h("div", { style: { flex: "none", display: "flex", opacity: spec.active ? 1 : 0.55 } },
+      h(ProfileAvatar, { name: spec.name, src: spec.avatar, size: "md", style: { width: 40, height: 40 } }));
+  }
+
+  // ---- radial thermostat gauge (compact preview of the radial control) ----
+  radialGauge(spec) {
+    const h = React.createElement;
+    const size = 40, r = 17, c = size / 2, sw = 4;
+    const C = 2 * Math.PI * r;
+    const arc = 0.75;                 // 270deg dial, gap at the bottom
+    const num = parseFloat(String(spec.value).replace(",", ".")) || 20;
+    const frac = Math.max(0, Math.min(1, (num - 5) / 25)); // 5 to 30 range
+    const track = arc * C;
+    const prog = Math.max(frac * arc * C, 0.001);
+    const color = spec.active ? this.DOM.thermostat.color : "var(--color-inactive)";
+    return h("div", { style: { position: "relative", width: size, height: size, flex: "none" } },
+      h("svg", { width: size, height: size, viewBox: "0 0 " + size + " " + size },
+        h("circle", { cx: c, cy: c, r: r, fill: "none", stroke: "var(--color-surface-raised)", strokeWidth: sw, strokeLinecap: "round", strokeDasharray: track + " " + (C - track), transform: "rotate(135 " + c + " " + c + ")" }),
+        h("circle", { cx: c, cy: c, r: r, fill: "none", stroke: color, strokeWidth: sw, strokeLinecap: "round", strokeDasharray: prog + " " + (C * 2), transform: "rotate(135 " + c + " " + c + ")", style: { transition: "stroke-dasharray 200ms ease-out" } })),
+      h("div", { style: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "14px", letterSpacing: "-0.04em", color: color } }, Math.round(num) + "\u00b0"));
+  }
+
+  // ---- badge overlay (climate hvac action, person zone, humidifier) ----
+  withBadge(leadEl, badge) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { position: "relative", flex: "none", display: "flex" } }, leadEl,
+      h("div", { style: { position: "absolute", top: -3, right: -3, minWidth: 18, height: 18, padding: "0 3px", borderRadius: "var(--radius-full)", background: badge.color || "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 0 2px var(--color-surface)" } },
+        badge.icon ? h(Icon, { name: badge.icon, size: 12, style: { color: "#fff" } }) : h("span", { style: { fontSize: "10px", fontWeight: 700, color: "#fff", fontFamily: "var(--font-mono)" } }, badge.label)));
+  }
+
+  // ---- generic tile ----
+  tile(spec) {
+    const h = React.createElement;
+    const rows = [];
+    // identity row
+    let lead = spec.domain === "thermostat" && !spec.unavail
+      ? this.radialGauge(spec)
+      : (spec.domain === "person" && spec.avatar && !spec.unavail
+          ? this.avatarEl(spec)
+          : this.shapeEl(spec));
+    const nameEl = h("div", { style: { fontSize: "var(--text-base)", fontWeight: 600, color: spec.unavail ? "var(--color-text-tertiary)" : "var(--color-text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, spec.name);
+    const subKids = [];
+    if (spec.badge && !spec.unavail) subKids.push(h(this.C.Icon, { key: "bi", name: spec.badge.icon, size: 15, style: { color: spec.badge.color || "var(--color-accent)", flex: "none" } }));
+    subKids.push(h("span", { key: "st", style: { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, spec.sub));
+    const subEl = h("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: "var(--text-sm)", color: spec.unavail ? "var(--color-text-disabled)" : "var(--color-text-secondary)", lineHeight: 1.3, marginTop: 2, minWidth: 0 } }, subKids);
+    const body = h("div", { style: { flex: 1, minWidth: 0 } }, nameEl, subEl);
+    let trailing = null;
+    if (spec.unavail) trailing = h(this.C.Icon, { name: "information-outline", size: 18, style: { color: "var(--color-text-disabled)", flex: "none" } });
+    rows.push(h("div", { key: "id", style: { display: "flex", alignItems: "center", gap: "var(--space-3)" } }, lead, body, trailing));
+    if (spec.feature) rows.push(h("div", { key: "ft", onClick: (e) => e.stopPropagation(), style: { cursor: "default" } }, spec.feature));
+    return h("div", {
+      key: spec.key, onClick: spec.onInfo ? () => this.setState({ info: spec }) : undefined,
+      style: { background: this.cardTint(spec), borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)", minWidth: 0, cursor: spec.onInfo ? "pointer" : "default", transition: "background-color 200ms ease-out" },
+    }, rows);
+  }
+
+  // ---- feature controls ----
+  segOnOff(id, def) {
+    const h = React.createElement; const on = this.getOn(id, def);
+    const btn = (label, val) => h("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.setOn(id, val); }, style: { flex: 1, padding: "9px 0", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, transition: "all 150ms ease-out", background: on === val ? "rgba(255,255,255,0.14)" : "transparent", color: on === val ? "var(--color-text-primary)" : "var(--color-text-tertiary)", boxShadow: "none" } }, label);
+    return h("div", { style: { display: "flex", gap: 4, padding: 4, height: 48, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, btn("On", true), btn("Off", false));
+  }
+  slider(id, def, _color, disabled, onOn) {
+    const h = React.createElement; const val = this.getVal(id, def);
+    const set = (clientX, el) => { const r = el.getBoundingClientRect(); this.setVal(id, ((clientX - r.left) / r.width) * 100); };
+    const down = (e) => { e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; if (disabled && onOn) onOn(); set(e.clientX, e.currentTarget); };
+    return h("div", {
+      style: { position: "relative", height: 48, borderRadius: "var(--radius-lg)", background: "rgba(255,255,255,0.06)", overflow: "hidden", cursor: "pointer", touchAction: "none", opacity: disabled ? 0.55 : 1, transition: "opacity 150ms ease-out" },
+      onPointerDown: down,
+      onPointerMove: (e) => { if (this._drag === id) set(e.clientX, e.currentTarget); },
+      onPointerUp: () => { this._drag = null; },
+    },
+      h("div", { style: { position: "absolute", top: 4, bottom: 4, left: 4, width: "calc(" + val + "% - 8px)", minWidth: 40, borderRadius: "var(--radius-md)", background: "rgba(255,255,255,0.16)", transition: this._drag === id ? "none" : "width 120ms ease-out" } },
+        h("div", { style: { position: "absolute", top: 8, bottom: 8, right: 8, width: 6, borderRadius: 3, background: "var(--color-text-primary)" } })),
+    );
+  }
+  stepper(id, def) {
+    const h = React.createElement; const { Icon } = this.C; const val = this.getVal(id, def);
+    const b = (name, d) => h("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.setVal(id, val + d); }, style: { width: 52, height: 48, border: "none", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" } }, h(Icon, { name, size: 20 }));
+    return h("div", { style: { display: "flex", alignItems: "center", height: 48, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, b("minus", -2), h("div", { style: { flex: 1, textAlign: "center", fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "var(--text-base)", color: "var(--color-text-primary)" } }, (18 + val * 0.06).toFixed(1) + "\u00b0"), b("plus", 2));
+  }
+  iconGroup(id, items, def, activeColor) {
+    const h = React.createElement; const { Icon } = this.C; const pick = this.getPick(id, def);
+    const b = (it) => { const on = it.v === pick; return h("button", { key: it.v, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); }, style: { flex: 1, height: 40, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: on ? "rgba(255,255,255,0.14)" : "transparent", color: on ? "var(--color-text-primary)" : "var(--color-text-tertiary)", boxShadow: "none", transition: "all 150ms ease-out" } }, h(Icon, { name: it.icon, size: 20 })); };
+    return h("div", { style: { display: "flex", gap: 4, padding: 4, height: 48, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, items.map(b));
+  }
+  buttonRow(id, items, def) {
+    const h = React.createElement; const { Icon } = this.C; const pick = this.getPick(id, def);
+    const b = (it) => { const on = it.v === pick; return h("button", { key: it.v, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); }, style: { flex: 1, height: 48, border: "none", borderRadius: "var(--radius-lg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: on ? "rgba(255,255,255,0.14)" : "var(--color-surface-raised)", color: on ? "var(--color-text-primary)" : "var(--color-text-secondary)", transition: "background-color 150ms ease-out" } }, h(Icon, { name: it.icon, size: 20 })); };
+    return h("div", { style: { display: "flex", gap: "var(--space-2)" } }, items.map(b));
+  }
+  commandRow(id, def, parts) {
+    const h = React.createElement; const { Icon } = this.C; const pick = this.getPick(id, def);
+    const mkBtn = (it, connected) => { const on = it.v === pick; return h("button", { key: it.v, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); }, style: { flex: 1, height: connected ? 40 : 48, border: "none", borderRadius: connected ? "var(--radius-md)" : "var(--radius-lg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", background: on ? "rgba(255,255,255,0.14)" : (connected ? "transparent" : "var(--color-surface-raised)"), color: on ? "var(--color-text-primary)" : "var(--color-text-secondary)", transition: "background-color 150ms ease-out" } }, h(Icon, { name: it.icon, size: 20 })); };
+    const els = parts.map((p, i) => p.seg
+      ? h("div", { key: "s" + i, style: { flex: p.seg.length, display: "flex", gap: 4, padding: 4, height: 48, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, p.seg.map((it) => mkBtn(it, true)))
+      : h("div", { key: "b" + i, style: { flex: 1, display: "flex" } }, mkBtn(p.solo, false)));
+    return h("div", { style: { display: "flex", gap: "var(--space-2)" } }, els);
+  }
+  dropdown(label, icon) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { display: "flex", alignItems: "center", height: 48, gap: "var(--space-2)", padding: "0 var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, icon ? h(Icon, { name: icon, size: 18, style: { color: "var(--color-text-secondary)" } }) : null, h("div", { style: { flex: 1, fontSize: "var(--text-sm)", fontWeight: 500 } }, label), h(Icon, { name: "chevron-down", size: 18, style: { color: "var(--color-text-tertiary)" } }));
+  }
+
+  // ---- sensor tile ----
+  sensor(spec) {
+    const h = React.createElement; const { Icon } = this.C;
+    const dom = this.DOM[spec.domain];
+    if (spec.unavail) {
+      return h("div", { key: spec.key, style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", opacity: 0.55, display: "flex", flexDirection: "column", gap: "var(--space-2)", justifyContent: "space-between", minHeight: 124 } },
+        h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)" } }, h(Icon, { name: dom.icon, size: 16, style: { color: "var(--color-text-disabled)" } }), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", flex: 1 } }, spec.name), h("div", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-disabled)" } }, "1 hour ago")),
+        h("div", { style: { fontSize: "var(--text-2xl)", fontWeight: 600, color: "var(--color-text-tertiary)", fontFamily: "var(--font-mono)" } }, "Unavailable"));
+    }
+    const risky = spec.band === "risky";
+    const bandColor = risky ? "var(--color-error)" : "var(--color-success)";
+    const line = risky ? "2,20 12,18 20,10 30,14 40,5 50,12 62,4 70,9" : "2,16 12,14 22,17 32,12 42,15 52,11 62,14 70,12";
+    return h("div", { key: spec.key, onClick: spec.onInfo ? () => this.setState({ info: spec }) : undefined, style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-2)", justifyContent: "space-between", minHeight: 124, cursor: spec.onInfo ? "pointer" : "default", minWidth: 0 } },
+      h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)" } }, h(Icon, { name: dom.icon, size: 16, style: { color: "var(--color-text-secondary)" } }), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, spec.name), h("div", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", flex: "none" } }, "1 hour ago")),
+      h("div", { style: { display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "var(--space-3)" } },
+        h("div", null,
+          h("div", { style: { fontSize: "var(--text-2xl)", fontWeight: 600, fontFamily: "var(--font-mono)", color: "var(--color-text-primary)", lineHeight: 1.1 } }, spec.value),
+          h("div", { style: { display: "flex", alignItems: "center", gap: 6, marginTop: 4 } }, h("span", { style: { width: 7, height: 7, borderRadius: "var(--radius-full)", background: bandColor } }), h("span", { style: { fontSize: "var(--text-sm)", color: bandColor, fontWeight: 500 } }, risky ? "Risky" : "Comfortable"))),
+        h("svg", { width: 74, height: 26, viewBox: "0 0 74 26", style: { flex: "none", overflow: "visible" } }, h("polyline", { points: line, fill: "none", stroke: bandColor, strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }))));
+  }
+
+  // ---- extra feature controls ----
+  stack(kids) { return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } }, kids); }
+  row2(kids) { return React.createElement("div", { style: { display: "flex", gap: "var(--space-2)" } }, kids); }
+  pillButton(label, color, key, grow) {
+    const h = React.createElement;
+    return h("button", { key: key, type: "button", onClick: (e) => e.stopPropagation(), style: { flex: grow ? "1 1 0" : "none", width: grow ? "auto" : "100%", height: 48, border: "none", borderRadius: "var(--radius-lg)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, background: color ? this.tint(color, 0.16) : "var(--color-surface-raised)", color: color || "var(--color-text-primary)", transition: "background-color 150ms ease-out" } }, label);
+  }
+  barGauge(id, def, color) {
+    const h = React.createElement; const val = this.getVal(id, def);
+    return h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", height: 48, padding: "0 var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } },
+      h("div", { style: { flex: 1, height: 8, borderRadius: "var(--radius-full)", background: "rgba(255,255,255,0.08)", overflow: "hidden" } }, h("div", { style: { width: val + "%", height: "100%", borderRadius: "var(--radius-full)", background: color } })),
+      h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "var(--text-sm)", color: "var(--color-text-primary)", minWidth: 40, textAlign: "right" } }, val + "%"));
+  }
+  lerpHex(a, b, t) {
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    const ar = (pa >> 16) & 255, ag = (pa >> 8) & 255, ab = pa & 255;
+    const br = (pb >> 16) & 255, bg = (pb >> 8) & 255, bb = pb & 255;
+    const m = (x, y) => Math.round(x + (y - x) * t);
+    return "rgb(" + m(ar, br) + "," + m(ag, bg) + "," + m(ab, bb) + ")";
+  }
+  tempSlider(id, def) {
+    const h = React.createElement; const val = this.getVal(id, def);
+    const stops = ["#f7b06a", "#fbe9cf", "#cfe0ff"]; const f = val / 100;
+    const picked = f < 0.5 ? this.lerpHex(stops[0], stops[1], f / 0.5) : this.lerpHex(stops[1], stops[2], (f - 0.5) / 0.5);
+    const set = (clientX, el) => { const r = el.getBoundingClientRect(); this.setVal(id, ((clientX - r.left) / r.width) * 100); };
+    return h("div", { style: { position: "relative", height: 48, borderRadius: "var(--radius-lg)", background: "var(--color-surface-raised)", overflow: "hidden", cursor: "pointer", touchAction: "none" },
+      onPointerDown: (e) => { e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; set(e.clientX, e.currentTarget); },
+      onPointerMove: (e) => { if (this._drag === id) set(e.clientX, e.currentTarget); },
+      onPointerUp: () => { this._drag = null; } },
+      h("div", { style: { position: "absolute", top: 4, bottom: 4, left: 4, right: 4, borderRadius: "var(--radius-md)", background: "linear-gradient(90deg,#f7b06a,#fbe9cf,#cfe0ff)" } }),
+      h("div", { style: { position: "absolute", top: 0, bottom: 0, left: "clamp(14px, " + val + "%, calc(100% - 14px))", transform: "translateX(-50%)", width: 28, borderRadius: "var(--radius-lg)", background: picked, border: "4px solid rgba(255,255,255,0.95)", boxSizing: "border-box" } }));
+  }
+
+  // ---- section chrome ----
+  sec(kicker, title, desc, body) {
+    const h = React.createElement;
+    return h("section", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)", maxWidth: 720 } },
+        h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" } }, kicker),
+        h("h2", { style: { margin: 0, fontFamily: "var(--font-display)", fontSize: "var(--text-2xl)", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--color-text-primary)" } }, title),
+        desc ? h("p", { style: { margin: 0, fontSize: "var(--text-base)", color: "var(--color-text-secondary)", lineHeight: 1.55 } }, desc) : null),
+      body);
+  }
+  colHead(label) {
+    const h = React.createElement;
+    return h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)", paddingBottom: "var(--space-1)" } }, label);
+  }
+  segControl(value, options, onChange) {
+    const h = React.createElement;
+    const b = (o) => h("button", { key: o.v, type: "button", onClick: () => onChange(o.v), style: { padding: "7px 14px", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, whiteSpace: "nowrap", background: value === o.v ? "var(--color-surface)" : "transparent", color: value === o.v ? "var(--color-text-primary)" : "var(--color-text-tertiary)", boxShadow: value === o.v ? "0 1px 2px rgba(0,0,0,0.35)" : "none", transition: "all 150ms ease-out" } }, o.label);
+    return h("div", { style: { display: "inline-flex", gap: 4, padding: 4, background: "var(--color-surface-raised)", borderRadius: "var(--radius-md)" } }, options.map(b));
+  }
+
+  // ---- more-info dialog ----
+  infoDialog() {
+    const h = React.createElement; const { Icon } = this.C; const spec = this.state.info; if (!spec) return null;
+    return h("div", { style: { position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-4)" } },
+      h("div", { onClick: () => this.setState({ info: null }), style: { position: "absolute", inset: 0, background: "var(--color-scrim)" } }),
+      h("div", { style: { position: "relative", zIndex: 1001, width: "min(400px,100%)", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+        h("button", { type: "button", onClick: () => this.setState({ info: null }), style: { position: "absolute", top: "var(--space-4)", left: "var(--space-4)", width: 32, height: 32, border: "none", borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "close", size: 18 })),
+        h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-3)", paddingTop: "var(--space-2)" } },
+          this.shapeEl({ ...spec, unavail: false }),
+          h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-xl)", fontWeight: 600, color: "var(--color-text-primary)" } }, spec.name),
+          h("div", { style: { fontSize: "var(--text-base)", color: "var(--color-text-secondary)", fontFamily: spec.domain === "temperature" || spec.domain === "humidity" ? "var(--font-mono)" : "inherit" } }, spec.sub || spec.value || "")),
+        h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", textAlign: "center", lineHeight: 1.5, borderTop: "1px solid var(--color-border-subtle)", paddingTop: "var(--space-4)" } }, "Tapping the icon toggles on and off. Tapping the card body (here) opens more-info.")));
+  }
+
+  // ================= sections =================
+  headerBar() {
+    const h = React.createElement;
+    return h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-6)", alignItems: "flex-end", padding: "var(--space-5)", background: "var(--color-surface)", borderRadius: "var(--radius-xl)" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } }, this.colHead("D2 · On-state background"), this.segControl(this.state.bgMode, [{ v: "none", label: "Icon only" }, { v: "subtle", label: "+ subtle tint" }, { v: "strong", label: "+ strong tint" }], (v) => this.setState({ bgMode: v }))),
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", maxWidth: 320, lineHeight: 1.5 } }, "Icon color is always device-class. The background tint shows on/off state and only appears on on/off domains, tune how strong it is here."));
+  }
+
+  matrix() {
+    const h = React.createElement;
+    const rows = [
+      [{ domain: "light", name: "Light", active: true, sub: "80%" }, { domain: "light", name: "Light", active: false, sub: "Off" }],
+      [{ domain: "switch", name: "Switch", active: true, sub: "On" }, { domain: "switch", name: "Switch", active: false, sub: "Off" }],
+      [{ domain: "fan", name: "Fan", active: true, sub: "80%" }, { domain: "fan", name: "Fan", active: false, sub: "Off" }],
+      [{ domain: "thermostat", name: "Thermostat", active: true, value: "20.4\u00b0", sub: "Heat to 21.5\u00b0", badge: { icon: "fire", color: "#d1453b" } }, { domain: "thermostat", name: "Thermostat", active: false, value: "22.0\u00b0", sub: "Idle on 20\u00b0" }],
+      [{ domain: "garage", name: "Garage", active: true, sub: "Open" }, { domain: "garage", name: "Garage", active: false, sub: "Closed" }],
+      [{ domain: "blind", name: "Blind", active: true, sub: "30% open" }, { domain: "blind", name: "Blind", active: false, sub: "Closed" }],
+      [{ domain: "lock", name: "Lock", active: true, state: "locked", sub: "Locked" }, { domain: "lock", name: "Lock", active: true, state: "unlocked", iconOn: "lock-open-variant", sub: "Unlocked" }],
+      [{ domain: "tv", name: "TV", active: true, sub: "Source" }, { domain: "tv", name: "TV", active: false, sub: "Off" }],
+      [{ domain: "speaker", name: "Speaker", active: true, sub: "Audio" }, { domain: "speaker", name: "Speaker", active: false, sub: "Off" }],
+      [{ domain: "vacuum", name: "Vacuum", active: true, sub: "Cleaning" }, { domain: "vacuum", name: "Vacuum", active: false, sub: "Docked" }],
+      [{ domain: "person", name: "Daan", avatar: "ds/assets/daan.png", active: true, sub: "Home", badge: { icon: "home", color: "#2e9e5b" } }, { domain: "person", name: "Daan", avatar: "ds/assets/daan.png", active: false, sub: "Away" }],
+    ];
+    const cells = [];
+    rows.forEach((r, i) => {
+      cells.push(this.tile({ ...r[0], key: "a" + i, onInfo: true }));
+      cells.push(this.tile({ ...r[1], key: "b" + i, onInfo: true }));
+      cells.push(this.tile({ ...r[0], name: r[0].name, active: false, unavail: true, sub: "Unavailable", key: "c" + i }));
+    });
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+      h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--space-3)" } }, this.colHead("Active"), this.colHead("Inactive"), this.colHead("Unavailable")),
+      h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--space-3)" } }, cells));
+  }
+
+  controls() {
+    const h = React.createElement;
+    const c = (spec) => this.tile(spec);
+    const items = [
+      c({ domain: "light", name: "Corner light", active: this.getOn("f-light", true), sub: this.getOn("f-light", true) ? this.getVal("f-bri", 80) + "%" : "Off", onInfo: true, onToggle: () => this.setOn("f-light", !this.getOn("f-light", true)), key: "fl", feature: this.slider("f-bri", 80, null, !this.getOn("f-light", true), () => this.setOn("f-light", true)) }),
+      c({ domain: "switch", name: "Switch", active: this.getOn("f-switch", true), sub: this.getOn("f-switch", true) ? "On" : "Off", onInfo: true, onToggle: () => this.setOn("f-switch", !this.getOn("f-switch", true)), key: "fsw" }),
+      c({ domain: "tv", name: "TV", active: this.getOn("f-tv", false), sub: this.getOn("f-tv", false) ? "Source" : "Off", onInfo: true, onToggle: () => this.setOn("f-tv", !this.getOn("f-tv", false)), key: "ftv" }),
+      c({ domain: "speaker", name: "Kitchen speaker", active: this.getOn("f-spk", true), sub: this.getOn("f-spk", true) ? "While My Guitar Gently Weeps" : "Off", onInfo: true, onToggle: () => this.setOn("f-spk", !this.getOn("f-spk", true)), key: "fsp", feature: this.slider("f-vol", 45, null, !this.getOn("f-spk", true), () => this.setOn("f-spk", true)) }),
+      c({ domain: "fan", name: "Fan", active: this.getOn("f-fan", true), sub: this.getOn("f-fan", true) ? this.getVal("f-fanv", 80) + "%" : "Off", onInfo: true, onToggle: () => this.setOn("f-fan", !this.getOn("f-fan", true)), key: "ffn", feature: h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } }, this.iconGroup("f-fanmode", [{ v: "auto", icon: "autorenew" }, { v: "low", icon: "fan-speed-1" }, { v: "med", icon: "fan-speed-2" }, { v: "high", icon: "fan-speed-3" }, { v: "osc", icon: "arrow-oscillating" }], "med", this.rawColor({ domain: "fan", active: true })), this.slider("f-fanv", 80, null, !this.getOn("f-fan", true), () => this.setOn("f-fan", true))) }),
+      c({ domain: "thermostat", name: "Thermostat", active: true, value: "20.4\u00b0", sub: "Heat to " + (18 + this.getVal("f-temp", 58) * 0.06).toFixed(1) + "\u00b0", onInfo: true, key: "fth", badge: { icon: "fire", color: "#d1453b" }, feature: this.stepper("f-temp", 58) }),
+      c({ domain: "blind", name: "Blind", active: true, sub: this.getVal("f-blind", 30) + "% open", onInfo: true, key: "fbl", feature: this.slider("f-blind", 30, null) }),
+      c({ domain: "garage", name: "Garage", active: this.getPick("f-garage", "up") === "up", sub: this.getPick("f-garage", "up") === "up" ? "Open" : "Closed", onInfo: true, key: "fga", feature: this.iconGroup("f-garage", [{ v: "up", icon: "arrow-up" }, { v: "stop", icon: "stop" }, { v: "down", icon: "arrow-down" }], "up") }),
+      c({ domain: "lock", name: "Front door", active: true, state: this.getPick("f-lock", "locked"), iconOn: this.getPick("f-lock", "locked") === "unlocked" ? "lock-open-variant" : "lock", sub: this.getPick("f-lock", "locked") === "unlocked" ? "Unlocked" : "Locked", onInfo: true, key: "flk", feature: this.iconGroup("f-lock", [{ v: "locked", icon: "lock" }, { v: "unlocked", icon: "lock-open-variant" }], "locked") }),
+      c({ domain: "vacuum", name: "Vacuum", active: this.getPick("f-vac", "clean") !== "dock", sub: this.getPick("f-vac", "clean") === "dock" ? "Docked" : "Cleaning", onInfo: true, key: "fvc", feature: this.commandRow("f-vac", "clean", [{ seg: [{ v: "clean", icon: "play" }, { v: "stop", icon: "stop" }] }, { solo: { v: "dock", icon: "home-import-outline" } }]) }),
+      c({ domain: "person", name: "Daan", avatar: "ds/assets/daan.png", active: this.getPick("f-person", "home") === "home", sub: this.getPick("f-person", "home") === "home" ? "Home" : "Away", onInfo: true, key: "fpr", badge: this.getPick("f-person", "home") === "home" ? { icon: "home", color: "#2e9e5b" } : null, feature: this.dropdown(this.getPick("f-person", "home") === "home" ? "Home" : "Away", "home") }),
+    ];
+    return h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "var(--space-3)", alignItems: "start" } }, items);
+  }
+
+  sensors() {
+    const h = React.createElement;
+    const specs = [
+      { domain: "temperature", name: "Temperature", value: "18.7\u00b0", band: "comfortable", onInfo: true, key: "s1", sub: "Comfortable" },
+      { domain: "temperature", name: "Temperature", value: "29.9\u00b0", band: "risky", onInfo: true, key: "s2", sub: "Risky" },
+      { domain: "temperature", name: "Temperature", unavail: true, key: "s3" },
+      { domain: "humidity", name: "Humidity", value: "58.5%", band: "comfortable", onInfo: true, key: "s4", sub: "Comfortable" },
+      { domain: "humidity", name: "Humidity", value: "85.5%", band: "risky", onInfo: true, key: "s5", sub: "Risky" },
+      { domain: "humidity", name: "Humidity", unavail: true, key: "s6" },
+    ];
+    return h("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "var(--space-3)" } },
+      this.colHead("Comfortable"), this.colHead("Risky"), this.colHead("Unavailable"),
+      ...specs.map((s) => this.sensor(s)));
+  }
+
+  interaction() {
+    const h = React.createElement; const { Icon } = this.C;
+    const cardBox = (children) => h("div", { style: { flex: 1, minWidth: 240, background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-5)", display: "flex", flexDirection: "column", gap: "var(--space-4)" } }, children);
+    const label = (icon, text, color) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--text-sm)", fontWeight: 600, color } }, h(Icon, { name: icon, size: 18 }), text);
+    const a = cardBox([
+      label("gesture-tap", "Tap the icon to toggle, on and off", "var(--color-success)"),
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, "The icon is the on/off control in both states, tap it. Domains with no on/off keep their own control and no tinted background."),
+      this.tile({ domain: "light", name: "Corner light", active: this.getOn("i-l", true), sub: this.getOn("i-l", true) ? "80%" : "Off", onToggle: () => this.setOn("i-l", !this.getOn("i-l", true)), key: "ia" }),
+    ]);
+    const b = cardBox([
+      label("card-search-outline", "Tap the card body for more-info", "var(--color-accent)"),
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, "Everything except the icon opens the detail dialog. Tap the name."),
+      this.tile({ domain: "switch", name: "Bookcase", active: this.getOn("i-sw", true), sub: this.getOn("i-sw", true) ? "On" : "Off", onToggle: () => this.setOn("i-sw", !this.getOn("i-sw", true)), onInfo: true, key: "ib" }),
+    ]);
+    return h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-3)" } }, a, b);
+  }
+
+  inContext() {
+    const h = React.createElement;
+    const t = (spec) => this.tile(spec);
+    const cells = [
+      this.sensor({ domain: "temperature", name: "Temperature", value: "18.7\u00b0", band: "comfortable", key: "x1", onInfo: true, sub: "Comfortable" }),
+      t({ domain: "thermostat", name: "Thermostat", active: true, value: "20.4\u00b0", sub: "Heat to " + (18 + this.getVal("x-temp", 58) * 0.06).toFixed(1) + "\u00b0", key: "x2", onInfo: true, badge: { icon: "fire", color: "#d1453b" }, feature: this.stepper("x-temp", 58) }),
+      t({ domain: "light", name: "Diner table", active: this.getOn("x-l1", true), sub: this.getOn("x-l1", true) ? this.getVal("x-b1", 80) + "%" : "Off", key: "x3", onInfo: true, onToggle: () => this.setOn("x-l1", !this.getOn("x-l1", true)), feature: this.slider("x-b1", 80, null, !this.getOn("x-l1", true), () => this.setOn("x-l1", true)) }),
+      t({ domain: "light", name: "Bookcase", active: this.getOn("x-l2", true), sub: this.getOn("x-l2", true) ? "80%" : "Off", key: "x4", onInfo: true, onToggle: () => this.setOn("x-l2", !this.getOn("x-l2", true)) }),
+      t({ domain: "light", name: "Corner light", active: this.getOn("x-l3", true), sub: this.getOn("x-l3", true) ? "80%" : "Off", key: "x5", onInfo: true, onToggle: () => this.setOn("x-l3", !this.getOn("x-l3", true)) }),
+      t({ domain: "speaker", name: "Speaker", active: this.getOn("x-spk", false), sub: this.getOn("x-spk", false) ? "Audio" : "Off", key: "x6", onInfo: true, onToggle: () => this.setOn("x-spk", !this.getOn("x-spk", false)), badge: this.getOn("x-spk", false) ? { icon: "play", color: this.DOM.speaker.color } : null }),
+      t({ domain: "tv", name: "TV", active: this.getOn("x-tv", false), sub: this.getOn("x-tv", false) ? "Source" : "Off", key: "x7", onInfo: true, onToggle: () => this.setOn("x-tv", !this.getOn("x-tv", false)), badge: this.getOn("x-tv", false) ? { icon: "play", color: this.DOM.tv.color } : null }),
+      t({ domain: "lock", name: "Front door", active: true, state: this.getPick("x-lk", "locked"), iconOn: this.getPick("x-lk", "locked") === "unlocked" ? "lock-open-variant" : "lock", sub: this.getPick("x-lk", "locked") === "unlocked" ? "Unlocked" : "Locked", key: "x8", onInfo: true, feature: this.iconGroup("x-lk", [{ v: "locked", icon: "lock" }, { v: "unlocked", icon: "lock-open-variant" }], "locked") }),
+    ];
+    return h("div", { style: { background: "var(--color-bg)", borderRadius: "var(--radius-xl)", padding: "var(--space-5)", border: "1px solid var(--color-border-subtle)" } },
+      h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 600, marginBottom: "var(--space-4)", display: "flex", alignItems: "center", gap: 6 } }, "Living room", h(this.C.Icon, { name: "chevron-right", size: 18, style: { color: "var(--color-text-tertiary)" } })),
+      h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: "var(--space-3)", alignItems: "start" } }, cells));
+  }
+
+  covChips() {
+    const h = React.createElement;
+    const items = ["Toggle", "Brightness", "Color temp", "Fan speed", "Fan modes", "Target temperature", "HVAC modes", "Preset modes", "Target humidity", "Cover open/close", "Cover position", "Cover tilt", "Valve", "Lock commands", "Open door", "Media controls", "Volume", "Vacuum commands", "Lawn mower", "Alarm modes", "Bar gauge", "Trend graph", "Numeric input", "Select options", "Buttons", "Update actions", "Date"];
+    return h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-2)" } }, items.map((label) => h("span", { key: label, style: { display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: "var(--radius-full)", background: "var(--color-surface)", fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" } }, h("span", { style: { width: 6, height: 6, borderRadius: "var(--radius-full)", background: "var(--color-success)", flex: "none" } }), label)));
+  }
+
+  coverage() {
+    const h = React.createElement;
+    const t = (spec) => this.tile(spec);
+    const grp = (title, tiles) => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+      this.colHead(title),
+      h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(264px,1fr))", gap: "var(--space-3)", alignItems: "start" } }, tiles));
+    const cLight = this.rawColor({ domain: "light", active: true });
+    const cFan = this.rawColor({ domain: "fan", active: true });
+    const groups = [
+      grp("Lighting and switches", [
+        t({ key: "cl1", domain: "light", name: "Ceiling light", active: this.getOn("cl1", true), sub: this.getOn("cl1", true) ? this.getVal("clb1", 80) + "%" : "Off", onToggle: () => this.setOn("cl1", !this.getOn("cl1", true)), onInfo: true, feature: this.getOn("cl1", true) ? this.slider("clb1", 80, cLight) : null }),
+        t({ key: "cl2", domain: "light", name: "Reading light", active: this.getOn("cl2", true), sub: "Warm white", onToggle: () => this.setOn("cl2", !this.getOn("cl2", true)), onInfo: true, feature: this.tempSlider("clt2", 35) }),
+        t({ key: "cl3", domain: "switch", name: "Coffee machine", active: this.getOn("cl3", true), sub: this.getOn("cl3", true) ? "On" : "Off", onInfo: true, noCircle: true, feature: this.segOnOff("cl3", true) }),
+        t({ key: "cl4", domain: "fan", name: "Bedroom fan", active: this.getOn("cl4", true), sub: this.getOn("cl4", true) ? this.getVal("clf4", 60) + "%" : "Off", onToggle: () => this.setOn("cl4", !this.getOn("cl4", true)), onInfo: true, feature: this.stack([this.iconGroup("clfm4", [{ v: "auto", icon: "autorenew" }, { v: "low", icon: "fan-speed-1" }, { v: "high", icon: "fan-speed-3" }, { v: "osc", icon: "arrow-oscillating" }, { v: "dir", icon: "arrow-u-left-top" }], "low", cFan), this.slider("clf4", 60, cFan, !this.getOn("cl4", true), () => this.setOn("cl4", true))]) }),
+      ]),
+      grp("Climate", [
+        t({ key: "cc1", domain: "thermostat", name: "Thermostat", active: true, value: "20.4\u00b0", sub: "Heat to " + (18 + this.getVal("cct1", 58) * 0.06).toFixed(1) + "\u00b0", onInfo: true, badge: { icon: "fire", color: "#d1453b" }, feature: this.stepper("cct1", 58) }),
+        t({ key: "cc2", domain: "thermostat", name: "Living room", active: true, value: "21.0\u00b0", sub: "Cooling", onInfo: true, badge: { icon: "snowflake", color: "#2f80ed" }, feature: this.iconGroup("cchv2", [{ v: "off", icon: "power" }, { v: "heat", icon: "fire" }, { v: "cool", icon: "snowflake" }, { v: "auto", icon: "autorenew" }, { v: "dry", icon: "water-percent" }, { v: "fan", icon: "fan" }], "cool") }),
+        t({ key: "cc3", domain: "thermostat", name: "Bedroom climate", active: true, value: "19.5\u00b0", sub: "Preset", onInfo: true, feature: this.dropdown("Eco", "leaf") }),
+        t({ key: "cc4", domain: "humidifier", name: "Humidifier", active: this.getOn("cc4", true), sub: this.getOn("cc4", true) ? this.getVal("cch4", 45) + "%" : "Off", onToggle: () => this.setOn("cc4", !this.getOn("cc4", true)), onInfo: true, feature: this.stack([this.iconGroup("ccm4", [{ v: "auto", icon: "autorenew" }, { v: "baby", icon: "baby-carriage" }, { v: "eco", icon: "leaf" }], "auto"), this.stepper("cch4", 45)]) }),
+        t({ key: "cc5", domain: "water_heater", name: "Water heater", active: true, sub: "Eco", onInfo: true, feature: this.iconGroup("ccw5", [{ v: "eco", icon: "leaf" }, { v: "perf", icon: "fire" }, { v: "off", icon: "power" }], "eco") }),
+      ]),
+      grp("Covers, locks and valves", [
+        t({ key: "cv1", domain: "blind", name: "Living room blinds", active: true, sub: this.getVal("cvp1", 30) + "% open", onInfo: true, feature: this.stack([this.iconGroup("cvo1", [{ v: "up", icon: "arrow-up" }, { v: "stop", icon: "stop" }, { v: "down", icon: "arrow-down" }], "up"), this.slider("cvp1", 30, this.rawColor({ domain: "blind", active: true }))]) }),
+        t({ key: "cv2", domain: "blind", name: "Venetian blinds", active: true, sub: "Tilt " + this.getVal("cvt2", 45) + "%", onInfo: true, feature: this.slider("cvt2", 45, this.rawColor({ domain: "blind", active: true })) }),
+        t({ key: "cv3", domain: "garage", name: "Garage door", active: this.getPick("cvg3", "up") === "up", sub: this.getPick("cvg3", "up") === "up" ? "Open" : "Closed", onInfo: true, feature: this.iconGroup("cvg3", [{ v: "up", icon: "arrow-up" }, { v: "stop", icon: "stop" }, { v: "down", icon: "arrow-down" }], "up") }),
+        t({ key: "cv4", domain: "lock", name: "Front door", active: true, state: this.getPick("cvl4", "locked"), iconOn: this.getPick("cvl4", "locked") === "unlocked" ? "lock-open-variant" : "lock", sub: this.getPick("cvl4", "locked") === "unlocked" ? "Unlocked" : "Locked", onInfo: true, feature: this.stack([this.iconGroup("cvl4", [{ v: "locked", icon: "lock" }, { v: "unlocked", icon: "lock-open-variant" }], "locked"), this.pillButton("Open door", null, "od")]) }),
+        t({ key: "cv5", domain: "valve", name: "Water valve", active: true, sub: this.getVal("cvv5", 100) + "% open", onInfo: true, feature: this.stack([this.iconGroup("cvvo5", [{ v: "open", icon: "valve-open" }, { v: "stop", icon: "stop" }, { v: "close", icon: "valve-closed" }], "open"), this.slider("cvv5", 100, this.DOM.valve.color)]) }),
+      ]),
+      grp("Media", [
+        t({ key: "cm1", domain: "tv", name: "Living room TV", active: this.getOn("cm1", true), sub: this.getOn("cm1", true) ? "Netflix" : "Off", onToggle: () => this.setOn("cm1", !this.getOn("cm1", true)), onInfo: true, feature: this.stack([this.iconGroup("cmt1", [{ v: "prev", icon: "skip-previous" }, { v: "play", icon: "pause" }, { v: "next", icon: "skip-next" }], "play"), this.slider("cmv1", 35, this.DOM.tv.color)]) }),
+        t({ key: "cm2", domain: "speaker", name: "Kitchen speaker", active: this.getOn("cm2", true), sub: this.getOn("cm2", true) ? "While My Guitar Gently Weeps" : "Off", onToggle: () => this.setOn("cm2", !this.getOn("cm2", true)), onInfo: true, feature: this.stack([this.iconGroup("cms2", [{ v: "prev", icon: "skip-previous" }, { v: "play", icon: "play" }, { v: "next", icon: "skip-next" }], "play"), this.slider("cmvol2", 50, this.DOM.speaker.color)]) }),
+      ]),
+      grp("Cleaning", [
+        t({ key: "cn1", domain: "vacuum", name: "Robot vacuum", active: this.getPick("cn1", "clean") !== "dock", sub: this.getPick("cn1", "clean") === "dock" ? "Docked" : "Cleaning", onInfo: true, feature: this.commandRow("cn1", "clean", [{ seg: [{ v: "clean", icon: "play-pause" }, { v: "stop", icon: "stop" }] }, { solo: { v: "locate", icon: "map-marker" } }, { solo: { v: "dock", icon: "home-import-outline" } }]) }),
+        t({ key: "cn2", domain: "lawn_mower", name: "Lawn mower", active: this.getPick("cn2", "mow") !== "dock", sub: this.getPick("cn2", "mow") === "dock" ? "Docked" : "Mowing", onInfo: true, feature: this.commandRow("cn2", "mow", [{ seg: [{ v: "mow", icon: "play-pause" }, { v: "stop", icon: "stop" }] }, { solo: { v: "dock", icon: "home-import-outline" } }]) }),
+      ]),
+      grp("Security and sensors", [
+        t({ key: "cs1", domain: "alarm", name: "Alarm", active: true, sub: "Armed home", onInfo: true, feature: this.iconGroup("cs1", [{ v: "off", icon: "shield-off", color: "#d1453b" }, { v: "home", icon: "shield-home" }, { v: "away", icon: "shield-lock" }, { v: "night", icon: "shield-moon" }], "home") }),
+        t({ key: "cs2", domain: "motion", name: "Hallway motion", active: true, sub: "Detected 2 min ago", onInfo: true }),
+        t({ key: "cs3", domain: "door", name: "Front door sensor", active: false, sub: "Closed", onInfo: true }),
+        t({ key: "cs4", domain: "smoke", name: "Smoke detector", active: false, sub: "Clear", onInfo: true }),
+        this.sensor({ key: "cs5", domain: "temperature", name: "Temperature", value: "18.7\u00b0", band: "comfortable", sub: "Comfortable", onInfo: true }),
+        t({ key: "cs6", domain: "battery", name: "Phone battery", active: true, sub: "Charging", onInfo: true, feature: this.barGauge("csb6", 72, "#2e9e5b") }),
+        t({ key: "cs7", domain: "sun", name: "Sun", active: true, sub: "Above horizon", onInfo: true }),
+      ]),
+      grp("Helpers and actions", [
+        t({ key: "ch1", domain: "number", name: "Volume limit", active: true, sub: (this.getVal("ch1", 70) / 10).toFixed(0), onInfo: true, feature: this.stepper("ch1", 70) }),
+        t({ key: "ch2", domain: "select", name: "Thermostat mode", active: true, sub: "Select", onInfo: true, feature: this.dropdown("Auto", "format-list-bulleted") }),
+        t({ key: "ch3", domain: "scene", name: "Movie night", active: true, sub: "Scene", onInfo: true, feature: this.pillButton("Activate", null, "a") }),
+        t({ key: "ch4", domain: "script", name: "Goodnight", active: true, sub: "Script", onInfo: true, feature: this.pillButton("Run", null, "r") }),
+        t({ key: "ch5", domain: "buttonEntity", name: "Doorbell", active: true, sub: "Button", onInfo: true, feature: this.pillButton("Press", null, "p") }),
+        t({ key: "ch6", domain: "automation", name: "Sunset lights", active: true, sub: "On", onInfo: true, feature: this.pillButton("Run", null, "r2") }),
+        t({ key: "ch7", domain: "update", name: "Home Assistant Core", active: true, sub: "Update available", onInfo: true, feature: this.row2([this.pillButton("Install", "#2f80ed", "i", true), this.pillButton("Skip", null, "s", true)]) }),
+        t({ key: "ch8", domain: "dateE", name: "Anniversary", active: true, sub: "Date", onInfo: true, feature: this.dropdown("14 Jul 2026", "calendar") }),
+      ]),
+    ];
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-8)" } }, this.covChips(), ...groups);
+  }
+
+  buildApp() {
+    const h = React.createElement;
+    return h("div", { style: { minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", padding: "clamp(20px,4vw,56px)" } },
+      h("div", { style: { maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "var(--space-16)" } },
+        // hero
+        h("header", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" } }, "Concept Car \u00b7 tile card"),
+          h("h1", { style: { margin: 0, fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 } }, "Tile card, flat and outline"),
+          h("p", { style: { margin: 0, maxWidth: 640, fontSize: "var(--text-md)", color: "var(--color-text-secondary)", lineHeight: 1.55 } }, "Your Iteration 3 direction, built live in the dark theme. State reads from a flat/outline icon in a device-class color; on/off devices also tint the card. Tapping the icon toggles on and off, and the card body opens more-info. Sensors get a comfort band, and every domain has an honest Unavailable state."),
+          this.headerBar()),
+        this.sec("The model", "Every domain, three states", "Active shows a filled glyph; on/off domains (light, switch, fan, TV, speaker) add a soft tinted circle behind it because they can be turned off. Domains with no on/off (lock, garage, blind, vacuum, person) show the colored glyph alone. Inactive is an outline glyph; unavailable is muted with an info affordance.", this.matrix()),
+        this.sec("Controls", "Tap the icon for on/off, feature row for the rest", "On/off devices (light, switch, fan, TV, speaker) toggle by tapping the icon and also carry a slider where it helps. Others have no on/off, so no tinted background: they get the right control instead, a target stepper, position slider, icon-button groups, a fan mode row, or a select. Every control is the same height. Drag and tap them.", this.controls()),
+        this.sec("Sensors", "Read-only, with a comfort band", "Temperature and humidity have no on/off. They lead with the value, a qualitative band (Comfortable / Risky) with a matching sparkline, and a timestamp. Decision D4: keep this banding, or run sensors neutral.", this.sensors()),
+        this.sec("Coverage", "Every domain and feature", "One preview per Home Assistant entity domain, built from the controls we have. Read-only entities (motion, door, smoke, sun, sensors) show state only; everything else carries its feature widget. The chips list the tile-card features (2025.9); trend graph is the sensor sparkline, and camera and weather forecast are parked.", this.coverage()),
+        this.sec("Interaction", "Tap the icon, or tap the card", "", this.interaction()),
+        this.sec("In context", "A room at the new density", "Mixed domains together, interactive. Toggle lights, step the thermostat, unlock the door, drag a slider, tap any card for more-info.", this.inContext()),
+        h("div", { style: { height: 1 } })),
+      this.infoDialog());
+  }
+
+  renderVals() { return { app: this.buildApp() }; }
+}
+</script>
+</body>
+</html>

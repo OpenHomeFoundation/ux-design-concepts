@@ -52,6 +52,12 @@
   }
   function zoneHtml(z) {
     var col = z.color || "#1C6FD6";
+    if (z.ghost) {
+      // Suggested-but-not-approved zone: dashed, translucent, muted fill so it
+      // reads as provisional against the live zones.
+      var ico = z.icon ? '<span class="mdi mdi-' + esc(z.icon) + ' cc-zone__ico"></span>' : esc(z.name);
+      return '<span class="cc-zone__label cc-zone__label--ghost' + (z.icon ? ' cc-zone__label--icon' : '') + '" title="' + esc(z.name) + '" style="background:transparent;color:' + col + ';border:1.5px dashed ' + col + '">' + ico + '</span>';
+    }
     if (z.icon) return '<span class="cc-zone__label cc-zone__label--icon" title="' + esc(z.name) + '" style="background:' + col + ';color:' + fgFor(col) + ';border-color:rgba(0,0,0,0.28)"><span class="mdi mdi-' + esc(z.icon) + ' cc-zone__ico"></span></span>';
     return '<span class="cc-zone__label" style="background:' + col + ';color:' + fgFor(col) + ';border-color:rgba(0,0,0,0.28)">' + esc(z.name) + '</span>';
   }
@@ -240,10 +246,12 @@
           if (map.getSource(src)) { map.getSource(src).setData(feat); }
           else { map.addSource(src, { type: "geojson", data: feat }); }
           if (!map.getLayer(src + "-fill")) {
-            map.addLayer({ id: src + "-fill", type: "fill", source: src, paint: { "fill-color": col, "fill-opacity": rest.fill } });
+            map.addLayer({ id: src + "-fill", type: "fill", source: src, paint: { "fill-color": col, "fill-opacity": z.ghost ? rest.fill * 0.5 : rest.fill } });
           }
           if (!map.getLayer(src + "-line")) {
-            map.addLayer({ id: src + "-line", type: "line", source: src, layout: { "line-join": "round" }, paint: { "line-color": col, "line-width": rest.width, "line-opacity": rest.lineOp } });
+            var linePaint = { "line-color": col, "line-width": rest.width, "line-opacity": rest.lineOp };
+            if (z.ghost) linePaint["line-dasharray"] = [2, 2];
+            map.addLayer({ id: src + "-line", type: "line", source: src, layout: { "line-join": "round" }, paint: linePaint });
           }
           self._zoneIds.push({ id: z.id, fill: src + "-fill", line: src + "-line" });
         });
@@ -430,7 +438,7 @@
       _zoneEditCenterEl() {
         var e = this._edit; var el = document.createElement("div");
         el.className = "cc-zone cc-zedit__center";
-        el.innerHTML = zoneHtml({ icon: e.icon || "map-marker-radius", color: e.color || "#1C6FD6", name: "" });
+        el.innerHTML = zoneHtml({ icon: e.icon || "map-marker-radius", color: e.color || "#1C6FD6", name: "", ghost: e.dashed });
         el.style.cursor = "grab"; return el;
       }
       _zoneEditBuildHandles() {
@@ -546,7 +554,7 @@
           var changed = false;
           if (spec.color && spec.color !== this._edit.color) { this._edit.color = spec.color; if (this._map.getLayer("zedit-live-fill")) this._map.setPaintProperty("zedit-live-fill", "fill-color", spec.color); if (this._map.getLayer("zedit-live-line")) this._map.setPaintProperty("zedit-live-line", "line-color", spec.color); changed = true; }
           if (spec.icon && spec.icon !== this._edit.icon) { this._edit.icon = spec.icon; changed = true; }
-          if (changed && this._editCenter) this._editCenter.getElement().innerHTML = zoneHtml({ icon: this._edit.icon || "map-marker-radius", color: this._edit.color || "#1C6FD6", name: "" });
+          if (changed && this._editCenter) this._editCenter.getElement().innerHTML = zoneHtml({ icon: this._edit.icon || "map-marker-radius", color: this._edit.color || "#1C6FD6", name: "", ghost: this._edit.dashed });
           return;
         }
         if (this._edit) this._endZoneEdit();
@@ -559,8 +567,8 @@
         else this._map.getSource("zedit-live").setData(this._zoneEditFeature());
         if (!this._map.getLayer("zedit-live-fill")) this._map.addLayer({ id: "zedit-live-fill", type: "fill", source: "zedit-live", paint: { "fill-color": col, "fill-opacity": dark ? 0.30 : 0.18 } });
         else this._map.setPaintProperty("zedit-live-fill", "fill-color", col);
-        if (!this._map.getLayer("zedit-live-line")) this._map.addLayer({ id: "zedit-live-line", type: "line", source: "zedit-live", layout: { "line-join": "round" }, paint: { "line-color": col, "line-width": 4, "line-opacity": 1 } });
-        else this._map.setPaintProperty("zedit-live-line", "line-color", col);
+        if (!this._map.getLayer("zedit-live-line")) { var lp = { "line-color": col, "line-width": 4, "line-opacity": 1 }; if (this._edit.dashed) lp["line-dasharray"] = [2, 2]; this._map.addLayer({ id: "zedit-live-line", type: "line", source: "zedit-live", layout: { "line-join": "round" }, paint: lp }); }
+        else { this._map.setPaintProperty("zedit-live-line", "line-color", col); this._map.setPaintProperty("zedit-live-line", "line-dasharray", this._edit.dashed ? [2, 2] : undefined); }
         this._reapplyEditHidden();
         this._zoneEditBuildHandles();
         this._zoneEditFrame();

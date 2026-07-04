@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":3,"namespace":"HAConceptCarDesignSystem_fababd","components":[{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Chip","sourcePath":"components/core/Chip.jsx"},{"name":"Icon","sourcePath":"components/core/Icon.jsx"},{"name":"ProfileAvatar","sourcePath":"components/core/ProfileAvatar.jsx"},{"name":"SpaceIndicator","sourcePath":"components/core/SpaceIndicator.jsx"},{"name":"Toggle","sourcePath":"components/core/Toggle.jsx"},{"name":"ActivityItem","sourcePath":"components/entities/ActivityItem.jsx"},{"name":"AreaCard","sourcePath":"components/entities/AreaCard.jsx"},{"name":"AutomationItem","sourcePath":"components/entities/AutomationItem.jsx"},{"name":"CameraCard","sourcePath":"components/entities/CameraCard.jsx"},{"name":"EntityCard","sourcePath":"components/entities/EntityCard.jsx"},{"name":"EntityTile","sourcePath":"components/entities/EntityTile.jsx"},{"name":"ForYouWidget","sourcePath":"components/entities/ForYouWidget.jsx"},{"name":"SectionHeader","sourcePath":"components/entities/SectionHeader.jsx"},{"name":"SpeakerCard","sourcePath":"components/entities/SpeakerCard.jsx"},{"name":"ThermostatCard","sourcePath":"components/entities/ThermostatCard.jsx"},{"name":"Checkbox","sourcePath":"components/forms/Checkbox.jsx"},{"name":"FormField","sourcePath":"components/forms/FormField.jsx"},{"name":"Input","sourcePath":"components/forms/Input.jsx"},{"name":"Radio","sourcePath":"components/forms/Radio.jsx"},{"name":"RadioGroup","sourcePath":"components/forms/RadioGroup.jsx"},{"name":"Select","sourcePath":"components/forms/Select.jsx"},{"name":"ListHeader","sourcePath":"components/lists/ListHeader.jsx"},{"name":"ListRow","sourcePath":"components/lists/ListRow.jsx"},{"name":"ListToolbar","sourcePath":"components/lists/ListToolbar.jsx"},{"name":"AppShell","sourcePath":"components/navigation/AppShell.jsx"},{"name":"BookmarkNav","sourcePath":"components/navigation/BookmarkNav.jsx"},{"name":"MorePage","sourcePath":"components/navigation/MorePage.jsx"},{"name":"PageHeader","sourcePath":"components/navigation/PageHeader.jsx"},{"name":"PersonaSwitcher","sourcePath":"components/navigation/PersonaSwitcher.jsx"},{"name":"Sheet","sourcePath":"components/navigation/Sheet.jsx"},{"name":"Submenu","sourcePath":"components/navigation/Submenu.jsx"},{"name":"TabBar","sourcePath":"components/navigation/TabBar.jsx"}],"sourceHashes":{"components/core/Badge.jsx":"ee47191941d4","components/core/Button.jsx":"17546a905828","components/core/Chip.jsx":"08d2ef448031","components/core/Icon.jsx":"cb1c4d01785a","components/core/ProfileAvatar.jsx":"7f923b423502","components/core/SpaceIndicator.jsx":"0fe372a4e359","components/core/Toggle.jsx":"85b7d7a499f7","components/entities/ActivityItem.jsx":"03defabe4d9a","components/entities/AreaCard.jsx":"e1acc63e66b3","components/entities/AutomationItem.jsx":"27b406eb5b77","components/entities/CameraCard.jsx":"6d3f92cf8e9a","components/entities/EntityCard.jsx":"e53bc4c5dd93","components/entities/EntityTile.jsx":"ca4cb80c4dd6","components/entities/ForYouWidget.jsx":"345b8d3b7656","components/entities/SectionHeader.jsx":"fee65dffa131","components/entities/SpeakerCard.jsx":"f61d3503fe32","components/entities/ThermostatCard.jsx":"f1e945845a89","components/forms/Checkbox.jsx":"61e1793a3137","components/forms/FormField.jsx":"9928b55a3d13","components/forms/Input.jsx":"f70d0fec9ae2","components/forms/Radio.jsx":"572a0da1f0e7","components/forms/RadioGroup.jsx":"b9d6a4c91b1e","components/forms/Select.jsx":"9a3a6e0f69be","components/lists/ListHeader.jsx":"5ae0264b4ba1","components/lists/ListRow.jsx":"7b021596c594","components/lists/ListToolbar.jsx":"015a00dd25d8","components/navigation/AppShell.jsx":"410b66259ba8","components/navigation/BookmarkNav.jsx":"4c2933709d38","components/navigation/MorePage.jsx":"d5af2e2225ab","components/navigation/PageHeader.jsx":"e667d03a0e10","components/navigation/PersonaSwitcher.jsx":"23c07678726e","components/navigation/Sheet.jsx":"4672354e9468","components/navigation/Submenu.jsx":"45e40f35dbc2","components/navigation/TabBar.jsx":"5816d1c8ad3a","design-tokens.js":"8a6be4bd1484"},"inlinedExternals":[],"unexposedExports":[{"name":"tokens","sourcePath":"design-tokens.js"}]} */
+/* @ds-bundle: {"format":3,"namespace":"HAConceptCarDesignSystem_fababd","components":[{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Chip","sourcePath":"components/core/Chip.jsx"},{"name":"Icon","sourcePath":"components/core/Icon.jsx"},{"name":"ProfileAvatar","sourcePath":"components/core/ProfileAvatar.jsx"},{"name":"SpaceIndicator","sourcePath":"components/core/SpaceIndicator.jsx"},{"name":"Toggle","sourcePath":"components/core/Toggle.jsx"},{"name":"ActivityItem","sourcePath":"components/entities/ActivityItem.jsx"},{"name":"AreaCard","sourcePath":"components/entities/AreaCard.jsx"},{"name":"AutomationItem","sourcePath":"components/entities/AutomationItem.jsx"},{"name":"CameraCard","sourcePath":"components/entities/CameraCard.jsx"},{"name":"EntityCard","sourcePath":"components/entities/EntityCard.jsx"},{"name":"EntityTile","sourcePath":"components/entities/EntityTile.jsx"},{"name":"ForYouWidget","sourcePath":"components/entities/ForYouWidget.jsx"},{"name":"SectionHeader","sourcePath":"components/entities/SectionHeader.jsx"},{"name":"SpeakerCard","sourcePath":"components/entities/SpeakerCard.jsx"},{"name":"ThermostatCard","sourcePath":"components/entities/ThermostatCard.jsx"},{"name":"Checkbox","sourcePath":"components/forms/Checkbox.jsx"},{"name":"FormField","sourcePath":"components/forms/FormField.jsx"},{"name":"Input","sourcePath":"components/forms/Input.jsx"},{"name":"Radio","sourcePath":"components/forms/Radio.jsx"},{"name":"RadioGroup","sourcePath":"components/forms/RadioGroup.jsx"},{"name":"Select","sourcePath":"components/forms/Select.jsx"},{"name":"ListHeader","sourcePath":"components/lists/ListHeader.jsx"},{"name":"ListRow","sourcePath":"components/lists/ListRow.jsx"},{"name":"ListToolbar","sourcePath":"components/lists/ListToolbar.jsx"},{"name":"AppShell","sourcePath":"components/navigation/AppShell.jsx"},{"name":"BookmarkNav","sourcePath":"components/navigation/BookmarkNav.jsx"},{"name":"MorePage","sourcePath":"components/navigation/MorePage.jsx"},{"name":"PageHeader","sourcePath":"components/navigation/PageHeader.jsx"},{"name":"PersonaSwitcher","sourcePath":"components/navigation/PersonaSwitcher.jsx"},{"name":"Sheet","sourcePath":"components/navigation/Sheet.jsx"},{"name":"Submenu","sourcePath":"components/navigation/Submenu.jsx"},{"name":"TabBar","sourcePath":"components/navigation/TabBar.jsx"}],"sourceHashes":{"components/core/Badge.jsx":"ee47191941d4","components/core/Button.jsx":"17546a905828","components/core/Chip.jsx":"08d2ef448031","components/core/Icon.jsx":"cb1c4d01785a","components/core/ProfileAvatar.jsx":"7f923b423502","components/core/SpaceIndicator.jsx":"0fe372a4e359","components/core/Toggle.jsx":"0ca2357141ea","components/entities/ActivityItem.jsx":"03defabe4d9a","components/entities/AreaCard.jsx":"e1acc63e66b3","components/entities/AutomationItem.jsx":"27b406eb5b77","components/entities/CameraCard.jsx":"6d3f92cf8e9a","components/entities/EntityCard.jsx":"e53bc4c5dd93","components/entities/EntityTile.jsx":"ca4cb80c4dd6","components/entities/ForYouWidget.jsx":"345b8d3b7656","components/entities/SectionHeader.jsx":"fee65dffa131","components/entities/SpeakerCard.jsx":"8e4b37507c63","components/entities/ThermostatCard.jsx":"f1e945845a89","components/forms/Checkbox.jsx":"61e1793a3137","components/forms/FormField.jsx":"9928b55a3d13","components/forms/Input.jsx":"f70d0fec9ae2","components/forms/Radio.jsx":"572a0da1f0e7","components/forms/RadioGroup.jsx":"b9d6a4c91b1e","components/forms/Select.jsx":"9a3a6e0f69be","components/lists/ListHeader.jsx":"5ae0264b4ba1","components/lists/ListRow.jsx":"7b021596c594","components/lists/ListToolbar.jsx":"015a00dd25d8","components/navigation/AppShell.jsx":"410b66259ba8","components/navigation/BookmarkNav.jsx":"4c2933709d38","components/navigation/MorePage.jsx":"d5af2e2225ab","components/navigation/PageHeader.jsx":"e667d03a0e10","components/navigation/PersonaSwitcher.jsx":"23c07678726e","components/navigation/Sheet.jsx":"4672354e9468","components/navigation/Submenu.jsx":"45e40f35dbc2","components/navigation/TabBar.jsx":"5816d1c8ad3a","design-tokens.js":"67183e683568"},"inlinedExternals":[],"unexposedExports":[{"name":"colorsFor","sourcePath":"design-tokens.js"},{"name":"darkColors","sourcePath":"design-tokens.js"},{"name":"lightColors","sourcePath":"design-tokens.js"},{"name":"tokens","sourcePath":"design-tokens.js"},{"name":"tokensFor","sourcePath":"design-tokens.js"}]} */
 
 (() => {
 
@@ -197,10 +197,8 @@ const CSS = `
 .ha-btn--danger:hover:not([disabled]) { filter: brightness(1.1); }
 .ha-btn--icon.ha-btn--ghost { color: var(--color-text-secondary); }
 
-@media (max-width: 1279px) {
-  .ha-btn { --_h: var(--button-height-touch, 44px); }
-  .ha-btn--sm { --_h: var(--button-height-touch, 44px); min-height: var(--button-height-touch, 44px); }
-}
+@media (min-width: 768px) and (max-width: 1279px) { .ha-btn { --_h: var(--touch-target-tablet, 44px); } }
+@media (max-width: 767px) { .ha-btn { --_h: var(--touch-target-mobile, 56px); } }
 `;
 function ensureStyles() {
   if (typeof document === "undefined" || document.getElementById("ha-btn-css")) return;
@@ -247,67 +245,6 @@ function Button({
 }
 Object.assign(__ds_scope, { Button });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Button.jsx", error: String((e && e.message) || e) }); }
-
-// components/core/IconButton.jsx
-try { (() => {
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-/**
- * IconButton — a borderless, square icon-only button for toolbars, topbars and
- * rails (search, add, more, back). Transparent at rest, fills to a raised
- * surface on hover; color is signal-neutral text-secondary. Pass an MDI `icon`
- * name (or arbitrary `children` for a custom glyph) plus an accessible `label`.
- * Sizes: sm 32 / md 40 (default) / lg 48; md grows to 44 on mobile and tablet.
- * Use the `primary` variant for a filled accent icon button (compact mobile CTA).
- */
-const ICONBTN_CSS = `
-.ha-iconbtn {
-  display: inline-flex; align-items: center; justify-content: center; flex: none;
-  width: 40px; height: 40px; border: none; background: transparent;
-  color: var(--color-text-secondary); border-radius: var(--radius-md, 8px); cursor: pointer;
-  transition: background-color var(--duration-normal,200ms) var(--easing-out,ease-out),
-              color var(--duration-normal,200ms) var(--easing-out,ease-out);
-}
-.ha-iconbtn:hover:not([disabled]) { background: var(--color-surface-raised); color: var(--color-text-primary); }
-.ha-iconbtn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.ha-iconbtn[disabled] { cursor: not-allowed; opacity: .45; }
-.ha-iconbtn--sm { width: 32px; height: 32px; }
-.ha-iconbtn--lg { width: 48px; height: 48px; }
-.ha-iconbtn--primary { background: var(--color-accent); color: var(--color-on-accent); }
-.ha-iconbtn--primary:hover:not([disabled]) { background: var(--color-accent-hover); color: var(--color-on-accent); }
-@media (max-width: 1279px) { .ha-iconbtn { width: var(--button-height-touch, 44px); height: var(--button-height-touch, 44px); } }
-`;
-function ensureIconBtnStyles() {
-  if (typeof document === "undefined" || document.getElementById("ha-iconbtn-css")) return;
-  const s = document.createElement("style");
-  s.id = "ha-iconbtn-css";
-  s.textContent = ICONBTN_CSS;
-  document.head.appendChild(s);
-}
-function IconButton({
-  icon,
-  label,
-  children,
-  size = "md",
-  variant = "ghost",
-  className = "",
-  style,
-  ...rest
-}) {
-  ensureIconBtnStyles();
-  const cls = `ha-iconbtn ha-iconbtn--${size}${variant === "primary" ? " ha-iconbtn--primary" : ""} ${className}`;
-  return /*#__PURE__*/React.createElement("button", _extends({}, rest, {
-    type: rest.type || "button",
-    className: cls,
-    "aria-label": label || rest["aria-label"],
-    title: rest.title || label,
-    style: style
-  }), children || (icon && /*#__PURE__*/React.createElement(__ds_scope.Icon, {
-    name: icon,
-    size: size === "lg" ? "lg" : "md"
-  })));
-}
-Object.assign(__ds_scope, { IconButton });
-})(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/IconButton.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/ProfileAvatar.jsx
 try { (() => {
@@ -410,7 +347,7 @@ const CSS = `
   position: relative; display: inline-flex; flex: none;
   width: var(--_w); height: var(--_h); padding: 0; border: none;
   border-radius: var(--radius-full); cursor: pointer;
-  background: var(--color-surface-raised);
+  background: var(--color-toggle-track);
   box-shadow: inset 0 0 0 1px var(--color-border);
   transition: background-color var(--duration-normal,200ms) var(--easing-out,ease-out),
               box-shadow var(--duration-normal,200ms) var(--easing-out,ease-out);
@@ -421,7 +358,7 @@ const CSS = `
 .ha-toggle__thumb {
   position: absolute; top: var(--_p); left: var(--_p);
   width: calc(var(--_h) - var(--_p) * 2); height: calc(var(--_h) - var(--_p) * 2);
-  border-radius: var(--radius-full); background: #fff;
+  border-radius: var(--radius-full); background: var(--color-toggle-thumb);
   transition: transform var(--duration-fast,150ms) var(--easing-out,ease-out);
 }
 .ha-toggle[aria-checked="true"] .ha-toggle__thumb {
@@ -1017,7 +954,7 @@ const CSS = `
 .ha-speaker__btn { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--touch-target-desktop,32px); height: var(--touch-target-desktop,32px); border: none; background: transparent; color: var(--color-text-primary); border-radius: var(--radius-full); cursor: pointer; transition: background-color var(--duration-normal,200ms) var(--easing-out,ease-out); }
 .ha-speaker__btn:hover { background: var(--color-surface-raised); }
 .ha-speaker__btn--play { background: var(--color-text-primary); color: var(--color-bg); }
-.ha-speaker__btn--play:hover { background: #fff; }
+.ha-speaker__btn--play:hover { background: var(--color-inverse-hover); }
 @media (max-width: 1279px) { .ha-speaker__btn { width: var(--touch-target-tablet,44px); height: var(--touch-target-tablet,44px); } }
 @media (max-width: 767px) { .ha-speaker__btn { width: var(--touch-target-mobile,56px); height: var(--touch-target-mobile,56px); } }
 `;
@@ -1319,7 +1256,7 @@ const CSS = `
 .ha-input[disabled] { color: var(--color-text-disabled); background: var(--color-surface-raised); cursor: not-allowed; }
 .ha-input__icon { position: absolute; left: 10px; color: var(--color-text-tertiary); pointer-events: none; }
 @media (max-width: 1279px) { .ha-input { height: 44px; font-size: var(--text-md,17px); } }
-@media (max-width: 767px) { .ha-input { height: 44px; } }
+@media (max-width: 767px) { .ha-input { height: 52px; } }
 `;
 function ensureStyles() {
   if (typeof document === "undefined" || document.getElementById("ha-input-css")) return;
@@ -1501,7 +1438,7 @@ const CSS = `
 .ha-select[disabled] { color: var(--color-text-disabled); cursor: not-allowed; }
 .ha-select__chev { position: absolute; right: 10px; color: var(--color-text-secondary); pointer-events: none; }
 @media (max-width: 1279px) { .ha-select { height: 44px; font-size: var(--text-md,17px); } }
-@media (max-width: 767px) { .ha-select { height: 44px; } }
+@media (max-width: 767px) { .ha-select { height: 52px; } }
 `;
 function ensureStyles() {
   if (typeof document === "undefined" || document.getElementById("ha-select-css")) return;
@@ -1913,7 +1850,6 @@ const CSS = `
 .ha-bnav__label { font-size: 10px; font-weight: var(--weight-medium,500); }
 
 .ha-bnav--vertical .ha-bnav__item { width: 40px; height: 40px; }
-@media (max-width: 1279px) { .ha-bnav--vertical .ha-bnav__item { width: var(--button-height-touch, 44px); height: var(--button-height-touch, 44px); } }
 .ha-bnav--vertical .ha-bnav__label { display: none; }
 .ha-bnav--vertical .ha-bnav__item::after {
   content: attr(data-label); position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
@@ -1969,7 +1905,6 @@ function BookmarkNav({
       href: it.href,
       type: it.href ? undefined : "button",
       "data-label": it.label,
-      style: isMore && orientation === "vertical" ? { border: "1px solid var(--color-border)" } : undefined,
       "aria-current": it.id === activeId ? "page" : undefined,
       "aria-label": it.label,
       onClick: e => {
@@ -2337,7 +2272,6 @@ function PersonaSwitcher({
     style: style
   }, rest), /*#__PURE__*/React.createElement(__ds_scope.ProfileAvatar, {
     name: active ? active.name : "",
-    src: active ? active.avatar : undefined,
     size: "md"
   })), open && /*#__PURE__*/React.createElement(__ds_scope.Sheet, {
     title: "Switch persona",
@@ -2355,7 +2289,6 @@ function PersonaSwitcher({
     }
   }, /*#__PURE__*/React.createElement(__ds_scope.ProfileAvatar, {
     name: p.name,
-    src: p.avatar,
     size: "md"
   }), /*#__PURE__*/React.createElement("span", {
     className: "ha-persona__name"
@@ -2544,41 +2477,89 @@ try { (() => {
    HA Concept Car — Design tokens as a plain JS object.
    Mirror of design-tokens.css. Use inside shadow DOM / JS contexts where
    linking the stylesheet is inconvenient, or to read a token value in code.
-   Values are the literal resolved values (dark theme).
+
+   COLOR is theme-dependent: `darkColors` and `lightColors` hold the two
+   palettes. Everything else (font, type, space, radius, motion, layout) is
+   theme-agnostic. `colorsFor(theme)` resolves a palette; `tokens` defaults to
+   the DARK palette for backwards compatibility.
    ========================================================================= */
 
-const tokens = {
-  color: {
-    bg: "#18181a",
-    surface: "#222226",
-    surfaceRaised: "#2c2c32",
-    overlay: "#36363e",
-    border: "#3a3a42",
-    borderSubtle: "#2a2a30",
-    textPrimary: "#f0eff8",
-    textSecondary: "#9e9daa",
-    textTertiary: "#6a6974",
-    textDisabled: "#4a4952",
-    accent: "#1C6FD6",
-    accentHover: "#1a5fb8",
-    accentSubtle: "rgba(28, 111, 214, 0.12)",
-    onAccent: "#ffffff",
-    success: "#4a8c47",
-    warning: "#c47a1a",
-    error: "#b8342a",
-    active: "#f0eff8",
-    inactive: "#6a6974",
-    successSubtle: "rgba(74, 140, 71, 0.15)",
-    warningSubtle: "rgba(196, 122, 26, 0.15)",
-    errorSubtle: "rgba(184, 52, 42, 0.15)",
-    spaceShared: "#2e7d52",
-    spacePersonal: "#1C6FD6",
-    spaceAdmin: "#7c5ab8",
-    spaceSharedSubtle: "rgba(46, 125, 82, 0.14)",
-    spacePersonalSubtle: "rgba(28, 111, 214, 0.14)",
-    spaceAdminSubtle: "rgba(124, 90, 184, 0.14)",
-    scrim: "rgba(0, 0, 0, 0.55)"
-  },
+const darkColors = {
+  bg: "#18181a",
+  surface: "#222226",
+  surfaceRaised: "#2c2c32",
+  overlay: "#36363e",
+  border: "#3a3a42",
+  borderSubtle: "#2a2a30",
+  textPrimary: "#f0eff8",
+  textSecondary: "#9e9daa",
+  textTertiary: "#6a6974",
+  textDisabled: "#4a4952",
+  accent: "#1C6FD6",
+  accentHover: "#1a5fb8",
+  accentSubtle: "rgba(28, 111, 214, 0.12)",
+  onAccent: "#ffffff",
+  success: "#4a8c47",
+  warning: "#c47a1a",
+  error: "#b8342a",
+  active: "#f0eff8",
+  inactive: "#6a6974",
+  successSubtle: "rgba(74, 140, 71, 0.15)",
+  warningSubtle: "rgba(196, 122, 26, 0.15)",
+  errorSubtle: "rgba(184, 52, 42, 0.15)",
+  spaceShared: "#2e7d52",
+  spacePersonal: "#1C6FD6",
+  spaceAdmin: "#7c5ab8",
+  spaceSharedSubtle: "rgba(46, 125, 82, 0.14)",
+  spacePersonalSubtle: "rgba(28, 111, 214, 0.14)",
+  spaceAdminSubtle: "rgba(124, 90, 184, 0.14)",
+  scrim: "rgba(0, 0, 0, 0.55)",
+  toggleTrack: "#2c2c32",
+  toggleThumb: "#ffffff",
+  inverseHover: "#ffffff"
+};
+const lightColors = {
+  bg: "#faf9f6",
+  surface: "#eeebe5",
+  surfaceRaised: "#e4dfd7",
+  overlay: "#d8d2c8",
+  border: "#ccc6bb",
+  borderSubtle: "#ddd8ce",
+  textPrimary: "#1d1c1a",
+  textSecondary: "#5a564f",
+  textTertiary: "#8a857b",
+  textDisabled: "#b3ada1",
+  accent: "#1559b8",
+  accentHover: "#114a99",
+  accentSubtle: "rgba(21, 89, 184, 0.10)",
+  onAccent: "#ffffff",
+  success: "#2f7a36",
+  warning: "#9a5a12",
+  error: "#b22d22",
+  active: "#1d1c1a",
+  inactive: "#8a857b",
+  successSubtle: "rgba(47, 122, 54, 0.12)",
+  warningSubtle: "rgba(154, 90, 18, 0.12)",
+  errorSubtle: "rgba(178, 45, 34, 0.10)",
+  spaceShared: "#2c7349",
+  spacePersonal: "#1559b8",
+  spaceAdmin: "#6a479e",
+  spaceSharedSubtle: "rgba(44, 115, 73, 0.12)",
+  spacePersonalSubtle: "rgba(21, 89, 184, 0.12)",
+  spaceAdminSubtle: "rgba(106, 71, 158, 0.12)",
+  scrim: "rgba(28, 26, 22, 0.45)",
+  toggleTrack: "#cbc4b6",
+  toggleThumb: "#ffffff",
+  inverseHover: "#000000"
+};
+
+/** Resolve a color palette by theme name ("dark" | "light"). Defaults to dark. */
+function colorsFor(theme) {
+  return theme === "light" ? lightColors : darkColors;
+}
+
+/* Theme-agnostic tokens — identical in both themes. */
+const shared = {
   font: {
     display: "'Inter Tight', system-ui, -apple-system, sans-serif",
     body: "'Inter', system-ui, -apple-system, sans-serif",
@@ -2655,14 +2636,24 @@ const tokens = {
     barHeight: "56px"
   }
 };
-Object.assign(__ds_scope, { tokens });
+
+/** Build a full token object for a theme. */
+function tokensFor(theme) {
+  return {
+    color: colorsFor(theme),
+    ...shared
+  };
+}
+
+/* Default export keeps the original shape (DARK), so existing imports of
+   `tokens.color.*` continue to resolve unchanged. */
+const tokens = tokensFor("dark");
+Object.assign(__ds_scope, { darkColors, lightColors, colorsFor, tokensFor, tokens });
 })(); } catch (e) { __ds_ns.__errors.push({ path: "design-tokens.js", error: String((e && e.message) || e) }); }
 
 __ds_ns.Badge = __ds_scope.Badge;
 
 __ds_ns.Button = __ds_scope.Button;
-
-__ds_ns.IconButton = __ds_scope.IconButton;
 
 __ds_ns.Chip = __ds_scope.Chip;
 

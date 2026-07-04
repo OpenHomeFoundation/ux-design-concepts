@@ -14,7 +14,7 @@ export const household = {
       spaces: ["shared", "personal", "admin"],
       bookmarks: ["home", "automations", "devices"],
       favorites: ["living_room_ceiling", "kitchen_ceiling", "main_bed_lamp", "hallway_ceiling", "garden_string", "garage_ceiling"],
-      widgets: ["weather", "calendar", "energy", "activity", "todo"],
+      widgets: ["weather", "favorites", "calendar", "energy", "activity", "todo"],
       presence: "home",
       note: "All access. The maintainer doing the invisible labor.",
     },
@@ -22,9 +22,9 @@ export const household = {
       id: "sofie", name: "Sofie", role: "resident", initials: "So",
       avatar: "ds/assets/sofie.png",
       spaces: ["shared", "personal"],
-      bookmarks: ["home", "my-dashboard", "my-data", "activity"],
+      bookmarks: ["home", "my-data", "activity"],
       favorites: ["living_room_lamp", "main_bed_lamp", "kitchen_ceiling"],
-      widgets: ["weather", "calendar"],
+      widgets: ["weather", "favorites", "calendar"],
       presence: "home",
       note: "Never configured anything. Has her own dashboard and private data.",
     },
@@ -34,7 +34,7 @@ export const household = {
       spaces: ["shared", "personal"], calibrated: "teen",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["tess_ceiling", "tess_lamp", "living_room_lamp"],
-      widgets: ["weather", "todo"],
+      widgets: ["weather", "favorites", "todo"],
       presence: "away",
       note: "Calibrated teen. Access expands over time.",
     },
@@ -44,7 +44,7 @@ export const household = {
       spaces: ["shared", "personal"],
       bookmarks: ["home", "my-stuff"],
       favorites: ["lars_lamp"],
-      widgets: ["weather"],
+      widgets: ["weather", "favorites"],
       presence: "home",
       note: "Calibrated child. Limited controls, still has a Personal space.",
     },
@@ -53,7 +53,7 @@ export const household = {
       spaces: ["shared", "personal"], homeArea: "greet-room",
       bookmarks: ["home", "my-dashboard", "activity"],
       favorites: ["greet_ceiling", "greet_lamp"],
-      widgets: ["weather", "activity"],
+      widgets: ["weather", "favorites", "activity"],
       presence: "home",
       note: "Calibrated for accessibility, larger type. Lives in the annex.",
     },
@@ -62,7 +62,7 @@ export const household = {
       spaces: ["shared"], scoped: ["ground", "front_door"], expiresAt: "18:00",
       bookmarks: ["home", "front-door"],
       favorites: ["hallway_ceiling", "kitchen_ceiling"],
-      widgets: ["weather", "activity"],
+      widgets: ["weather", "favorites", "activity"],
       presence: "away",
       note: "Nanny. Scoped, time-limited access to the ground floor and front door.",
     },
@@ -85,10 +85,12 @@ export const household = {
   // house meets the ground plane, so homes whose entrance is not at the bottom
   // of the stack (e.g. built on a slope) still sit correctly. Floors above
   // ground render upward, floors below downward.
+  // Array order drives content-list display (Ground first, Basement last);
+  // each floor's `order` still drives the physical 3D stack and settings.
   floors: [
-    { id: "basement", name: "Basement", building: "main-house", order: 0, icon: "home-floor-negative-1", areas: ["utility"] },
     { id: "ground", name: "Ground floor", building: "main-house", order: 1, isGround: true, icon: "home-floor-g", areas: ["living-room", "kitchen", "hallway", "garage", "greet-room", "greet-ensuite"] },
     { id: "first", name: "First floor", building: "main-house", order: 2, icon: "home-floor-1", areas: ["main-bedroom", "tess-room", "lars-room", "bathroom"] },
+    { id: "basement", name: "Basement", building: "main-house", order: 0, icon: "home-floor-negative-1", areas: ["utility"] },
   ],
 
   // Outdoor areas: no floor, placed directly outside. The garage here is an
@@ -172,9 +174,19 @@ export const household = {
     { id: "garden_string", name: "String lights", type: "light", area: "garden", icon: "string-lights", on: false },
     { id: "garden_cam", name: "Garden", type: "camera", area: "garden", icon: "cctv", live: true },
     { id: "driveway_flood", name: "Floodlight", type: "light", area: "driveway", icon: "track-light", on: false },
-    { id: "driveway_cam", name: "Driveway", type: "camera", area: "driveway", icon: "cctv", live: true },
     { id: "patio_lights", name: "Patio lights", type: "light", area: "patio", icon: "outdoor-lamp", on: false },
     { id: "patio_temp", name: "Outdoor temperature", type: "sensor", area: "patio", icon: "thermometer", state: "14.2\u00b0C", devType: "Temperature", battery: 76 },
+    // Energy: smart plugs (measured switches) and Powercalc virtual power sensors.
+    // `meter: true` marks a power-reporting entity; `power` is watts, `integration`
+    // names the source. These drive the per-area Energy subview.
+    { id: "lr_media_plug", name: "TV and media", type: "sensor", devType: "Power", area: "living-room", icon: "power-socket-eu", state: "142 W", mono: true, meter: true, power: 142, kwhToday: 1.8, integration: "TP-Link Kasa" },
+    { id: "lr_lights_power", name: "Living room lights", type: "sensor", devType: "Power", area: "living-room", icon: "lightning-bolt", state: "34 W", mono: true, meter: true, power: 34, kwhToday: 0.4, integration: "Powercalc" },
+    { id: "kt_fridge_plug", name: "Fridge", type: "sensor", devType: "Power", area: "kitchen", icon: "fridge-outline", state: "92 W", mono: true, meter: true, power: 92, kwhToday: 1.4, integration: "Shelly" },
+    { id: "kt_dishwasher_plug", name: "Dishwasher", type: "sensor", devType: "Power", area: "kitchen", icon: "dishwasher", state: "0 W", mono: true, meter: true, power: 0, kwhToday: 0.9, integration: "Shelly" },
+    { id: "mb_media_plug", name: "Bedroom media", type: "sensor", devType: "Power", area: "main-bedroom", icon: "power-socket-eu", state: "6 W", mono: true, meter: true, power: 6, kwhToday: 0.1, integration: "TP-Link Kasa" },
+    { id: "gr_ev_charger", name: "EV charger", type: "sensor", devType: "Power", area: "garage", icon: "ev-station", state: "7400 W", mono: true, meter: true, power: 7400, kwhToday: 12.4, integration: "Wallbox" },
+    { id: "ut_heatpump_power", name: "Heat pump", type: "sensor", devType: "Power", area: "utility", icon: "heat-pump", state: "1240 W", mono: true, meter: true, power: 1240, kwhToday: 6.2, integration: "Powercalc" },
+    { id: "ut_washer_plug", name: "Washing machine", type: "sensor", devType: "Power", area: "utility", icon: "washing-machine", state: "3 W", mono: true, meter: true, power: 3, kwhToday: 0.6, integration: "Shelly" },
   ],
 
   // ---- Home routines ---------------------------------------------------
@@ -184,7 +196,7 @@ export const household = {
     { id: "unoccupied-off", name: "Turn lights off when the home is unoccupied", description: "Switches every light off once the last person leaves", space: "shared", enabled: false, lastTriggered: "yesterday 9:10", creator: "Daan", category: "Lighting", presencePeople: ["anyone"] },
     { id: "heating-occupied", name: "Turn heating on when the home is occupied", description: "Brings the heating to the target temperature when anyone is home", space: "shared", enabled: true, lastTriggered: "today 7:02", creator: "Home Assistant", category: "Climate", presencePeople: ["anyone"] },
     { id: "boost-ac", name: "Boost AC when the panic button is pressed", description: "Runs the living room AC at full for ten minutes when the panic button is pressed", space: "shared", enabled: false, lastTriggered: "never", creator: "Daan", area: "living-room", category: "Climate" },
-    { id: "sunset-lights", name: "Sunset lights", description: "Fades the garden and living room lights on at sunset", space: "shared", enabled: true, lastTriggered: "yesterday 20:14", creator: "Daan", category: "Lighting" },
+    { id: "sunset-lights", name: "Sunset lights", description: "Fades the garden and living room lights on at sunset", space: "shared", enabled: true, lastTriggered: "yesterday 20:14", creator: "Daan", createdBy: "daan", contributors: ["daan", "sofie"], editors: ["maintainers", "sofie"], category: "Lighting" },
     { id: "away-lock", name: "Lock the doors when everyone leaves", description: "Locks the front door, garage and annex once the home is empty", space: "shared", enabled: true, lastTriggered: "today 8:20", creator: "Daan", category: "Security", presencePeople: ["anyone"] },
     { id: "lars-bedtime", name: "Lars's bedtime lamp", description: "Dims Lars's lamp to warm at 19:30 and off at 20:00", space: "shared", enabled: true, lastTriggered: "yesterday 20:00", creator: "Daan", area: "lars-room", affects: ["lars"], category: "Lighting" },
     { id: "annex-night", name: "Annex night light", description: "Keeps Elizabeth's hallway softly lit between 22:00 and 6:00", space: "shared", enabled: true, lastTriggered: "today 6:00", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Lighting" },
@@ -205,6 +217,45 @@ export const household = {
     { id: "arrive-home", name: "Arrive home", description: "Unlocks the front door, lights the hallway, resumes music", space: "shared", enabled: true, creator: "Daan" },
     { id: "leaving-home", name: "Leaving home", description: "A single tap to lock up and switch to away", space: "shared", enabled: true, creator: "Sofie" },
     { id: "wake-up", name: "Wake up", description: "Gradually raises the bedroom lights over ten minutes", space: "shared", enabled: false, creator: "Daan" },
+  ],
+
+  // ---- Tags (physical NFC stickers and QR codes) ----------------------
+  // A tag is a physical thing you scan. Scanning fires a tag_scanned event you
+  // point automations at. Its value is the scans it produces and what they run.
+  // `runs` references automations / scenes / scripts by { kind, id }.
+  // `lastScannedBy` / scans[].by reference people ids. `scanCount` is total.
+  tags: [
+    { id: "front-door", name: "Front door", description: "Stuck inside the front door. Scan on your way in or out.", type: "nfc", space: "shared", icon: "door", area: "hallway", creator: "Daan",
+      runs: [{ kind: "scripts", id: "arrive-home" }, { kind: "scripts", id: "leaving-home" }], scanCount: 214,
+      lastScanned: "today 8:14", lastScannedBy: "sofie",
+      scans: [{ by: "sofie", time: "today 8:14" }, { by: "daan", time: "today 7:36" }, { by: "tess", time: "yesterday 16:52" }, { by: "sofie", time: "yesterday 8:07" }] },
+    { id: "lars-bedtime", name: "Lars's bedtime", description: "On Lars's nightstand. He scans it to start winding down.", type: "nfc", space: "shared", icon: "sticker-emoji", area: "lars-room", creator: "Daan",
+      runs: [{ kind: "scripts", id: "goodnight" }], scanCount: 61,
+      lastScanned: "yesterday 19:58", lastScannedBy: "lars",
+      scans: [{ by: "lars", time: "yesterday 19:58" }, { by: "lars", time: "2 days ago" }, { by: "lars", time: "3 days ago" }] },
+    { id: "coffee-machine", name: "Coffee machine", description: "By the coffee machine. Kicks off the morning.", type: "nfc", space: "shared", icon: "coffee", area: "kitchen", creator: "Sofie",
+      runs: [{ kind: "scenes", id: "good-morning" }], scanCount: 138,
+      lastScanned: "today 6:41", lastScannedBy: "daan",
+      scans: [{ by: "daan", time: "today 6:41" }, { by: "sofie", time: "yesterday 6:58" }, { by: "daan", time: "2 days ago" }] },
+    { id: "movie-night", name: "Movie night", description: "On the media console. Sets the room for a film.", type: "qr", space: "shared", icon: "movie-open", area: "living-room", creator: "Daan",
+      runs: [{ kind: "scenes", id: "movie-night" }], scanCount: 27,
+      lastScanned: "yesterday 20:31", lastScannedBy: "tess",
+      scans: [{ by: "tess", time: "yesterday 20:31" }, { by: "sofie", time: "last week" }] },
+    { id: "laundry", name: "Laundry", description: "On the washing machine. Scan when you start a load.", type: "nfc", space: "shared", icon: "washing-machine", area: "utility", creator: "Sofie",
+      runs: [], scanCount: 44,
+      lastScanned: "today 9:12", lastScannedBy: "sofie",
+      scans: [{ by: "sofie", time: "today 9:12" }, { by: "daan", time: "3 days ago" }] },
+    { id: "guest", name: "Guest", description: "A printed code for visitors. Lets the home know someone has arrived.", type: "qr", space: "shared", icon: "account-arrow-right", area: "hallway", creator: "Daan",
+      runs: [{ kind: "scripts", id: "arrive-home" }], scanCount: 9,
+      lastScanned: "today 8:02", lastScannedBy: "nour",
+      scans: [{ by: "nour", time: "today 8:02" }, { by: "nour", time: "yesterday 8:05" }] },
+    { id: "bins", name: "Bins", description: "By the back door. Scan when you take the bins out.", type: "nfc", space: "shared", icon: "trash-can-outline", area: "garage", creator: "Daan",
+      runs: [], scanCount: 18,
+      lastScanned: "2 days ago", lastScannedBy: "daan",
+      scans: [{ by: "daan", time: "2 days ago" }, { by: "daan", time: "last week" }] },
+    { id: "plants", name: "Plants", description: "By the garden tap. Logs when the plants were last watered.", type: "nfc", space: "shared", icon: "watering-can-outline", area: "garden", creator: "Sofie",
+      runs: [], scanCount: 6,
+      lastScanned: "never", lastScannedBy: null, scans: [] },
   ],
 
   // ---- Analytics -------------------------------------------------------
@@ -241,13 +292,165 @@ export const household = {
     { id: "nour", name: "Nour", role: "Non-resident", presence: "away", initials: "No", scoped: true },
   ],
 
-  services: [
-    { id: "weather", name: "Weather", icon: "weather-rainy", state: "Rain, 15 degrees" },
-    { id: "music", name: "Music", icon: "music", state: "Spotify connected" },
-    { id: "traffic", name: "Traffic", icon: "map-marker-path", state: "22 minutes to work" },
-    { id: "calendar", name: "Family calendar", icon: "calendar", state: "3 events today" },
-    { id: "todo", name: "Family to-do", icon: "format-list-checks", state: "4 open tasks" },
-  ],
+  // ---- Services (use-case pages) --------------------------------------
+  // Each service is a top-level destination phrased as the job a resident is
+  // doing ("what's the weather", "play music", "what's my commute"). Not a
+  // technical "Services" bucket. `installed` lists the integration ids powering
+  // it (see serviceIntegrations for the per-category gallery). View data lives
+  // here; edit mode reads installed + the gallery + settings.
+  services: {
+    weather: {
+      id: "weather", name: "Weather", icon: "weather-partly-rainy", route: "/weather", space: "shared",
+      installed: ["metno"], location: "Utrecht, Netherlands", updated: "just now",
+      now: { temp: 15, condition: "Light rain", icon: "weather-pouring", feelsLike: 14, high: 17, low: 10, wind: "14 km/h SW", humidity: 82, pressure: "1008 hPa", visibility: "8 km", uv: "Moderate" },
+      hourly: [
+        { t: "now", temp: 15, icon: "weather-pouring", pop: 80 },
+        { t: "14:00", temp: 16, icon: "weather-rainy", pop: 60 },
+        { t: "16:00", temp: 17, icon: "weather-partly-rainy", pop: 40 },
+        { t: "18:00", temp: 16, icon: "weather-partly-cloudy", pop: 20 },
+        { t: "20:00", temp: 14, icon: "weather-cloudy", pop: 10 },
+        { t: "22:00", temp: 12, icon: "weather-night-partly-cloudy", pop: 10 },
+        { t: "00:00", temp: 11, icon: "weather-night", pop: 5 },
+        { t: "02:00", temp: 10, icon: "weather-night", pop: 5 },
+      ],
+      daily: [
+        { day: "Today", hi: 17, lo: 10, icon: "weather-pouring", pop: 80 },
+        { day: "Thu", hi: 19, lo: 11, icon: "weather-partly-cloudy", pop: 30 },
+        { day: "Fri", hi: 22, lo: 13, icon: "weather-sunny", pop: 5 },
+        { day: "Sat", hi: 24, lo: 14, icon: "weather-sunny", pop: 0 },
+        { day: "Sun", hi: 21, lo: 15, icon: "weather-partly-cloudy", pop: 20 },
+        { day: "Mon", hi: 18, lo: 12, icon: "weather-rainy", pop: 60 },
+        { day: "Tue", hi: 20, lo: 12, icon: "weather-partly-cloudy", pop: 30 },
+      ],
+      sun: { sunrise: "05:24", sunset: "22:01", daylight: "16h 37m" },
+      air: { aqi: 34, label: "Good", pollen: "Moderate", pollenType: "Grass pollen" },
+      settings: { unit: "celsius", showOnHome: true, severeAlerts: true },
+    },
+    music: {
+      id: "music", name: "Music", icon: "music", route: "/music", space: "shared",
+      installed: ["spotify"],
+      nowPlaying: { track: "Come Together", artist: "The Beatles", album: "Abbey Road", room: "Living room", playing: true, position: "1:12", duration: "4:20" },
+      rooms: [
+        { area: "living-room", name: "Living room", state: "Come Together, The Beatles", playing: true, volume: 42 },
+        { area: "kitchen", name: "Kitchen", state: "Idle", playing: false, volume: 20 },
+        { area: "tess-room", name: "Tess's room", state: "Idle", playing: false, volume: 30 },
+      ],
+      sources: [
+        { id: "spotify", name: "Spotify", detail: "Daan's Premium account", icon: "spotify", connected: true },
+        { id: "radio", name: "Radio", detail: "NPO Radio 2, Sky Radio, 3FM", icon: "radio", connected: true },
+        { id: "library", name: "Local library", detail: "1,240 tracks on the home server", icon: "folder-music", connected: true },
+      ],
+      playlists: [
+        { name: "Family favourites", detail: "48 songs", icon: "playlist-music" },
+        { name: "Dinner", detail: "62 songs", icon: "silverware-fork-knife" },
+        { name: "Focus", detail: "3h 20m", icon: "headphones" },
+      ],
+      settings: { defaultRoom: "living-room", explicitFilter: true, showArtwork: true },
+    },
+    commute: {
+      id: "commute", name: "Commute", icon: "map-marker-path", route: "/commute", space: "shared",
+      installed: ["googlemaps"],
+      destinations: [
+        { id: "work", name: "Daan's office", icon: "briefcase-variant", drive: "22 min", driveVia: "via A27", transit: "31 min", transitVia: "Bus 28, then a 6 min walk", traffic: "light", leaveBy: "08:40", next: "Bus 28 in 12 min" },
+        { id: "school", name: "School", icon: "school", drive: "9 min", driveVia: "via Biltstraat", transit: "18 min", transitVia: "Bus 4", traffic: "moderate", leaveBy: "08:15", next: "Bus 4 in 5 min" },
+        { id: "sofie-work", name: "Sofie's work", icon: "briefcase-variant", drive: "38 min", driveVia: "via A2", transit: "52 min", transitVia: "Train from Utrecht Centraal", traffic: "heavy", leaveBy: "07:55", next: "Train in 21 min" },
+      ],
+      settings: { home: "Abbey Road, Utrecht", mode: "drive", avoidTolls: false },
+    },
+    calendar: {
+      id: "calendar", name: "Calendar", icon: "calendar", route: "/calendar", space: "shared",
+      installed: ["google"],
+      calendars: [
+        { id: "family", name: "Family", color: "#2e9e5b" },
+        { id: "daan", name: "Daan", color: "#1C6FD6" },
+        { id: "sofie", name: "Sofie", color: "#a855f7" },
+        { id: "school", name: "School", color: "#e0a32e" },
+      ],
+      events: [
+        { id: "ev1", day: "Today", date: "Wednesday 1 July", time: "16:00", end: "17:30", title: "Tess football training", where: "Sports park Overvecht", cal: "school", who: ["Tess"], notes: "Bring the away kit and a full water bottle." },
+        { id: "ev2", day: "Today", date: "Wednesday 1 July", time: "18:30", end: "20:00", title: "Dinner with Elizabeth", where: "Home", cal: "family", who: ["Daan", "Sofie", "Elizabeth"], notes: "" },
+        { id: "ev3", day: "Today", date: "Wednesday 1 July", allDay: true, title: "Bin day, general waste", where: "", cal: "family", who: [], notes: "" },
+        { id: "ev4", day: "Tomorrow", date: "Thursday 2 July", time: "09:00", end: "09:30", title: "Sofie, standup", where: "Amsterdam office", cal: "sofie", who: ["Sofie"], notes: "" },
+        { id: "ev5", day: "Tomorrow", date: "Thursday 2 July", time: "15:00", end: "16:00", title: "Boiler service", where: "Home, utility room", cal: "family", who: ["Daan"], notes: "Engineer from Feenstra, between 15:00 and 17:00." },
+        { id: "ev6", day: "Friday", date: "Friday 3 July", time: "12:30", end: "13:30", title: "Lunch with Mum", where: "Cafe Orloff", cal: "daan", who: ["Daan"], notes: "" },
+      ],
+      settings: { defaultCal: "family", weekStart: "monday", showDeclined: false },
+    },
+    todo: {
+      id: "todo", name: "To-do", icon: "format-list-checks", route: "/todo", space: "shared",
+      installed: ["local"],
+      lists: [
+        { id: "family", name: "Family to-do", color: "#2e9e5b", tasks: [
+          { id: "t1", title: "Book the summer holiday", done: false, due: "This week", notes: "Compare the two campsites in the Ardennes before Friday." },
+          { id: "t2", title: "Return the library books", done: false, due: "Today", notes: "" },
+          { id: "t3", title: "Fix the garden gate latch", done: false, due: "", notes: "" },
+          { id: "t4", title: "Pay the water bill", done: true, due: "", notes: "" },
+        ] },
+        { id: "shopping", name: "Shopping", color: "#1C6FD6", tasks: [
+          { id: "s1", title: "Milk", done: false, due: "", notes: "" },
+          { id: "s2", title: "Bread", done: false, due: "", notes: "" },
+          { id: "s3", title: "Coffee beans", done: false, due: "", notes: "The dark roast from the market." },
+          { id: "s4", title: "Dishwasher tablets", done: true, due: "", notes: "" },
+        ] },
+        { id: "tess", name: "Tess's list", color: "#e0a32e", tasks: [
+          { id: "te1", title: "Maths homework", done: false, due: "Tomorrow", notes: "" },
+          { id: "te2", title: "Pack football kit", done: false, due: "Today", notes: "" },
+        ] },
+      ],
+      settings: { defaultList: "family", showCompleted: true },
+    },
+    waste: {
+      id: "waste", name: "Waste", icon: "trash-can", route: "/waste", space: "shared",
+      installed: ["afvalwijzer"], address: "Abbey Road, Utrecht",
+      collections: [
+        { id: "w1", type: "General waste", icon: "trash-can", color: "#6a6974", date: "Thursday 2 July", when: "Tomorrow" },
+        { id: "w2", type: "Paper and cardboard", icon: "newspaper-variant-outline", color: "#1C6FD6", date: "Tuesday 7 July", when: "In 6 days" },
+        { id: "w3", type: "Organic, garden and food", icon: "leaf", color: "#2e9e5b", date: "Thursday 9 July", when: "In 8 days" },
+        { id: "w4", type: "Plastic, metal and cartons", icon: "recycle", color: "#e0a32e", date: "Tuesday 14 July", when: "In 13 days" },
+      ],
+      settings: { reminder: "evening-before", showInCalendar: true },
+    },
+  },
+
+  // Per-category integration gallery (edit mode). `installed` marks what is
+  // already powering the service; the rest are addable, filtered to the
+  // category. Mirrors the real Home Assistant "add integration" flow, but
+  // pre-filtered to the service the user is on.
+  serviceIntegrations: {
+    weather: [
+      { id: "metno", name: "Met.no", desc: "Free forecasts from the Norwegian Meteorological Institute", icon: "weather-partly-cloudy", installed: true },
+      { id: "buienradar", name: "Buienradar", desc: "Rain radar and forecasts for the Netherlands", icon: "weather-rainy", installed: false },
+      { id: "owm", name: "OpenWeatherMap", desc: "Global current conditions and forecasts", icon: "weather-cloudy", installed: false },
+      { id: "accuweather", name: "AccuWeather", desc: "Local forecasts, alerts and air quality", icon: "weather-lightning", installed: false },
+    ],
+    music: [
+      { id: "spotify", name: "Spotify", desc: "Stream and control your Spotify library", icon: "spotify", installed: true },
+      { id: "sonos", name: "Sonos", desc: "Control Sonos speakers and groups", icon: "speaker", installed: false },
+      { id: "applemusic", name: "Apple Music", desc: "Stream from your Apple Music subscription", icon: "apple", installed: false },
+      { id: "musicassistant", name: "Music Assistant", desc: "One library across every speaker in the home", icon: "music-box-multiple", installed: false },
+    ],
+    commute: [
+      { id: "googlemaps", name: "Google Maps", desc: "Live drive times with current traffic", icon: "map-marker-path", installed: true },
+      { id: "waze", name: "Waze", desc: "Community driven traffic and travel times", icon: "car-traction-control", installed: false },
+      { id: "ns", name: "Nederlandse Spoorwegen", desc: "Dutch railway departure times", icon: "train", installed: false },
+      { id: "nineduo", name: "9292", desc: "Public transport across the Netherlands", icon: "bus", installed: false },
+    ],
+    calendar: [
+      { id: "google", name: "Google Calendar", desc: "Sync events from your Google account", icon: "calendar", installed: true },
+      { id: "local", name: "Local calendar", desc: "A calendar stored on your home, no account needed", icon: "calendar-blank", installed: false },
+      { id: "caldav", name: "CalDAV", desc: "Connect any CalDAV calendar, like iCloud or Fastmail", icon: "calendar-sync", installed: false },
+      { id: "microsoft", name: "Microsoft 365", desc: "Sync events from Outlook and Microsoft 365", icon: "microsoft-outlook", installed: false },
+    ],
+    todo: [
+      { id: "local", name: "Local to-do", desc: "Lists stored on your home, no account needed", icon: "format-list-checks", installed: true },
+      { id: "todoist", name: "Todoist", desc: "Sync your Todoist projects and tasks", icon: "check-circle-outline", installed: false },
+      { id: "googletasks", name: "Google Tasks", desc: "Sync tasks from your Google account", icon: "format-list-bulleted", installed: false },
+    ],
+    waste: [
+      { id: "afvalwijzer", name: "Afvalwijzer", desc: "Dutch household waste collection schedules", icon: "trash-can", installed: true },
+      { id: "icalwaste", name: "Council calendar (iCal)", desc: "Import a collection calendar from your council", icon: "calendar-import", installed: false },
+    ],
+  },
 
   // ---- Home overview: software update (drives the admin "system-update"
   // widget; the widget only shows when available is true) -----------------
@@ -267,7 +470,82 @@ export const household = {
     { id: "presence", name: "Location", icon: "map-marker", access: "shared", description: "Whether you are home or away", usedBy: "Lights and heating routines respond to who is home" },
     { id: "health", name: "Health", icon: "heart-pulse", access: "private", description: "Activity and sleep from your connected watch", usedBy: "Not shared with anyone" },
     { id: "calendar", name: "Calendar", icon: "calendar", access: "shared", description: "Your events on the family calendar", usedBy: "Shown on the shared family calendar" },
+    { id: "voice", name: "Voice", icon: "microphone", access: "private", description: "What you have asked the home out loud", usedBy: "Only you can see your own voice history" },
   ],
+
+  // ---- Voice assistants (shared space) ---------------------------------
+  // The pipeline directory: what voice assistants the home has, what they can
+  // do, which satellites run them and where. This is capability, not content.
+  // The transcript of what was said is deliberately NOT here (see the app's
+  // transparency copy): shared speakers keep no readable record, and a person's
+  // own attributed history lives in their Personal space (My data -> Voice).
+  // A satellite carries an `area`, so persona scope (Nour, Lars) filters them
+  // the same way the rest of the app does (canAccessArea).
+  voiceAssistants: [
+    {
+      id: "home-voice", name: "Home voice", isDefault: true, space: "shared",
+      language: "Dutch (Netherlands)", wakeWord: "Hey Nabu", processing: "local",
+      handledOn: "This home",
+      agent: { name: "Home Assistant", kind: "local" },
+      stt: { name: "Whisper", kind: "local" },
+      tts: { name: "Piper", voice: "Fenna", kind: "local" },
+      can: [
+        { icon: "lightbulb-on-outline", text: "Control lights, climate, locks and media" },
+        { icon: "play-circle-outline", text: "Run scenes and scripts" },
+        { icon: "home-search-outline", text: "Answer questions about the home" },
+      ],
+      satellites: [
+        { id: "sat-lr", name: "Living room satellite", area: "living-room", status: "listening" },
+        { id: "sat-kt", name: "Kitchen satellite", area: "kitchen", status: "listening" },
+        { id: "sat-mb", name: "Bedroom satellite", area: "main-bedroom", status: "muted" },
+      ],
+    },
+    {
+      id: "ai-assist", name: "Assist with AI", isDefault: false, space: "shared",
+      language: "English (United Kingdom)", wakeWord: "Okay Home", processing: "cloud",
+      handledOn: "Home Assistant Cloud",
+      agent: { name: "Home LLM", kind: "cloud" },
+      stt: { name: "Home Assistant Cloud", kind: "cloud" },
+      tts: { name: "Home Assistant Cloud", voice: "Colette", kind: "cloud" },
+      can: [
+        { icon: "message-processing-outline", text: "Understand plain language and follow ups" },
+        { icon: "comment-question-outline", text: "Answer open questions beyond the home" },
+      ],
+      satellites: [
+        { id: "sat-hall", name: "Hallway satellite", area: "hallway", status: "idle" },
+      ],
+    },
+  ],
+
+  // A person's own voice history, keyed by persona id. Attributed to them via
+  // the companion app or voice match. Shown only in their Personal space
+  // (My data -> Voice), never on the shared page. `handled` is where the
+  // request was processed (local | cloud). Utterances the home could not
+  // attribute to a person are never stored, so this is only ever your own.
+  voiceHistory: {
+    daan: [
+      { id: "vh-d1", text: "Turn off the living room lights", time: "today 22:41", room: "Living room", assistant: "Home voice", response: "Turned off 2 lights", handled: "local" },
+      { id: "vh-d2", text: "Is the front door locked?", time: "today 22:40", room: "Main bedroom", assistant: "Home voice", response: "Yes, the front door is locked", handled: "local" },
+      { id: "vh-d3", text: "Set the bedroom to 19 degrees", time: "today 22:39", room: "Main bedroom", assistant: "Home voice", response: "Set the heating to 19.0 degrees", handled: "local" },
+      { id: "vh-d4", text: "What is the weather tomorrow?", time: "yesterday 7:52", room: "Kitchen", assistant: "Assist with AI", response: "Rain in the afternoon, around 14 degrees", handled: "cloud" },
+      { id: "vh-d5", text: "Start the coffee", time: "yesterday 7:04", room: "Kitchen", assistant: "Home voice", response: "Ran Good morning", handled: "local" },
+    ],
+    sofie: [
+      { id: "vh-s1", text: "Play something in the kitchen", time: "today 18:10", room: "Kitchen", assistant: "Home voice", response: "Playing your Discover Weekly", handled: "local" },
+      { id: "vh-s2", text: "How long until dinner is done?", time: "today 18:02", room: "Kitchen", assistant: "Assist with AI", response: "The timer has 12 minutes left", handled: "cloud" },
+      { id: "vh-s3", text: "Turn on the hallway light", time: "today 7:48", room: "Hallway", assistant: "Home voice", response: "Turned on the hallway ceiling", handled: "local" },
+    ],
+    tess: [
+      { id: "vh-t1", text: "Set an alarm for 7", time: "yesterday 22:15", room: "Living room", assistant: "Home voice", response: "Alarm set for 7:00", handled: "local" },
+    ],
+    lars: [
+      { id: "vh-l1", text: "Goodnight", time: "yesterday 19:58", room: "Living room", assistant: "Home voice", response: "Ran Lars's bedtime lamp", handled: "local" },
+    ],
+    greet: [
+      { id: "vh-g1", text: "Turn on my reading light", time: "today 20:20", room: "Elizabeth's room", assistant: "Home voice", response: "Turned on your lamp", handled: "local" },
+    ],
+    nour: [],
+  },
 
   // ---- Settings IA (admin submenu, from the IA map) --------------------
   // Each item is a main settings page. Items with a `links` array surface those
@@ -389,6 +667,126 @@ export const household = {
     { time: "17:02:19", level: "info", source: "homeassistant.components.hassio", message: "Cloud backup completed (788.82 MB)" },
     { time: "17:14:55", level: "warning", source: "homeassistant.helpers.template", message: "Template loop detected for sensor.daily_energy" },
   ],
+
+  // ---- Cameras --------------------------------------------------------
+  // The Cameras destination (shared space) reads the camera entities above
+  // plus this system status, recorded clips, and detection events. Camera
+  // devices carry `area`, so persona scope (Nour, Lars) filters them the same
+  // way the rest of the app does (canAccessArea).
+  cameraSystem: {
+    armed: true,           // whether recording / detection is active
+    online: 5, total: 5,   // recomputed against accessible cameras at render
+    storageUsed: 412,      // GB
+    storageTotal: 1000,    // GB (1 TB local disk)
+    oldest: "18 days",     // retention window
+    retention: "Keeps 30 days, or until the disk is full",
+  },
+  // Recorded clips per camera (most recent first). Times are today unless a
+  // `day` is given. `kind` drives the glyph (motion / person / vehicle / doorbell).
+  cameraClips: [
+    { id: "clip_fd_1", cam: "front_door_cam", kind: "doorbell", label: "Doorbell pressed", start: "08:14", end: "08:15", dur: "1m 02s", size: "38 MB" },
+    { id: "clip_fd_2", cam: "front_door_cam", kind: "person", label: "Sofie left", start: "07:52", end: "07:53", dur: "0m 44s", size: "26 MB" },
+    { id: "clip_fd_3", cam: "front_door_cam", kind: "vehicle", label: "Parcel van stopped", start: "Yesterday 16:03", end: "16:05", dur: "2m 11s", size: "74 MB", day: "yesterday" },
+    { id: "clip_gd_1", cam: "garden_cam", kind: "animal", label: "Cat crossed the lawn", start: "13:07", end: "13:08", dur: "0m 28s", size: "16 MB" },
+    { id: "clip_gd_2", cam: "garden_cam", kind: "person", label: "Lars playing outside", start: "11:35", end: "11:49", dur: "13m 40s", size: "402 MB" },
+    { id: "clip_lr_1", cam: "living_room_cam", kind: "motion", label: "Motion detected", start: "09:18", end: "09:19", dur: "0m 51s", size: "30 MB" },
+    { id: "clip_gr_1", cam: "garage_cam", kind: "motion", label: "Garage door opened", start: "Yesterday 22:10", end: "22:11", dur: "1m 04s", size: "36 MB", day: "yesterday" },
+  ],
+  // Detection events (the Events grid). type: person | vehicle | animal | motion.
+  cameraEvents: [
+    { id: "ev_1", cam: "front_door_cam", type: "person", label: "Sofie", time: "08:14", ago: "4 hours ago", confidence: 96 },
+    { id: "ev_2", cam: "front_door_cam", type: "vehicle", label: "Delivery van", time: "08:02", ago: "4 hours ago", confidence: 91 },
+    { id: "ev_5", cam: "garden_cam", type: "animal", label: "Cat", time: "13:07", ago: "5 hours ago", confidence: 79 },
+    { id: "ev_6", cam: "garden_cam", type: "person", label: "Lars", time: "11:35", ago: "7 hours ago", confidence: 94 },
+    { id: "ev_7", cam: "garden_cam", type: "motion", label: "Motion", time: "10:58", ago: "8 hours ago", confidence: 72 },
+    { id: "ev_8", cam: "living_room_cam", type: "person", label: "Person", time: "09:18", ago: "9 hours ago", confidence: 90 },
+    { id: "ev_9", cam: "living_room_cam", type: "animal", label: "Cat", time: "07:44", ago: "10 hours ago", confidence: 81 },
+    { id: "ev_10", cam: "front_door_cam", type: "person", label: "Postal worker", time: "Yesterday 16:03", ago: "yesterday", confidence: 93, day: "yesterday" },
+    { id: "ev_12", cam: "garage_cam", type: "motion", label: "Motion", time: "Yesterday 22:10", ago: "yesterday", confidence: 74, day: "yesterday" },
+    { id: "ev_13", cam: "front_door_cam", type: "animal", label: "Dog", time: "Yesterday 09:12", ago: "yesterday", confidence: 83, day: "yesterday" },
+    { id: "ev_14", cam: "garden_cam", type: "vehicle", label: "Bicycle", time: "16:29", ago: "3 hours ago", confidence: 77 },
+  ],
+
+  // ---- Files (maintainer only) ----------------------------------------
+  // The Files destination (admin space) browses everything the instance can
+  // reach, on the local disk and in the cloud, and edits YAML in place, so the
+  // File editor add-on is no longer needed. A tree of nodes: kind is
+  // location | dir | file. Files carry ftype (yaml | text | json | log | image
+  // | binary), size, modified, and (for text) content. `protected: true` marks
+  // read-only, sensitive files (.storage, secrets) that must not be edited.
+  files: [
+    {
+      id: "instance", name: "On this instance", kind: "location", icon: "harddisk",
+      detail: "Local config and media on the Home Assistant Green",
+      children: [
+        {
+          id: "config", name: "config", kind: "dir", icon: "folder-cog", detail: "Configuration",
+          children: [
+            { id: "configuration.yaml", name: "configuration.yaml", kind: "file", ftype: "yaml", size: "1.2 KB", modified: "3 days ago",
+              content: "# Loads default set of integrations. Do not remove.\ndefault_config:\n\n# Load frontend themes from the themes folder\nfrontend:\n  themes: !include_dir_merge_named themes\n\nautomation: !include automations.yaml\nscript: !include scripts.yaml\nscene: !include scenes.yaml\n\nhomeassistant:\n  name: Abbey Road\n  latitude: 52.0825\n  longitude: 5.1437\n  elevation: 13\n  unit_system: metric\n  time_zone: Europe/Amsterdam\n" },
+            { id: "automations.yaml", name: "automations.yaml", kind: "file", ftype: "yaml", size: "6.4 KB", modified: "2 hours ago",
+              content: "- id: '1699812345'\n  alias: Sunset lights\n  trigger:\n    - platform: sun\n      event: sunset\n      offset: '-00:15:00'\n  action:\n    - service: light.turn_on\n      target:\n        area_id: living_room\n\n- id: '1699898765'\n  alias: Arrive home\n  trigger:\n    - platform: tag\n      tag_id: front_door\n  action:\n    - service: lock.unlock\n      target:\n        entity_id: lock.front_door\n" },
+            { id: "scripts.yaml", name: "scripts.yaml", kind: "file", ftype: "yaml", size: "2.1 KB", modified: "5 days ago",
+              content: "goodnight:\n  alias: Goodnight\n  sequence:\n    - service: light.turn_off\n      target:\n        entity_id: all\n    - service: lock.lock\n      target:\n        entity_id: lock.front_door\n" },
+            { id: "scenes.yaml", name: "scenes.yaml", kind: "file", ftype: "yaml", size: "1.8 KB", modified: "1 week ago",
+              content: "- id: '1700000001'\n  name: Movie night\n  entities:\n    light.living_room_ceiling: off\n    light.tv_backlight: on\n    media_player.living_room: playing\n" },
+            { id: "secrets.yaml", name: "secrets.yaml", kind: "file", ftype: "yaml", size: "0.4 KB", modified: "2 months ago", protected: true,
+              content: "# Secrets are hidden. This file holds tokens and passwords\n# and cannot be edited here.\n" },
+            { id: "themes", name: "themes", kind: "dir", icon: "palette-swatch", detail: "3 themes",
+              children: [
+                { id: "abbey.yaml", name: "abbey.yaml", kind: "file", ftype: "yaml", size: "0.9 KB", modified: "1 month ago",
+                  content: "Abbey warm:\n  primary-color: '#1C6FD6'\n  card-background-color: '#222226'\n  primary-background-color: '#18181a'\n" },
+              ],
+            },
+            { id: "www", name: "www", kind: "dir", icon: "folder-network", detail: "Served at /local", children: [
+              { id: "floorplan.png", name: "floorplan.png", kind: "file", ftype: "image", size: "248 KB", modified: "3 weeks ago" },
+              { id: "welcome.mp3", name: "welcome.mp3", kind: "file", ftype: "binary", size: "1.1 MB", modified: "3 weeks ago" },
+            ] },
+            { id: "custom_components", name: "custom_components", kind: "dir", icon: "puzzle", detail: "2 custom integrations", children: [
+              { id: "hacs", name: "hacs", kind: "dir", icon: "folder", detail: "HACS", children: [] },
+              { id: "afvalwijzer", name: "afvalwijzer", kind: "dir", icon: "folder", detail: "Waste collection", children: [] },
+            ] },
+            { id: "blueprints", name: "blueprints", kind: "dir", icon: "file-tree", detail: "Automation and script blueprints", children: [] },
+            { id: ".storage", name: ".storage", kind: "dir", icon: "database-lock", detail: "Internal state, read only", protected: true, children: [
+              { id: "core.config_entries", name: "core.config_entries", kind: "file", ftype: "json", size: "84 KB", modified: "2 hours ago", protected: true, content: "{\n  \"version\": 1,\n  \"data\": { \"entries\": [ ... ] }\n}" },
+            ] },
+            { id: "home-assistant.log", name: "home-assistant.log", kind: "file", ftype: "log", size: "512 KB", modified: "1 minute ago",
+              content: "2026-07-01 16:42:08 INFO (MainThread) [homeassistant.core] Starting Home Assistant\n2026-07-01 16:51:33 ERROR (MainThread) [homeassistant.components.camera] Timeout fetching front_door snapshot\n2026-07-01 17:02:19 INFO (MainThread) [homeassistant.components.hassio] Cloud backup completed\n" },
+          ],
+        },
+        {
+          id: "media", name: "media", kind: "dir", icon: "folder-play", detail: "Local media library",
+          children: [
+            { id: "music", name: "music", kind: "dir", icon: "folder-music", detail: "1,240 tracks", children: [] },
+            { id: "movies", name: "movies", kind: "dir", icon: "folder", detail: "Home videos", children: [] },
+            { id: "photos", name: "photos", kind: "dir", icon: "folder-image", detail: "Shared albums", children: [] },
+          ],
+        },
+        { id: "share", name: "share", kind: "dir", icon: "folder-account", detail: "Shared with add-ons", children: [] },
+        { id: "backup", name: "backup", kind: "dir", icon: "backup-restore", detail: "3 local backups", children: [
+          { id: "backup-2026-07-01.tar", name: "Full backup 2026-07-01.tar", kind: "file", ftype: "binary", size: "788 MB", modified: "today" },
+          { id: "backup-2026-06-24.tar", name: "Full backup 2026-06-24.tar", kind: "file", ftype: "binary", size: "771 MB", modified: "1 week ago" },
+        ] },
+      ],
+    },
+    {
+      id: "cloud", name: "Home Assistant Cloud", kind: "location", icon: "cloud-outline",
+      detail: "Nabu Casa, cloud backup",
+      children: [
+        { id: "cloud-backups", name: "Cloud backups", kind: "dir", icon: "cloud-lock", detail: "Encrypted, off site", children: [
+          { id: "cloud-backup-2026-07-01.tar", name: "Cloud backup 2026-07-01.tar", kind: "file", ftype: "binary", size: "788 MB", modified: "today" },
+        ] },
+      ],
+    },
+    {
+      id: "nas", name: "Network storage", kind: "location", icon: "nas",
+      detail: "Synology NAS, mounted over SMB",
+      children: [
+        { id: "nas-media", name: "Media", kind: "dir", icon: "folder-play", detail: "Movies and music", children: [] },
+        { id: "nas-recordings", name: "Camera recordings", kind: "dir", icon: "folder-play", detail: "Archived clips", children: [] },
+      ],
+    },
+  ],
 };
 
 // ---- Route directory (for the More page, grouped by space) -------------
@@ -401,25 +799,136 @@ export const directory = [
   // Shared, discovery
   { id: "devices", label: "Devices", icon: "devices", space: "shared", route: "/devices" },
   { id: "people", label: "People", icon: "account-group", space: "shared", route: "/people" },
+  { id: "cameras", label: "Cameras", icon: "cctv", space: "shared", route: "/cameras" },
   { id: "map", label: "Map", icon: "map", space: "shared", route: "/map" },
+  { id: "explore", label: "Explore", icon: "compass-outline", space: "shared", route: "/explore" },
   // Shared, home routines
   { id: "automations", label: "Automations", icon: "robot", space: "shared", route: "/automations" },
   { id: "scenes", label: "Scenes", icon: "palette", space: "shared", route: "/scenes" },
   { id: "scripts", label: "Scripts", icon: "script-text", space: "shared", route: "/scripts" },
+  { id: "tags", label: "Tags", icon: "nfc-variant", space: "shared", route: "/tags" },
+  { id: "voice-assistants", label: "Voice assistants", icon: "assistant", space: "shared", route: "/voice-assistants" },
   // Shared, analytics
   { id: "energy", label: "Energy", icon: "lightning-bolt", space: "shared", route: "/energy" },
   { id: "history", label: "History", icon: "history", space: "shared", route: "/history" },
   { id: "activity", label: "Activity", icon: "timeline-text", space: "shared", route: "/activity" },
+  // Shared, services (use-case pages). More-page grouping is deferred; these
+  // land in the shared group for now so they are reachable.
+  { id: "weather", label: "Weather", icon: "weather-partly-rainy", space: "shared", route: "/weather" },
+  { id: "music", label: "Music", icon: "music", space: "shared", route: "/music" },
+  { id: "commute", label: "Commute", icon: "map-marker-path", space: "shared", route: "/commute" },
+  { id: "calendar", label: "Calendar", icon: "calendar", space: "shared", route: "/calendar" },
+  { id: "todo", label: "To-do", icon: "format-list-checks", space: "shared", route: "/todo" },
+  { id: "waste", label: "Waste", icon: "trash-can", space: "shared", route: "/waste" },
   // Personal
-  { id: "my-dashboard", label: "My dashboard", icon: "view-dashboard", space: "personal", route: "/my/dashboard" },
-  { id: "my-stuff", label: "My stuff", icon: "star", space: "personal", route: "/my/dashboard" },
   { id: "my-data", label: "My data", icon: "shield-lock", space: "personal", route: "/my/data" },
   { id: "my-settings", label: "My settings", icon: "cog-outline", space: "personal", route: "/my/settings" },
   // Admin
   { id: "settings", label: "Settings", icon: "cog", space: "admin", route: "/settings" },
+  { id: "entities", label: "Entities", icon: "shape-outline", space: "admin", route: "/entities" },
+  { id: "files", label: "Files", icon: "folder-cog", space: "admin", route: "/files" },
   { id: "logs", label: "Logs", icon: "text-box", space: "admin", route: "/logs" },
-  { id: "extensions", label: "Home extensions", icon: "store", space: "admin", route: "/extensions" },
+  { id: "extensions", label: "Community store", icon: "store", space: "admin", route: "/extensions" },
 ];
+
+// ---- Entity registry (admin: entities list + developer tools states) ----
+// The granular per-entity layer beneath devices. Real Home Assistant has many
+// entities per device; this expands the device list (`household.entities`,
+// which this codebase uses as the *devices* array) into a realistic registry
+// carrying domain, current state, attributes, integration, status flags and
+// category. `deviceId` references a device in `household.entities` (null for
+// orphaned / standalone entities). Admin space only. The states side is
+// read-only: there is no "set state" here by design.
+export const entityRegistry = (() => {
+  const reg = [];
+  const areaName = (id) => (household.areas[id] || {}).name || "";
+  const push = (e) => reg.push(Object.assign(
+    { enabled: true, hidden: false, readOnly: false, unavailable: false, restored: false, labels: [], category: null, assistants: [], unit: "" }, e));
+  const integ = (d) => {
+    if (d.type === "light") return /garden|driveway|patio/.test(d.id) ? "ESPHome" : "Philips Hue";
+    if (d.type === "climate") return d.id === "utility_boiler" ? "ESPHome" : "Google Nest";
+    if (d.type === "lock") return "Z-Wave";
+    if (d.type === "camera") return /front_door/.test(d.id) ? "Google Nest" : "Reolink";
+    if (d.type === "media") return "Sonos";
+    if (d.type === "sensor") return /patio|garden/.test(d.id) ? "ESPHome" : "Zigbee";
+    if (d.type === "voice") return "Assist";
+    return "Other";
+  };
+  const homeA = ["Home Assistant"];
+  const cloudA = ["Home Assistant", "Google Assistant", "Amazon Alexa"];
+  household.entities.forEach((d, di) => {
+    const integration = integ(d);
+    const A = areaName(d.area);
+    const fn = (suffix) => (A ? A + " " : "") + d.name + (suffix ? " " + suffix : "");
+    if (d.type === "light") {
+      push({ id: "light." + d.id, name: d.name, domain: "light", deviceId: d.id, integration, area: d.area,
+        state: d.on ? "on" : "off",
+        attributes: Object.assign({ friendly_name: fn(), supported_color_modes: ["color_temp", "xy"] }, d.on ? { brightness: 180, color_temp_kelvin: 2700 } : {}),
+        assistants: cloudA, labels: ["Lighting"] });
+    } else if (d.type === "climate") {
+      const mode = ({ Automatic: "auto", Heat: "heat", Cool: "cool" })[d.mode] || "auto";
+      push({ id: "climate." + d.id, name: d.name, domain: "climate", deviceId: d.id, integration, area: d.area,
+        state: mode,
+        attributes: { friendly_name: fn(), current_temperature: d.current, temperature: d.target, hvac_modes: ["off", "heat", "auto"], hvac_action: d.current < d.target ? "heating" : "idle", min_temp: 7, max_temp: 35 },
+        assistants: cloudA, labels: ["Climate"] });
+      push({ id: "sensor." + d.id + "_temperature", name: d.name + " temperature", domain: "sensor", deviceId: d.id, integration, area: d.area,
+        state: String(d.current), unit: "\u00b0C",
+        attributes: { friendly_name: fn("temperature"), device_class: "temperature", state_class: "measurement", unit_of_measurement: "\u00b0C" } });
+    } else if (d.type === "lock") {
+      push({ id: "lock." + d.id, name: d.name, domain: "lock", deviceId: d.id, integration, area: d.area,
+        state: d.locked ? "locked" : "unlocked",
+        attributes: { friendly_name: fn(), supported_features: 1 }, assistants: homeA, labels: ["Security"] });
+    } else if (d.type === "camera") {
+      const un = d.live === false && /garage/.test(d.id);
+      push({ id: "camera." + d.id, name: d.name, domain: "camera", deviceId: d.id, integration, area: d.area,
+        state: un ? "unavailable" : (d.live ? "streaming" : "idle"), unavailable: un,
+        attributes: { friendly_name: fn(), frontend_stream_type: "hls", supported_features: 2 }, assistants: homeA, labels: ["Security"] });
+      push({ id: "binary_sensor." + d.id + "_motion", name: d.name + " motion", domain: "binary_sensor", deviceId: d.id, integration, area: d.area,
+        state: "off",
+        attributes: { friendly_name: fn("motion"), device_class: "motion" }, labels: ["Security"] });
+    } else if (d.type === "media") {
+      const parts = (d.track || "").split(",");
+      push({ id: "media_player." + d.id, name: d.name, domain: "media_player", deviceId: d.id, integration, area: d.area,
+        state: d.playing ? "playing" : "idle",
+        attributes: Object.assign({ friendly_name: fn(), volume_level: 0.34, supported_features: 152461 }, d.playing && d.track ? { media_title: parts[0].trim(), media_artist: (parts[1] || "").trim() } : {}),
+        assistants: homeA });
+    } else if (d.type === "voice") {
+      push({ id: "assist_satellite." + d.id, name: d.name, domain: "assist_satellite", deviceId: d.id, integration, area: d.area,
+        state: "idle", attributes: { friendly_name: fn(), supported_features: 1 } });
+    } else if (d.type === "sensor") {
+      const dc = ({ Motion: "motion", Leak: "moisture", CO: "smoke", Humidity: "humidity", Temperature: "temperature" })[d.devType];
+      if (["motion", "moisture", "smoke"].includes(dc)) {
+        push({ id: "binary_sensor." + d.id, name: d.name, domain: "binary_sensor", deviceId: d.id, integration, area: d.area,
+          state: /detect/i.test(d.state) ? "on" : "off",
+          attributes: { friendly_name: fn(), device_class: dc } });
+      } else {
+        const num = parseFloat(d.state);
+        const unit = /%/.test(d.state) ? "%" : /\u00b0C/.test(d.state) ? "\u00b0C" : "";
+        push({ id: "sensor." + d.id, name: d.name, domain: "sensor", deviceId: d.id, integration, area: d.area,
+          state: isNaN(num) ? d.state : String(num), unit,
+          attributes: { friendly_name: fn(), device_class: dc || undefined, state_class: "measurement", unit_of_measurement: unit || undefined } });
+      }
+    }
+    if (typeof d.battery === "number") {
+      push({ id: "sensor." + d.id + "_battery", name: d.name + " battery", domain: "sensor", deviceId: d.id, integration, area: d.area,
+        state: String(d.battery), unit: "%", category: "diagnostic", enabled: di % 4 !== 3,
+        attributes: { friendly_name: fn("battery"), device_class: "battery", state_class: "measurement", unit_of_measurement: "%" } });
+    }
+  });
+  // Hidden / config touches for honest Status variety.
+  const at = (id) => reg.find((e) => e.id === id);
+  if (at("light.living_room_tv_backlight")) at("light.living_room_tv_backlight").hidden = true;
+  if (at("sensor.kitchen_motion_battery")) at("sensor.kitchen_motion_battery").hidden = true;
+  if (at("binary_sensor.garden_cam_motion")) at("binary_sensor.garden_cam_motion").category = "diagnostic";
+  // Orphaned / read-only / disabled standalone entities (the removable ones).
+  push({ id: "light.spare_bulb", name: "Spare bulb", domain: "light", deviceId: null, integration: "MQTT", area: null,
+    state: "unavailable", unavailable: true, restored: true, attributes: { friendly_name: "Spare bulb", restored: true } });
+  push({ id: "sensor.template_daylight", name: "Daylight", domain: "sensor", deviceId: null, integration: "Template", area: null,
+    state: "Below horizon", readOnly: true, attributes: { friendly_name: "Daylight" } });
+  push({ id: "switch.old_smart_plug", name: "Old smart plug", domain: "switch", deviceId: null, integration: "TP-Link Kasa", area: "garage",
+    state: "unavailable", unavailable: true, enabled: false, attributes: { friendly_name: "Old smart plug" } });
+  return reg;
+})();
 
 // ---- Bookmark targets ---------------------------------------------------
 // Bookmarks are favourite shortcuts, NOT destinations. They never appear on
@@ -429,6 +938,95 @@ export const directory = [
 // persona's bookmark ids against the directory first, then these extras.
 export const bookmarkExtras = [
   { id: "front-door", label: "Front door", icon: "door", route: "/home/area/hallway" },
+];
+
+// ---- Dashboards (user-created, access-controlled) ----------------------
+// A dashboard is the ONLY thing a person builds. Nothing HA ships is a
+// dashboard; the built-in home (Home, areas, Lights/Climate/... ) is the app.
+// A dashboard is one FIXED shared object carrying independent view + edit
+// grants. Each grant token is a ROLE ("everyone" | "maintainers" | "residents")
+// or an individual person id. "Shared vs personal" is emergent from the grant,
+// never a stored toggle. Cards are demo layout; add/remove/reorder is local.
+//   card types: weather | entities (ids[]) | camera (id) | media (id) | actions (kind/id[])
+export const dashboardTemplates = [
+  { id: "blank", name: "Blank", icon: "view-dashboard-outline", desc: "Start with an empty canvas.", cards: [] },
+  { id: "room", name: "Room control", icon: "sofa-outline", desc: "Lights, climate and media for one room.", cards: [
+    { type: "entities", title: "Lights", ids: ["living_room_ceiling", "living_room_lamp"] },
+    { type: "entities", title: "Climate", ids: ["living_room_thermostat"] },
+    { type: "media", id: "living_room_speaker" },
+  ] },
+  { id: "media", name: "Media", icon: "play-circle-outline", desc: "Now playing and quick scenes.", cards: [
+    { type: "media", id: "living_room_speaker" },
+    { type: "actions", title: "Scenes", kind: "scenes", ids: ["movie-night", "dinner"] },
+  ] },
+  { id: "family", name: "Family board", icon: "account-group-outline", desc: "Weather, a camera and shared lights.", cards: [
+    { type: "weather" },
+    { type: "camera", id: "living_room_cam" },
+    { type: "entities", title: "Shared lights", ids: ["living_room_ceiling", "kitchen_ceiling", "hallway_ceiling"] },
+  ] },
+];
+
+export const dashboards = [
+  {
+    id: "family-wall", name: "Family wall", icon: "monitor-dashboard",
+    viewers: ["everyone"], editors: ["sofie"], createdBy: "sofie",
+    created: "12 Mar 2026", modified: "yesterday 21:04", startedFrom: "family",
+    cards: [
+      { type: "weather" },
+      { type: "actions", title: "Quick actions", kind: "scenes", ids: ["good-morning", "movie-night", "away"] },
+      { type: "entities", title: "Downstairs lights", ids: ["living_room_ceiling", "kitchen_ceiling", "hallway_ceiling"] },
+      { type: "camera", id: "living_room_cam" },
+    ],
+  },
+  {
+    id: "movie-night", name: "Movie night", icon: "movie-open-outline",
+    viewers: ["daan", "sofie"], editors: ["daan"], createdBy: "daan",
+    created: "4 Feb 2026", modified: "last week", startedFrom: "media",
+    cards: [
+      { type: "media", id: "living_room_speaker" },
+      { type: "entities", title: "Living room", ids: ["living_room_ceiling", "living_room_lamp", "living_room_tv_backlight"] },
+      { type: "entities", title: "Climate", ids: ["living_room_thermostat"] },
+    ],
+  },
+  {
+    id: "daan-home", name: "Daan's dashboard", icon: "view-dashboard",
+    viewers: ["daan"], editors: ["daan"], createdBy: "daan",
+    created: "18 Jan 2026", modified: "today 7:41", startedFrom: "blank",
+    cards: [
+      { type: "entities", title: "Bedroom", ids: ["main_bed_lamp", "main_bed_reading", "main_bed_thermostat"] },
+      { type: "actions", title: "Routines", kind: "scenes", ids: ["good-morning", "away"] },
+      { type: "weather" },
+    ],
+  },
+  {
+    id: "sofie-home", name: "Sofie's dashboard", icon: "view-dashboard",
+    viewers: ["sofie"], editors: ["sofie"], createdBy: "sofie",
+    created: "20 Jan 2026", modified: "today 8:12", startedFrom: "blank",
+    cards: [
+      { type: "entities", title: "My lights", ids: ["living_room_lamp", "main_bed_lamp", "kitchen_ceiling"] },
+      { type: "weather" },
+    ],
+  },
+  {
+    id: "lars-stuff", name: "Lars's stuff", icon: "star-outline",
+    viewers: ["lars"], editors: ["lars"], createdBy: "lars",
+    created: "8 Feb 2026", modified: "2 weeks ago", startedFrom: "blank",
+    cards: [
+      { type: "entities", title: "My lamp", ids: ["lars_lamp"] },
+      { type: "actions", title: "Bedtime", kind: "scripts", ids: ["goodnight"] },
+      { type: "weather" },
+    ],
+  },
+  {
+    id: "guest", name: "Guest", icon: "account-clock-outline",
+    viewers: ["nour"], editors: ["daan"], createdBy: "daan",
+    created: "1 Jul 2026", modified: "today 7:20", startedFrom: "blank",
+    cards: [
+      { type: "entities", title: "Ground floor", ids: ["hallway_ceiling", "kitchen_ceiling"] },
+      { type: "entities", title: "Front door", ids: ["front_door"] },
+      { type: "camera", id: "living_room_cam" },
+    ],
+  },
 ];
 
 // ---- World map (person + zone locations, for the /map page) ------------
@@ -593,6 +1191,42 @@ export function bookmarksFor(persona) {
   return items;
 }
 
+// ---- Dashboard access -------------------------------------------------
+// A grant token matches a persona if it is a role the persona has, or the
+// persona's own id. "everyone" means every household member (maintainers +
+// residents), NOT scoped non-residents (guests) unless named explicitly.
+const DASH_ROLES = ["everyone", "maintainers", "residents"];
+export function grantMatches(grant, persona) {
+  if (!persona) return false;
+  if (grant === "everyone") return persona.role === "maintainer" || persona.role === "resident";
+  if (grant === "maintainers") return persona.role === "maintainer";
+  if (grant === "residents") return persona.role === "resident";
+  return grant === persona.id;
+}
+export function canEditDashboard(persona, d) {
+  if (typeof d === "string") d = dashboards.find((x) => x.id === d);
+  return !!d && (d.editors || []).some((g) => grantMatches(g, persona));
+}
+export function canViewDashboard(persona, d) {
+  if (typeof d === "string") d = dashboards.find((x) => x.id === d);
+  if (!d) return false;
+  return (d.viewers || []).some((g) => grantMatches(g, persona)) || canEditDashboard(persona, d);
+}
+// Every dashboard this persona can see, in stored order.
+export function dashboardsFor(persona) {
+  return dashboards.filter((d) => canViewDashboard(persona, d));
+}
+// Emergent space FOR A GIVEN VIEWER: personal only when this dashboard is
+// private to exactly this person (no role grant, no other named viewer);
+// otherwise it reads as shared. So Sofie's own dashboard is personal to her,
+// but "Lars's stuff" is shared from the maintainer's editing perspective.
+export function dashboardSpaceFor(d, persona) {
+  const v = d.viewers || [];
+  if (v.some((g) => DASH_ROLES.includes(g))) return "shared";
+  const persons = v.filter((g) => !DASH_ROLES.includes(g));
+  return persons.length === 1 && persons[0] === persona.id ? "personal" : "shared";
+}
+
 // ---- Energy data --------------------------------------------------------
 // Deterministic pseudo-data for the Energy page. energyFor(period, offset)
 // returns the meters and series for a period ("now" | "day" | "week" |
@@ -701,10 +1335,96 @@ export function energyFor(period, offset) {
 // Expose the module's exports on a global so the single-file bundle (which can't
 // rewrite the dynamic `import("./household.js")`) can still reach them. When
 // served normally as siblings, the dynamic import works too; this is belt-and-braces.
+// ---- AI tasks (Settings -> AI tasks) ---------------------------------------
+// HA's AI Tasks registry. Two task types: data generation and image generation.
+// The resident "Draft with AI" button on the suggest flow gates on a configured,
+// enabled data-generation task (the "draft-routine" one below). Toggle it off in
+// Settings -> AI tasks to see the honest fallback.
+export const aiTasks = {
+  provider: "Assist with AI (Home Assistant Cloud)",
+  dataGeneration: [
+    { id: "suggest-names", name: "Suggest automation names", desc: "Proposes clear names for new automations.", enabled: true, stock: true },
+    { id: "draft-routine", name: "Draft a zone or automation", desc: "Turns a plain-language idea into a draft you can review, tweak, and suggest.", enabled: true },
+  ],
+  imageGeneration: [
+    { id: "gen-images", name: "Generate images", desc: "Creates images for dashboards and notifications.", enabled: true, stock: true },
+  ],
+};
+
+// ---- Suggestions (resident -> maintainer review) ---------------------------
+// Zones and automations are always shared, so a resident's creation arrives as a
+// suggestion a maintainer approves, edits, or declines. Pending items drive the
+// inline pending state + the Explore open-loop tray; resolved items seed the
+// Explore archive. Runtime edits are layered in localStorage by the component.
+export const suggestions = [
+  {
+    id: "sg-football", kind: "zone", title: "Tess's football club",
+    body: "Can we add a zone at the sports park? Then the home knows when Tess is at football practice, so I stop texting her to check she got there.",
+    status: "pending", suggestedBy: "sofie", suggestedAt: "today 9:12",
+    draft: { name: "Football club", icon: "soccer", color: "#2e9e5b", lat: 52.0781, lon: 5.1215, radius: 90 },
+  },
+  {
+    id: "sg-porch", kind: "automation", title: "Porch light at dusk",
+    body: "Turn the porch light on at sunset and off again at midnight.",
+    status: "pending", suggestedBy: "tess", suggestedAt: "yesterday 20:40",
+    draft: { name: "Porch light at dusk", description: "Turns the porch light on at sunset and off at midnight.", space: "shared" },
+  },
+  {
+    id: "sg-laundry", kind: "automation", title: "Tell me when the laundry is done",
+    body: "Notify whoever started a wash when the machine finishes.",
+    status: "approved", suggestedBy: "sofie", suggestedAt: "3 days ago",
+    resolvedBy: "daan", resolvedAt: "2 days ago", edited: false,
+    newId: "laundry-done",
+  },
+  {
+    id: "sg-wakeup", kind: "automation", title: "Gentle wake-up light",
+    body: "Fade the bedroom light up over ten minutes before the alarm.",
+    status: "declined", suggestedBy: "tess", suggestedAt: "last week",
+    resolvedBy: "daan", resolvedAt: "last week",
+    reviewNote: "The wake-up script already does this. Added you as an editor there instead.",
+  },
+];
+
+// ---- Explore (Discovery canvas) --------------------------------------------
+// Evergreen possibility + guidance (the opposite of the live For-you stack):
+// a getting-started checklist and capabilities-by-outcome. The open-loop tray
+// and archive are derived at runtime from suggestions + updates + checklist.
+export const explore = {
+  checklist: [
+    { id: "ck-people", label: "Add everyone who lives here", done: true },
+    { id: "ck-areas", label: "Set up your floors and areas", done: true },
+    { id: "ck-devices", label: "Connect your lights, sensors, and other devices", done: false, doc: "Devices and services" },
+    { id: "ck-presence", label: "Turn on presence so the home knows who is in", done: true },
+    { id: "ck-first-automation", label: "Create your first automation", done: true },
+    { id: "ck-remote", label: "Reach your home securely when you are away", done: false, doc: "Remote access" },
+    { id: "ck-backup", label: "Set up an automatic backup", done: false, doc: "Back up your home" },
+    { id: "ck-voice", label: "Try talking to the home", done: false, doc: "Assist and voice" },
+  ],
+  capabilities: [
+    { id: "cap-energy", outcome: "Save energy", icon: "leaf", tint: "#2e9e5b",
+      recipes: [
+        { id: "r-eco-away", name: "Drop the heating when everyone leaves", desc: "Set the thermostat to eco once the home is empty.", kind: "automation" },
+        { id: "r-standby", name: "Cut standby power overnight", desc: "Switch off the media wall between 1:00 and 6:00.", kind: "automation" },
+      ] },
+    { id: "cap-safe", outcome: "Feel safe when away", icon: "shield-home", tint: "#1C6FD6",
+      recipes: [
+        { id: "r-lock-away", name: "Lock up when the last person leaves", desc: "Lock the doors and arm the home automatically.", kind: "automation" },
+        { id: "r-arrive-zone", name: "Know when the kids reach a place", desc: "Add a zone (like school or a club) and get told on arrival.", kind: "zone" },
+      ] },
+    { id: "cap-wake", outcome: "Wake up gently", icon: "weather-sunset-up", tint: "#e0a32e",
+      recipes: [
+        { id: "r-sunrise", name: "Fade the bedroom light up before your alarm", desc: "A ten-minute sunrise on weekday mornings.", kind: "automation" },
+        { id: "r-coffee", name: "Start the coffee when you get up", desc: "Kick off the morning when the bedroom motion clears.", kind: "automation" },
+      ] },
+  ],
+};
+
 if (typeof window !== "undefined") {
   window.__HH_MOD = {
-    household, directory, bookmarkExtras, extensionCategories, mapData,
+    household, directory, bookmarkExtras, extensionCategories, mapData, entityRegistry,
     getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, energyFor,
     normalizeStructure, floorsOfBuilding, groundFloorOf, outdoorAreaList, visibleBuildings,
+    dashboards, dashboardTemplates, grantMatches, canEditDashboard, canViewDashboard, dashboardsFor, dashboardSpaceFor,
+    aiTasks, suggestions, explore,
   };
 }

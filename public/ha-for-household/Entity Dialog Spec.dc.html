@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Entity dialogs — more-info spec</title>
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/fonts.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/styles.css">
+  <script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-bg); }
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
+    @keyframes cc-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cc-dialog-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+    @keyframes cc-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+  </style>
+</helmet>
+{{ app }}
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  get C() { return (typeof window !== "undefined" && window.HAConceptCarDesignSystem_fababd) || {}; }
+
+  constructor(props) {
+    super(props);
+    if (typeof window !== "undefined" && !window.React) window.React = React;
+    this.state = { on: {}, val: {}, tval: {}, pick: {}, open: null, frame: "dialog", range: "24h", attrsOpen: {} };
+    this.DOM = {
+      light:       { icon: "lightbulb",            color: "#e0a32e" },
+      switch:      { icon: "light-switch",         color: "#2f80ed" },
+      fan:         { icon: "fan",                   color: "#2aa6b3" },
+      climate:     { icon: "thermostat",            color: "#e0662e" },
+      humidifier:  { icon: "air-humidifier",        color: "#2f80ed" },
+      water_heater:{ icon: "water-boiler",          color: "#e0662e" },
+      garage:      { icon: "garage-open-variant",   color: "#7c5ab8" },
+      blind:       { icon: "roller-shade",          color: "#7c5ab8" },
+      valve:       { icon: "pipe-valve",            color: "#7c5ab8" },
+      lock:        { icon: "lock",                   color: "#2e9e5b" },
+      tv:          { icon: "television",             color: "#2f80ed" },
+      speaker:     { icon: "speaker",                color: "#2f80ed" },
+      vacuum:      { icon: "robot-vacuum",           color: "#2e9e5b" },
+      lawn_mower:  { icon: "robot-mower",            color: "#2e9e5b" },
+      alarm:       { icon: "shield-home",            color: "#2e9e5b" },
+      motion:      { icon: "motion-sensor",          color: "#2f80ed" },
+      person:      { icon: "account",                color: "#2f80ed" },
+      temperature: { icon: "thermometer",            color: "#e0662e" },
+      humidity:    { icon: "water-percent",          color: "#2f80ed" },
+      number:      { icon: "counter",                color: "#2f80ed" },
+      select:      { icon: "format-list-bulleted",   color: "#2f80ed" },
+      scene:       { icon: "palette",                color: "#e0a32e" },
+      script:      { icon: "script-text",            color: "#2f80ed" },
+      buttonE:     { icon: "gesture-tap-button",     color: "#2f80ed" },
+      automation:  { icon: "robot",                  color: "#2f80ed" },
+      update:      { icon: "package-up",             color: "#2f80ed" },
+      dateE:       { icon: "calendar",               color: "#2f80ed" },
+      weather:     { icon: "weather-partly-cloudy",  color: "#e0a32e" },
+      sun:         { icon: "weather-sunny",          color: "#e0a32e" },
+    };
+    this.ONOFF = new Set(["light", "switch", "fan", "tv", "speaker", "humidifier"]);
+  }
+
+  componentDidMount() {
+    try { document.documentElement.setAttribute("data-theme", "dark"); } catch (e) {}
+    this._onKey = (e) => { if (e.key === "Escape" && this.state.open) this.setState({ open: null }); };
+    this._onResize = () => this.forceUpdate();
+    window.addEventListener("keydown", this._onKey);
+    window.addEventListener("resize", this._onResize);
+  }
+  componentWillUnmount() { window.removeEventListener("keydown", this._onKey); window.removeEventListener("resize", this._onResize); }
+
+  // ---------- helpers ----------
+  bp() { return (typeof window !== "undefined" && window.innerWidth < 768) ? "mobile" : "desktop"; }
+  tint(hex, a) { const m = hex.replace("#", ""); const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16); return "rgba(" + r + "," + g + "," + b + "," + a + ")"; }
+  getOn(id, def) { const v = this.state.on[id]; return v === undefined ? def : v; }
+  setOn(id, v) { this.setState((s) => ({ on: { ...s.on, [id]: v } })); }
+  getVal(id, def) { const v = this.state.val[id]; return v === undefined ? def : v; }
+  setVal(id, v) { this.setState((s) => ({ val: { ...s.val, [id]: Math.max(0, Math.min(100, Math.round(v))) } })); }
+  getT(id, def) { const v = this.state.tval[id]; return v === undefined ? def : v; }
+  setT(id, v, lo, hi) { this.setState((s) => ({ tval: { ...s.tval, [id]: Math.max(lo, Math.min(hi, v)) } })); }
+  getPick(id, def) { const v = this.state.pick[id]; return v === undefined ? def : v; }
+  setPick(id, v) { this.setState((s) => ({ pick: { ...s.pick, [id]: v } })); }
+
+  // ---------- control widgets (large, dialog-scale) ----------
+  // vertical brightness / position slider
+  vSlider(id, def, color, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {};
+    const val = this.getVal(id, def);
+    const set = (clientY, el) => { const r = el.getBoundingClientRect(); this.setVal(id, ((r.bottom - clientY) / r.height) * 100); };
+    return h("div", {
+      style: { position: "relative", height: o.height || 260, borderRadius: "var(--radius-xl)", background: "var(--color-surface-raised)", overflow: "hidden", cursor: "pointer", touchAction: "none", userSelect: "none" },
+      onPointerDown: (e) => { e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; set(e.clientY, e.currentTarget); },
+      onPointerMove: (e) => { if (this._drag === id) set(e.clientY, e.currentTarget); },
+      onPointerUp: () => { this._drag = null; },
+    },
+      h("div", { style: { position: "absolute", left: 0, right: 0, bottom: 0, height: val + "%", background: o.gradient || this.tint(color, 0.9), transition: this._drag === id ? "none" : "height 120ms ease-out" } }),
+      h("div", { style: { position: "absolute", left: 0, right: 0, bottom: 0, padding: "var(--space-4) var(--space-5)", display: "flex", alignItems: "flex-end", justifyContent: "space-between", pointerEvents: "none" } },
+        h(Icon, { name: o.icon || "brightness-6", size: 24, style: { color: val > 12 ? "rgba(0,0,0,0.7)" : "var(--color-text-secondary)" } }),
+        h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "var(--text-2xl)", color: val > 12 ? "rgba(0,0,0,0.82)" : "var(--color-text-primary)" } }, Math.round(val) + (o.suffix || "%"))));
+  }
+  hSlider(id, def, color, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {};
+    const val = this.getVal(id, def);
+    const set = (clientX, el) => { const r = el.getBoundingClientRect(); this.setVal(id, ((clientX - r.left) / r.width) * 100); };
+    return h("div", { style: { position: "relative", height: 56, borderRadius: "var(--radius-lg)", background: "var(--color-surface-raised)", overflow: "hidden", cursor: "pointer", touchAction: "none", userSelect: "none" },
+      onPointerDown: (e) => { e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; set(e.clientX, e.currentTarget); },
+      onPointerMove: (e) => { if (this._drag === id) set(e.clientX, e.currentTarget); },
+      onPointerUp: () => { this._drag = null; } },
+      h("div", { style: { position: "absolute", top: 0, bottom: 0, left: 0, width: val + "%", background: this.tint(color, 0.85), transition: this._drag === id ? "none" : "width 120ms ease-out" } }),
+      h("div", { style: { position: "absolute", inset: 0, padding: "0 var(--space-4)", display: "flex", alignItems: "center", gap: "var(--space-3)", pointerEvents: "none" } },
+        o.icon ? h(Icon, { name: o.icon, size: 20, style: { color: "var(--color-text-secondary)", flex: "none" } }) : null,
+        h("div", { style: { flex: 1 } }),
+        h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "var(--text-base)", color: "var(--color-text-primary)" } }, Math.round(val) + (o.suffix || "%"))));
+  }
+  tempStrip(id, def) {
+    const h = React.createElement; const val = this.getVal(id, def);
+    const set = (clientX, el) => { const r = el.getBoundingClientRect(); this.setVal(id, ((clientX - r.left) / r.width) * 100); };
+    return h("div", { style: { position: "relative", height: 56, borderRadius: "var(--radius-lg)", overflow: "hidden", cursor: "pointer", touchAction: "none", userSelect: "none" },
+      onPointerDown: (e) => { e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; set(e.clientX, e.currentTarget); },
+      onPointerMove: (e) => { if (this._drag === id) set(e.clientX, e.currentTarget); },
+      onPointerUp: () => { this._drag = null; } },
+      h("div", { style: { position: "absolute", inset: 0, background: "linear-gradient(90deg,#f7b06a,#fbe9cf,#cfe0ff)" } }),
+      h("div", { style: { position: "absolute", top: 6, bottom: 6, left: "clamp(18px," + val + "%,calc(100% - 18px))", transform: "translateX(-50%)", width: 10, borderRadius: 6, background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.4)" } }));
+  }
+  iconRow(id, items, def, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {}; const pick = this.getPick(id, def);
+    const b = (it) => { const on = it.v === pick; const c = on && it.color ? it.color : (on ? "var(--color-text-primary)" : "var(--color-text-tertiary)"); return h("button", { key: it.v, type: "button", title: it.label || it.v, onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); if (o.onPick) o.onPick(it.v); }, style: { flex: 1, height: 52, border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", flexDirection: "column", gap: 3, alignItems: "center", justifyContent: "center", background: on ? (it.color ? this.tint(it.color, 0.16) : "rgba(255,255,255,0.14)") : "transparent", color: c, transition: "all 150ms ease-out" } }, h(Icon, { name: it.icon, size: 22 }), it.small ? h("span", { style: { fontSize: 10, fontWeight: 600, letterSpacing: "0.02em" } }, it.small) : null); };
+    return h("div", { style: { display: "flex", gap: 4, padding: 4, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, items.map(b));
+  }
+  segBig(id, items, def) {
+    const h = React.createElement; const pick = this.getPick(id, def);
+    const b = (it) => { const on = it.v === pick; return h("button", { key: it.v, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); }, style: { flex: 1, padding: "13px 0", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-sm)", fontWeight: 600, background: on ? "rgba(255,255,255,0.14)" : "transparent", color: on ? "var(--color-text-primary)" : "var(--color-text-tertiary)", transition: "all 150ms ease-out" } }, it.label); };
+    return h("div", { style: { display: "flex", gap: 4, padding: 4, background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, items.map(b));
+  }
+  stepper(id, def, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {};
+    const lo = o.min == null ? 5 : o.min, hi = o.max == null ? 30 : o.max, step = o.step || 0.5;
+    const val = this.getT(id, def);
+    const b = (name, d) => h("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.setT(id, +(val + d).toFixed(2), lo, hi); }, style: { width: 64, height: 64, border: "none", borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", color: "var(--color-text-primary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" } }, h(Icon, { name, size: 26 }));
+    return h("div", { style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-5)" } },
+      b("minus", -step),
+      h("div", { style: { textAlign: "center", minWidth: 96 } }, h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "var(--text-3xl)", letterSpacing: "-0.03em", color: o.color || "var(--color-text-primary)", lineHeight: 1 } }, val.toFixed(1) + (o.unit || "\u00b0")), o.caption ? h("div", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", marginTop: 4 } }, o.caption) : null),
+      b("plus", step));
+  }
+  // circular target dial (climate)
+  dial(id, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts;
+    const size = o.size || 240, r = size / 2 - 18, c = size / 2, sw = 14;
+    const CIRC = 2 * Math.PI * r; const arc = 0.75;
+    const lo = o.min, hi = o.max; const target = this.getT(id, o.target);
+    const frac = Math.max(0, Math.min(1, (target - lo) / (hi - lo)));
+    const track = arc * CIRC; const prog = Math.max(frac * arc * CIRC, 0.001);
+    const setFromEvent = (e, el) => {
+      const rect = el.getBoundingClientRect(); const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+      let ang = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI; // -180..180, 0 = east
+      ang = (ang - 90 + 360) % 360; // 0 at top(north), clockwise
+      // dial spans from 135deg(=bottom-left start) going clockwise 270deg. In north-cw terms start=225? map:
+      let a = (ang + 135) % 360; // shift so gap(bottom) sits at 0..90 area
+      // simpler: usable sweep is ang in [ -135 .. 135 ] measured from top; convert
+      let fromTop = ang > 180 ? ang - 360 : ang; // -180..180
+      const f = (fromTop + 135) / 270; if (f < -0.05 || f > 1.05) return;
+      this.setT(id, +(lo + Math.max(0, Math.min(1, f)) * (hi - lo)).toFixed(1), lo, hi);
+    };
+    return h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-4)" } },
+      h("div", { style: { position: "relative", width: size, height: size, touchAction: "none", userSelect: "none" },
+        onPointerDown: (e) => { e.currentTarget.setPointerCapture(e.pointerId); this._drag = id; setFromEvent(e, e.currentTarget); },
+        onPointerMove: (e) => { if (this._drag === id) setFromEvent(e, e.currentTarget); },
+        onPointerUp: () => { this._drag = null; } },
+        h("svg", { width: size, height: size, viewBox: "0 0 " + size + " " + size, style: { display: "block" } },
+          h("circle", { cx: c, cy: c, r: r, fill: "none", stroke: "var(--color-surface-raised)", strokeWidth: sw, strokeLinecap: "round", strokeDasharray: track + " " + (CIRC - track), transform: "rotate(135 " + c + " " + c + ")" }),
+          h("circle", { cx: c, cy: c, r: r, fill: "none", stroke: o.color, strokeWidth: sw, strokeLinecap: "round", strokeDasharray: prog + " " + (CIRC * 2), transform: "rotate(135 " + c + " " + c + ")", style: { transition: this._drag === id ? "none" : "stroke-dasharray 150ms ease-out" } })),
+        h("div", { style: { position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, pointerEvents: "none" } },
+          o.action ? h("div", { style: { fontSize: "var(--text-xs)", fontWeight: 600, color: o.color, textTransform: "none" } }, o.action) : null,
+          h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 46, letterSpacing: "-0.04em", color: "var(--color-text-primary)", lineHeight: 1 } }, target.toFixed(1) + "\u00b0"),
+          h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)" } }, "Now " + o.current + "\u00b0"))));
+  }
+  transport(id) {
+    const h = React.createElement; const { Icon } = this.C; const playing = this.getOn(id, true);
+    const btn = (name, big, onClick) => h("button", { type: "button", onClick: (e) => { e.stopPropagation(); onClick && onClick(); }, style: { width: big ? 64 : 48, height: big ? 64 : 48, border: "none", borderRadius: "var(--radius-full)", background: big ? "var(--color-text-primary)" : "transparent", color: big ? "var(--color-bg)" : "var(--color-text-primary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" } }, h(Icon, { name, size: big ? 30 : 26 }));
+    return h("div", { style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-4)" } },
+      btn("skip-previous", false), btn(playing ? "pause" : "play", true, () => this.setOn(id, !playing)), btn("skip-next", false));
+  }
+  pill(label, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {};
+    return h("button", { type: "button", onClick: (e) => e.stopPropagation(), style: { flex: o.grow ? 1 : "none", width: o.grow ? "auto" : "100%", height: 52, border: o.outline ? "1px solid var(--color-border)" : "none", borderRadius: "var(--radius-lg)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-2)", background: o.outline ? "transparent" : (o.color ? this.tint(o.color, 0.16) : "var(--color-surface-raised)"), color: o.color || "var(--color-text-primary)", transition: "background-color 150ms ease-out" } }, o.icon ? h(Icon, { name: o.icon, size: 20 }) : null, label);
+  }
+  selectRow(label, icon) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("button", { type: "button", onClick: (e) => e.stopPropagation(), style: { width: "100%", display: "flex", alignItems: "center", height: 52, gap: "var(--space-3)", padding: "0 var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", border: "none", cursor: "pointer", textAlign: "left" } }, icon ? h(Icon, { name: icon, size: 20, style: { color: "var(--color-text-secondary)", flex: "none" } }) : null, h("div", { style: { flex: 1, fontSize: "var(--text-base)", fontWeight: 500, color: "var(--color-text-primary)" } }, label), h(Icon, { name: "chevron-down", size: 20, style: { color: "var(--color-text-tertiary)" } }));
+  }
+  bigToggle(id, def, color) {
+    const h = React.createElement; const { Icon } = this.C; const on = this.getOn(id, def);
+    const b = (label, val, icon) => h("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.setOn(id, val); }, style: { flex: 1, height: 64, border: "none", borderRadius: "var(--radius-lg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-2)", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: 600, background: on === val ? (val ? this.tint(color, 0.2) : "rgba(255,255,255,0.1)") : "var(--color-surface-raised)", color: on === val ? (val ? color : "var(--color-text-primary)") : "var(--color-text-tertiary)", transition: "all 150ms ease-out" } }, h(Icon, { name: icon, size: 22 }), label);
+    return h("div", { style: { display: "flex", gap: "var(--space-3)" } }, b("On", true, "power"), b("Off", false, "power-off"));
+  }
+
+  // ---------- history / attributes ----------
+  trendGraph(band) {
+    const h = React.createElement;
+    const range = this.state.range;
+    const data = {
+      "24h": [17.2, 17.0, 16.8, 17.4, 18.6, 19.8, 20.9, 21.4, 21.1, 20.2, 19.4, 18.7],
+      "7d": [16.1, 18.9, 20.2, 19.4, 21.7, 20.1, 18.7],
+      "30d": [15.2, 16.8, 18.1, 17.4, 19.9, 21.2, 20.4, 18.9, 17.7, 18.7],
+    }[range];
+    const w = 100, hgt = 42; const min = Math.min(...data) - 1, max = Math.max(...data) + 1;
+    const pts = data.map((d, i) => [(i / (data.length - 1)) * w, hgt - ((d - min) / (max - min)) * hgt]);
+    const line = pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+    const area = "0," + hgt + " " + line + " " + w + "," + hgt;
+    const col = "var(--color-accent)";
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+      h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+        h("div", { style: { display: "flex", flexDirection: "column" } },
+          h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)" } }, "high " + max.toFixed(1) + "\u00b0 \u00b7 low " + min.toFixed(1) + "\u00b0")),
+        this.segControl(range, [{ v: "24h", label: "24 h" }, { v: "7d", label: "7 d" }, { v: "30d", label: "30 d" }], (v) => this.setState({ range: v }))),
+      h("div", { style: { position: "relative", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", padding: "var(--space-3)" } },
+        h("svg", { viewBox: "0 0 " + w + " " + hgt, preserveAspectRatio: "none", style: { width: "100%", height: 96, display: "block", overflow: "visible" } },
+          h("defs", null, h("linearGradient", { id: "tg", x1: 0, y1: 0, x2: 0, y2: 1 }, h("stop", { offset: "0%", stopColor: col, stopOpacity: 0.28 }), h("stop", { offset: "100%", stopColor: col, stopOpacity: 0 }))),
+          h("polygon", { points: area, fill: "url(#tg)" }),
+          h("polyline", { points: line, fill: "none", stroke: col, strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" }))));
+  }
+  logbook(rows) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { display: "flex", flexDirection: "column" } }, rows.map((r, i) => h("div", { key: i, style: { display: "flex", gap: "var(--space-3)", alignItems: "flex-start", padding: "var(--space-3) 0", borderTop: i === 0 ? "none" : "1px solid var(--color-border-subtle)" } },
+      h("span", { style: { width: 8, height: 8, borderRadius: "var(--radius-full)", background: r.color || "var(--color-text-tertiary)", flex: "none", marginTop: 6 } }),
+      h("div", { style: { flex: 1, minWidth: 0 } }, h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-primary)", lineHeight: 1.4 } }, r.text), h("div", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontFamily: "var(--font-mono)", marginTop: 1 } }, r.time)))));
+  }
+  metaBlock(spec) {
+    const h = React.createElement; const { Icon } = this.C;
+    const kids = [];
+    if (spec.graph) kids.push(this.block("History", this.trendGraph(spec.band)));
+    else if (spec.history) kids.push(this.block("Logbook", this.logbook(spec.history)));
+    if (spec.attrs && spec.attrs.length) {
+      const open = !!this.state.attrsOpen[spec.id];
+      const head = h("button", { type: "button", onClick: (e) => { e.stopPropagation(); this.setState((s) => ({ attrsOpen: { ...s.attrsOpen, [spec.id]: !open } })); }, style: { width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "none", border: "none", cursor: "pointer", padding: 0, color: "var(--color-text-secondary)" } },
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-sm)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Attributes"),
+        h(Icon, { name: open ? "chevron-up" : "chevron-down", size: 20 }));
+      const body = open ? h("div", { style: { marginTop: "var(--space-3)", display: "flex", flexDirection: "column" } }, spec.attrs.map((a, i) => h("div", { key: i, style: { display: "flex", justifyContent: "space-between", gap: "var(--space-4)", padding: "var(--space-2) 0", borderTop: i === 0 ? "none" : "1px solid var(--color-border-subtle)" } }, h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, a.k), h("span", { style: { fontSize: "var(--text-sm)", fontFamily: "var(--font-mono)", color: "var(--color-text-primary)", textAlign: "right" } }, a.v)))) : null;
+      kids.push(h("div", { key: "attrs", style: { paddingTop: "var(--space-1)" } }, head, body));
+    }
+    kids.push(h("button", { key: "dev", type: "button", onClick: (e) => e.stopPropagation(), style: { display: "flex", alignItems: "center", gap: "var(--space-2)", background: "none", border: "none", padding: "var(--space-1) 0", cursor: "pointer", color: "var(--color-accent)", fontSize: "var(--text-sm)", fontWeight: 500 } }, h(Icon, { name: "open-in-new", size: 16 }), "Device info and settings"));
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)", borderTop: "1px solid var(--color-border-subtle)", paddingTop: "var(--space-5)" } }, kids);
+  }
+  block(title, body) {
+    const h = React.createElement;
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+      h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-sm)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, title), body);
+  }
+
+  // ---------- shared dialog inner (header + identity + control + meta) ----------
+  iconBadge(spec, size) {
+    const h = React.createElement; const { Icon, ProfileAvatar } = this.C;
+    const s = size || 52;
+    if (spec.avatar) return h(ProfileAvatar, { name: spec.name, src: spec.avatar, size: "lg", style: { width: s, height: s } });
+    const dom = this.DOM[spec.domain] || this.DOM.sun; const color = spec.color || dom.color;
+    const circle = this.ONOFF.has(spec.domain) && spec.active !== false;
+    return h("div", { style: { width: s, height: s, borderRadius: "var(--radius-full)", flex: "none", display: "flex", alignItems: "center", justifyContent: "center", background: circle ? this.tint(color, 0.18) : "var(--color-surface-raised)", color: spec.active === false ? "var(--color-inactive)" : color } }, h(Icon, { name: spec.icon || dom.icon, size: Math.round(s * 0.46) }));
+  }
+  dialogInner(spec) {
+    const h = React.createElement; const { Icon } = this.C;
+    const header = h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-2)" } },
+      h("button", { type: "button", "aria-label": "Close", onClick: (e) => { e.stopPropagation(); this.setState({ open: null }); }, style: { width: 36, height: 36, border: "none", borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "close", size: 20 })),
+      h("button", { type: "button", "aria-label": "Settings", onClick: (e) => e.stopPropagation(), style: { width: 36, height: 36, border: "none", borderRadius: "var(--radius-full)", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "cog-outline", size: 20 })));
+    const identity = h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-2)", textAlign: "center", marginBottom: "var(--space-5)" } },
+      this.iconBadge(spec, 52),
+      h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.02em", color: "var(--color-text-primary)" } }, spec.name),
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, spec.sub));
+    const control = spec.control ? h("div", { style: { marginBottom: "var(--space-6)" } }, spec.control()) : null;
+    return h("div", null, header, identity, control, this.metaBlock(spec));
+  }
+  dialogFrame(spec) {
+    const h = React.createElement;
+    return h("div", { onClick: (e) => e.stopPropagation(), style: { width: "min(400px, 100%)", maxHeight: "88vh", overflowY: "auto", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", padding: "var(--space-5) var(--space-5) var(--space-6)" } }, this.dialogInner(spec));
+  }
+  // static gallery card (a dialog shown in place, not overlaid)
+  galleryCard(spec) {
+    const h = React.createElement;
+    return h("div", { key: spec.id, style: { width: "100%", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", padding: "var(--space-5) var(--space-5) var(--space-6)", alignSelf: "start" } }, this.dialogInner(spec));
+  }
+
+  // ================= archetype specs =================
+  specs() {
+    const cLight = this.DOM.light.color, cClimate = this.DOM.climate.color, cSpk = this.DOM.speaker.color, cTV = this.DOM.tv.color, cBlind = this.DOM.blind.color, cFan = this.DOM.fan.color, cLock = this.DOM.lock.color, cVac = this.DOM.vacuum.color;
+    const h = React.createElement;
+    return [
+      // -------- rich controls --------
+      { group: "Rich controls", id: "light", domain: "light", name: "Diner table", sub: "On \u00b7 " + this.getVal("d-lb", 78) + "%",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.vSlider("d-lb", 78, cLight, { icon: "brightness-6", gradient: "linear-gradient(0deg, " + this.tint(cLight, 0.55) + ", " + this.tint(cLight, 0.95) + ")" }),
+          this.tempStrip("d-lct", 40),
+          this.iconRow("d-lmode", [{ v: "warm", icon: "white-balance-incandescent", label: "Warm" }, { v: "color", icon: "palette", label: "Color" }, { v: "day", icon: "white-balance-sunny", label: "Daylight" }], "warm"),
+          this.selectRow("Effect: none", "auto-fix")),
+        history: [{ text: "You turned it on to 78%", time: "16:42", color: cLight }, { text: "Sunset scene set 40%", time: "07:10" }, { text: "Turned off", time: "Yesterday 23:30" }],
+        attrs: [{ k: "brightness", v: "199" }, { k: "color_temp", v: "366 mired" }, { k: "supported", v: "brightness, color" }, { k: "entity_id", v: "light.diner_table" }] },
+
+      { group: "Rich controls", id: "climate", domain: "climate", name: "Living room", sub: "Heating \u00b7 now 20.4\u00b0",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+          this.dial("d-ct", { target: 21.5, current: "20.4", min: 12, max: 30, color: cClimate, action: "Heating to" }),
+          this.iconRow("d-chvac", [{ v: "off", icon: "power", label: "Off" }, { v: "heat", icon: "fire", label: "Heat", color: "#e0662e" }, { v: "cool", icon: "snowflake", label: "Cool", color: "#2f80ed" }, { v: "auto", icon: "autorenew", label: "Auto" }, { v: "dry", icon: "water-percent", label: "Dry" }], "heat"),
+          this.selectRow("Preset: comfort", "tune-variant")),
+        history: [{ text: "Switched to heat, target 21.5\u00b0", time: "16:20", color: "#e0662e" }, { text: "Eco preset overnight", time: "23:00" }, { text: "Reached 21.5\u00b0", time: "16:58" }],
+        attrs: [{ k: "current_temperature", v: "20.4" }, { k: "temperature", v: "21.5" }, { k: "hvac_action", v: "heating" }, { k: "fan_mode", v: "auto" }] },
+
+      { group: "Rich controls", id: "speaker", domain: "speaker", name: "Kitchen speaker", sub: "Playing \u00b7 Sonos",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          h("div", { style: { display: "flex", gap: "var(--space-4)", alignItems: "center" } },
+            h("div", { style: { width: 64, height: 64, borderRadius: "var(--radius-lg)", flex: "none", background: "linear-gradient(135deg,#5b3a8a,#c2497a)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(this.C.Icon, { name: "music", size: 28, style: { color: "rgba(255,255,255,0.9)" } })),
+            h("div", { style: { minWidth: 0 } }, h("div", { style: { fontWeight: 600, fontSize: "var(--text-base)", color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, "While My Guitar Gently Weeps"), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "The Beatles"))),
+          this.progressBar("d-spos", 34, "2:41", "4:45"),
+          this.transport("d-splay"),
+          this.hSlider("d-svol", 45, cSpk, { icon: "volume-high" }),
+          h("div", { style: { display: "flex", gap: "var(--space-3)" } }, this.selectRow("Kitchen speaker", "speaker"), this.pill("", { icon: "speaker-multiple", outline: true }))),
+        history: [{ text: "Started playing on Kitchen speaker", time: "16:38", color: cSpk }, { text: "Volume set to 45%", time: "16:38" }, { text: "Grouped with Living room", time: "16:39" }],
+        attrs: [{ k: "media_title", v: "While My Guitar..." }, { k: "volume_level", v: "0.45" }, { k: "source", v: "Spotify" }, { k: "group_members", v: "2" }] },
+
+      { group: "Rich controls", id: "tv", domain: "tv", name: "Living room TV", sub: "On \u00b7 Netflix",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          this.transport("d-tvplay"),
+          this.hSlider("d-tvvol", 30, cTV, { icon: "volume-high" }),
+          this.iconRow("d-tvpad", [{ v: "back", icon: "arrow-left", label: "Back" }, { v: "home", icon: "home", label: "Home" }, { v: "menu", icon: "menu", label: "Menu" }, { v: "power", icon: "power", label: "Power" }], "home"),
+          this.selectRow("Source: Netflix", "import")),
+        history: [{ text: "Turned on, source Netflix", time: "20:05", color: cTV }, { text: "Volume up to 30%", time: "20:06" }],
+        attrs: [{ k: "source", v: "Netflix" }, { k: "volume_level", v: "0.30" }, { k: "app_id", v: "com.netflix" }] },
+
+      { group: "Rich controls", id: "blind", domain: "blind", name: "Living room blinds", sub: this.getVal("d-cpos", 60) + "% open",
+        control: () => h("div", { style: { display: "flex", gap: "var(--space-4)" } },
+          h("div", { style: { flex: "none", width: 96 } }, this.iconColumn("d-cbtn", [{ v: "up", icon: "arrow-up", label: "Open" }, { v: "stop", icon: "stop", label: "Stop" }, { v: "down", icon: "arrow-down", label: "Close" }], "up")),
+          h("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+            this.vSlider("d-cpos", 60, cBlind, { icon: "roller-shade", height: 200 }),
+            this.hSlider("d-ctilt", 45, cBlind, { icon: "angle-acute", suffix: "\u00b0" }))),
+        history: [{ text: "Opened to 60%", time: "08:15", color: cBlind }, { text: "Closed at sunset", time: "Yesterday 21:10" }],
+        attrs: [{ k: "current_position", v: "60" }, { k: "current_tilt", v: "45" }, { k: "device_class", v: "blind" }] },
+
+      { group: "Rich controls", id: "garage", domain: "garage", name: "Garage door", sub: this.getPick("d-gar", "open") === "open" ? "Open" : "Closed",
+        control: () => this.iconColumn("d-gar", [{ v: "open", icon: "arrow-up", label: "Open" }, { v: "stop", icon: "stop", label: "Stop" }, { v: "closed", icon: "arrow-down", label: "Close" }], "open", { big: true }),
+        history: [{ text: "Opened", time: "17:44", color: this.DOM.garage.color }, { text: "Closed automatically", time: "17:52" }],
+        attrs: [{ k: "device_class", v: "garage" }, { k: "current_position", v: "100" }] },
+
+      { group: "Rich controls", id: "fan", domain: "fan", name: "Bedroom fan", sub: this.getOn("d-fanon", true) ? this.getVal("d-fanv", 60) + "%" : "Off",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.vSlider("d-fanv", 60, cFan, { icon: "fan", height: 200 }),
+          this.iconRow("d-fanmode", [{ v: "auto", icon: "autorenew", label: "Auto" }, { v: "sleep", icon: "power-sleep", label: "Sleep" }, { v: "nature", icon: "leaf", label: "Nature" }], "auto"),
+          h("div", { style: { display: "flex", gap: "var(--space-3)" } }, this.pill("Oscillate", { icon: "arrow-oscillating", grow: true }), this.pill("Reverse", { icon: "arrow-u-left-top", grow: true }))),
+        history: [{ text: "Set to 60%", time: "22:10", color: cFan }, { text: "Oscillation on", time: "22:10" }],
+        attrs: [{ k: "percentage", v: "60" }, { k: "oscillating", v: "true" }, { k: "direction", v: "forward" }] },
+
+      { group: "Rich controls", id: "lock", domain: "lock", name: "Front door", sub: this.getOn("d-lock", true) ? "Locked" : "Unlocked", color: this.getOn("d-lock", true) ? cLock : "#d1453b", icon: this.getOn("d-lock", true) ? "lock" : "lock-open-variant",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.bigToggle("d-lock", true, cLock),
+          this.pill("Open door", { icon: "door-open", outline: true })),
+        history: [{ text: "You locked it", time: "22:31", color: cLock }, { text: "Unlocked by Sofie", time: "18:04", color: "#d1453b" }, { text: "Auto-locked after 5 min", time: "18:09" }],
+        attrs: [{ k: "device_class", v: "door" }, { k: "code_format", v: "number" }, { k: "changed_by", v: "Sofie" }] },
+
+      { group: "Rich controls", id: "vacuum", domain: "vacuum", name: "Robot vacuum", sub: this.getPick("d-vac", "clean") === "dock" ? "Docked" : "Cleaning",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.iconRow("d-vac", [{ v: "clean", icon: "play", label: "Start" }, { v: "pause", icon: "pause", label: "Pause" }, { v: "stop", icon: "stop", label: "Stop" }, { v: "locate", icon: "map-marker", label: "Locate" }, { v: "dock", icon: "home-import-outline", label: "Dock" }], "clean"),
+          this.block("Fan speed", this.segBig("d-vacfan", [{ v: "quiet", label: "Quiet" }, { v: "balanced", label: "Balanced" }, { v: "turbo", label: "Turbo" }], "balanced")),
+          this.barGauge("Battery", "d-vacbat", 64, cVac, "battery-charging-60")),
+        history: [{ text: "Started cleaning: whole home", time: "10:00", color: cVac }, { text: "Returned to dock", time: "10:48" }],
+        attrs: [{ k: "battery_level", v: "64" }, { k: "fan_speed", v: "balanced" }, { k: "status", v: "cleaning" }] },
+
+      { group: "Rich controls", id: "mower", domain: "lawn_mower", name: "Lawn mower", sub: this.getPick("d-mow", "mow") === "dock" ? "Docked" : "Mowing",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.iconRow("d-mow", [{ v: "mow", icon: "play", label: "Start" }, { v: "pause", icon: "pause", label: "Pause" }, { v: "dock", icon: "home-import-outline", label: "Dock" }], "mow"),
+          this.barGauge("Battery", "d-mowbat", 88, this.DOM.lawn_mower.color, "battery-80")),
+        history: [{ text: "Started mowing zone 2", time: "09:30", color: this.DOM.lawn_mower.color }, { text: "Rain detected, docked", time: "11:02" }],
+        attrs: [{ k: "activity", v: "mowing" }, { k: "battery_level", v: "88" }] },
+
+      { group: "Rich controls", id: "alarm", domain: "alarm", name: "Home alarm", sub: "Armed home",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          this.iconRow("d-alarm", [{ v: "disarm", icon: "shield-off", label: "Disarm", color: "#d1453b" }, { v: "home", icon: "shield-home", label: "Home", color: "#2e9e5b" }, { v: "away", icon: "shield-lock", label: "Away", color: "#e0662e" }, { v: "night", icon: "shield-moon", label: "Night" }], "home"),
+          this.keypad()),
+        history: [{ text: "Armed home by you", time: "23:15", color: "#2e9e5b" }, { text: "Disarmed by Lars", time: "07:02", color: "#d1453b" }],
+        attrs: [{ k: "code_arm_required", v: "false" }, { k: "changed_by", v: "you" }] },
+
+      { group: "Rich controls", id: "humidifier", domain: "humidifier", name: "Bedroom humidifier", sub: this.getOn("d-humon", true) ? "On \u00b7 target " + this.getT("d-humt", 45) + "%" : "Off",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+          this.dial("d-humt", { target: 45, current: "41", min: 30, max: 60, color: this.DOM.humidifier.color, action: "Target", size: 220 }),
+          this.iconRow("d-hummode", [{ v: "auto", icon: "autorenew", label: "Auto" }, { v: "baby", icon: "baby-carriage", label: "Baby" }, { v: "eco", icon: "leaf", label: "Eco" }], "auto")),
+        history: [{ text: "Turned on, target 45%", time: "21:30", color: this.DOM.humidifier.color }],
+        attrs: [{ k: "humidity", v: "45" }, { k: "current_humidity", v: "41" }, { k: "mode", v: "auto" }] },
+
+      { group: "Rich controls", id: "water_heater", domain: "water_heater", name: "Water heater", sub: "Eco \u00b7 now 48\u00b0",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+          this.stepper("d-wht", 55, { min: 30, max: 65, step: 1, color: this.DOM.water_heater.color, caption: "Currently 48\u00b0" }),
+          this.iconRow("d-whmode", [{ v: "eco", icon: "leaf", label: "Eco" }, { v: "perf", icon: "fire", label: "High" }, { v: "off", icon: "power", label: "Off" }], "eco")),
+        history: [{ text: "Eco mode, target 55\u00b0", time: "06:00", color: this.DOM.water_heater.color }],
+        attrs: [{ k: "temperature", v: "55" }, { k: "current_temperature", v: "48" }, { k: "operation_mode", v: "eco" }] },
+
+      { group: "Rich controls", id: "valve", domain: "valve", name: "Garden water valve", sub: this.getVal("d-valve", 100) + "% open",
+        control: () => h("div", { style: { display: "flex", gap: "var(--space-4)" } },
+          h("div", { style: { flex: "none", width: 96 } }, this.iconColumn("d-valvebtn", [{ v: "open", icon: "valve-open", label: "Open" }, { v: "stop", icon: "stop", label: "Stop" }, { v: "close", icon: "valve-closed", label: "Close" }], "open")),
+          h("div", { style: { flex: 1 } }, this.vSlider("d-valve", 100, this.DOM.valve.color, { icon: "pipe-valve", height: 200 }))),
+        history: [{ text: "Opened to 100%", time: "07:00", color: this.DOM.valve.color }, { text: "Closed after 20 min", time: "07:20" }],
+        attrs: [{ k: "current_position", v: "100" }, { k: "device_class", v: "water" }] },
+
+      // -------- value + history --------
+      { group: "Value and history", id: "sensor", domain: "temperature", name: "Living room temperature", sub: "18.7\u00b0 \u00b7 comfortable", graph: true, band: "comfortable",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-2)", padding: "var(--space-2) 0 var(--space-4)" } },
+          h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 56, letterSpacing: "-0.04em", color: "var(--color-text-primary)", lineHeight: 1 } }, "18.7\u00b0"),
+          h("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, h("span", { style: { width: 8, height: 8, borderRadius: "var(--radius-full)", background: "var(--color-success)" } }), h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-success)", fontWeight: 500 } }, "Comfortable"))),
+        attrs: [{ k: "unit_of_measurement", v: "\u00b0C" }, { k: "device_class", v: "temperature" }, { k: "state_class", v: "measurement" }] },
+
+      { group: "Value and history", id: "binary", domain: "motion", name: "Hallway motion", sub: "Clear \u00b7 2 min ago",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-4) 0" } },
+          h("div", { style: { width: 88, height: 88, borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-text-secondary)" } }, h(this.C.Icon, { name: "motion-sensor", size: 44 })),
+          h("div", { style: { fontSize: "var(--text-base)", color: "var(--color-text-secondary)" } }, "No motion detected")),
+        history: [{ text: "Motion detected", time: "16:40", color: this.DOM.motion.color }, { text: "Cleared", time: "16:42" }, { text: "Motion detected", time: "15:58", color: this.DOM.motion.color }],
+        attrs: [{ k: "device_class", v: "motion" }, { k: "off_delay", v: "120" }] },
+
+      { group: "Value and history", id: "person", domain: "person", name: "Sofie", sub: "Home \u00b7 3 min ago", avatar: "ds/assets/sofie.png",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          h("div", { style: { position: "relative", height: 150, borderRadius: "var(--radius-lg)", overflow: "hidden", background: "var(--color-surface-raised)" } },
+            h("div", { style: { position: "absolute", inset: 0, background: "repeating-linear-gradient(0deg, var(--color-border-subtle) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, var(--color-border-subtle) 0 1px, transparent 1px 28px)" } }),
+            h("div", { style: { position: "absolute", left: "42%", top: "46%", width: 16, height: 16, borderRadius: "var(--radius-full)", background: this.DOM.person.color, boxShadow: "0 0 0 6px " + this.tint(this.DOM.person.color, 0.25) } })),
+          h("div", { style: { display: "flex", gap: "var(--space-3)" } },
+            this.infoTile("map-marker", "Zone", "Home"), this.infoTile("battery-70", "Phone", "72%"))),
+        history: [{ text: "Arrived home", time: "16:37", color: this.DOM.person.color }, { text: "Left work zone", time: "16:05" }],
+        attrs: [{ k: "source", v: "device_tracker.sofie" }, { k: "latitude", v: "hidden" }, { k: "gps_accuracy", v: "8 m" }] },
+
+      // -------- helpers and actions --------
+      { group: "Helpers and actions", id: "switch", domain: "switch", name: "Coffee machine", sub: this.getOn("d-sw", true) ? "On" : "Off", active: this.getOn("d-sw", true),
+        control: () => this.bigToggle("d-sw", true, this.DOM.switch.color),
+        history: [{ text: "Turned on", time: "06:45", color: this.DOM.switch.color }, { text: "Auto-off after 30 min", time: "07:15" }],
+        attrs: [{ k: "device_class", v: "outlet" }, { k: "current_power_w", v: "0" }] },
+
+      { group: "Helpers and actions", id: "number", domain: "number", name: "Volume limit", sub: (this.getVal("d-num", 70) / 10).toFixed(1),
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          h("div", { style: { textAlign: "center", fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "var(--text-3xl)", color: "var(--color-text-primary)" } }, (this.getVal("d-num", 70) / 10).toFixed(1)),
+          this.hSlider("d-num", 70, this.DOM.number.color, { suffix: "" })),
+        attrs: [{ k: "min", v: "0" }, { k: "max", v: "10" }, { k: "step", v: "0.1" }, { k: "mode", v: "slider" }] },
+
+      { group: "Helpers and actions", id: "select", domain: "select", name: "Thermostat mode", sub: this.getPick("d-sel", "Auto"),
+        control: () => this.optionList("d-sel", ["Auto", "Heat", "Cool", "Eco", "Off"], "Auto"),
+        attrs: [{ k: "options", v: "5" }, { k: "current_option", v: "Auto" }] },
+
+      { group: "Helpers and actions", id: "scene", domain: "scene", name: "Movie night", sub: "Scene",
+        control: () => this.pill("Activate", { icon: "play", color: this.DOM.scene.color }),
+        history: [{ text: "Activated by you", time: "20:30", color: this.DOM.scene.color }],
+        attrs: [{ k: "entity_id", v: "scene.movie_night" }, { k: "entities", v: "6" }] },
+
+      { group: "Helpers and actions", id: "script", domain: "script", name: "Goodnight", sub: "Idle",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.selectRow("Delay: 5 minutes", "timer-outline"),
+          h("div", { style: { display: "flex", gap: "var(--space-3)" } }, this.pill("Run", { icon: "play", grow: true }), this.pill("Cancel", { outline: true, grow: true }))),
+        history: [{ text: "Ran to completion", time: "23:00", color: this.DOM.script.color }],
+        attrs: [{ k: "last_triggered", v: "23:00" }, { k: "mode", v: "single" }] },
+
+      { group: "Helpers and actions", id: "button", domain: "buttonE", name: "Doorbell chime", sub: "Button",
+        control: () => this.pill("Press", { icon: "gesture-tap-button" }),
+        attrs: [{ k: "entity_id", v: "button.doorbell" }, { k: "last_pressed", v: "18:22" }] },
+
+      { group: "Helpers and actions", id: "automation", domain: "automation", name: "Sunset lights", sub: this.getOn("d-auto", true) ? "On" : "Off",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          this.bigToggle("d-auto", true, this.DOM.automation.color),
+          this.pill("Run now", { icon: "play", outline: true })),
+        history: [{ text: "Triggered: sun below horizon", time: "21:04", color: this.DOM.automation.color }, { text: "Enabled by you", time: "Mon" }],
+        attrs: [{ k: "last_triggered", v: "21:04" }, { k: "mode", v: "single" }, { k: "current", v: "0" }] },
+
+      { group: "Helpers and actions", id: "update", domain: "update", name: "Home Assistant Core", sub: "Update available",
+        control: () => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          h("div", { style: { display: "flex", justifyContent: "space-between", padding: "var(--space-3) var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } }, h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Installed"), h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)" } }, "2026.6.4")),
+          h("div", { style: { display: "flex", justifyContent: "space-between", padding: "var(--space-3) var(--space-4)", background: this.tint(cTV, 0.12), borderRadius: "var(--radius-lg)" } }, h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Available"), h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", color: "var(--color-accent)", fontWeight: 600 } }, "2026.7.0")),
+          h("label", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, h("input", { type: "checkbox", defaultChecked: true }), "Back up before updating"),
+          h("div", { style: { display: "flex", gap: "var(--space-3)" } }, this.pill("Install", { color: "#2f80ed", grow: true }), this.pill("Skip", { outline: true, grow: true }))),
+        history: [{ text: "Update to 2026.7.0 available", time: "Today 09:00", color: cTV }],
+        attrs: [{ k: "installed_version", v: "2026.6.4" }, { k: "latest_version", v: "2026.7.0" }, { k: "release_url", v: "github.com" }] },
+
+      { group: "Helpers and actions", id: "date", domain: "dateE", name: "Anniversary", sub: "14 Jul 2026",
+        control: () => this.datePicker(),
+        attrs: [{ k: "entity_id", v: "input_datetime.anniversary" }, { k: "has_time", v: "false" }] },
+
+      { group: "Helpers and actions", id: "weather", domain: "weather", name: "Home weather", sub: "Partly cloudy \u00b7 19\u00b0",
+        control: () => this.weatherPanel(),
+        attrs: [{ k: "temperature", v: "19" }, { k: "humidity", v: "62" }, { k: "wind_speed", v: "11 km/h" }, { k: "pressure", v: "1014 hPa" }] },
+
+      { group: "Helpers and actions", id: "fallback", domain: "sun", name: "Sun", sub: "Above horizon",
+        control: () => h("div", { style: { padding: "var(--space-3)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", textAlign: "center", color: "var(--color-text-secondary)", fontSize: "var(--text-sm)", lineHeight: 1.5 } }, "No controls for this entity. The generic dialog shows its state, history and attributes only."),
+        attrs: [{ k: "elevation", v: "42.6\u00b0" }, { k: "next_setting", v: "21:38" }, { k: "next_rising", v: "05:42" }, { k: "azimuth", v: "216\u00b0" }] },
+    ];
+  }
+
+  // small extra widgets used by specs
+  progressBar(id, def, cur, total) {
+    const h = React.createElement; const val = this.getVal(id, def);
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: 6 } },
+      h("div", { style: { height: 6, borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", overflow: "hidden" } }, h("div", { style: { width: val + "%", height: "100%", background: "var(--color-text-primary)", borderRadius: "var(--radius-full)" } })),
+      h("div", { style: { display: "flex", justifyContent: "space-between", fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)" } }, h("span", null, cur), h("span", null, total)));
+  }
+  iconColumn(id, items, def, opts) {
+    const h = React.createElement; const { Icon } = this.C; const o = opts || {}; const pick = this.getPick(id, def);
+    const b = (it) => { const on = it.v === pick; return h("button", { key: it.v, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, it.v); }, style: { width: "100%", height: o.big ? 72 : 60, border: "none", borderRadius: "var(--radius-lg)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--space-2)", background: on ? "rgba(255,255,255,0.14)" : "var(--color-surface-raised)", color: on ? "var(--color-text-primary)" : "var(--color-text-secondary)", fontSize: "var(--text-sm)", fontWeight: 600, transition: "background-color 150ms ease-out" } }, h(Icon, { name: it.icon, size: 24 }), o.big ? it.label : null); };
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } }, items.map(b));
+  }
+  barGauge(label, id, def, color, icon) {
+    const h = React.createElement; const { Icon } = this.C; const val = this.getVal(id, def);
+    return h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", height: 52, padding: "0 var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)" } },
+      icon ? h(Icon, { name: icon, size: 20, style: { color: color, flex: "none" } }) : null,
+      h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", flex: "none" } }, label),
+      h("div", { style: { flex: 1, height: 8, borderRadius: "var(--radius-full)", background: "rgba(255,255,255,0.08)", overflow: "hidden" } }, h("div", { style: { width: val + "%", height: "100%", borderRadius: "var(--radius-full)", background: color } })),
+      h("span", { style: { fontFamily: "var(--font-mono)", fontWeight: 600, fontSize: "var(--text-sm)", minWidth: 40, textAlign: "right" } }, val + "%"));
+  }
+  infoTile(icon, label, value) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { flex: 1, padding: "var(--space-3) var(--space-4)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", display: "flex", flexDirection: "column", gap: 2 } },
+      h("div", { style: { display: "flex", alignItems: "center", gap: 6, color: "var(--color-text-tertiary)" } }, h(Icon, { name: icon, size: 16 }), h("span", { style: { fontSize: "var(--text-xs)" } }, label)),
+      h("div", { style: { fontSize: "var(--text-base)", fontWeight: 600, color: "var(--color-text-primary)", fontFamily: "var(--font-mono)" } }, value));
+  }
+  optionList(id, options, def) {
+    const h = React.createElement; const { Icon } = this.C; const pick = this.getPick(id, def);
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } }, options.map((opt) => { const on = opt === pick; return h("button", { key: opt, type: "button", onClick: (e) => { e.stopPropagation(); this.setPick(id, opt); }, style: { display: "flex", alignItems: "center", justifyContent: "space-between", height: 52, padding: "0 var(--space-4)", border: "none", borderRadius: "var(--radius-lg)", cursor: "pointer", background: on ? this.tint(this.DOM.select.color, 0.14) : "var(--color-surface-raised)", color: on ? "var(--color-accent)" : "var(--color-text-primary)", fontSize: "var(--text-base)", fontWeight: on ? 600 : 500 } }, opt, on ? h(Icon, { name: "check", size: 20 }) : null); }));
+  }
+  keypad() {
+    const h = React.createElement;
+    const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
+    const { Icon } = this.C;
+    return h("div", { style: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--space-2)" } }, keys.map((k, i) => k === "" ? h("div", { key: i }) : h("button", { key: i, type: "button", onClick: (e) => e.stopPropagation(), style: { height: 52, border: "none", borderRadius: "var(--radius-lg)", background: "var(--color-surface-raised)", color: "var(--color-text-primary)", fontFamily: "var(--font-mono)", fontSize: "var(--text-lg)", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" } }, k === "del" ? h(Icon, { name: "backspace-outline", size: 20 }) : k)));
+  }
+  datePicker() {
+    const h = React.createElement;
+    const days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    const cells = []; for (let d = 1; d <= 31; d++) cells.push(d);
+    const lead = 1; // Jul 2026 starts Wed-ish (illustrative)
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", padding: "var(--space-4)" } },
+      h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 600 } }, h(this.C.Icon, { name: "chevron-left", size: 20, style: { color: "var(--color-text-secondary)" } }), h("span", null, "July 2026"), h(this.C.Icon, { name: "chevron-right", size: 20, style: { color: "var(--color-text-secondary)" } })),
+      h("div", { style: { display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4, fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", textAlign: "center" } }, days.map((d) => h("div", { key: d }, d))),
+      h("div", { style: { display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 } },
+        Array.from({ length: lead }).map((_, i) => h("div", { key: "l" + i })),
+        cells.map((d) => { const sel = d === 14; return h("button", { key: d, type: "button", onClick: (e) => e.stopPropagation(), style: { aspectRatio: "1", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", background: sel ? "var(--color-accent)" : "transparent", color: sel ? "#fff" : "var(--color-text-primary)", fontWeight: sel ? 700 : 400 } }, d); })));
+  }
+  weatherPanel() {
+    const h = React.createElement; const { Icon } = this.C;
+    const days = [{ d: "Thu", i: "weather-partly-cloudy", hi: 21, lo: 13 }, { d: "Fri", i: "weather-sunny", hi: 24, lo: 14 }, { d: "Sat", i: "weather-rainy", hi: 18, lo: 12 }, { d: "Sun", i: "weather-partly-rainy", hi: 19, lo: 11 }, { d: "Mon", i: "weather-sunny", hi: 23, lo: 13 }];
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+      h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-4)" } },
+        h(Icon, { name: "weather-partly-cloudy", size: 56, style: { color: this.DOM.weather.color } }),
+        h("div", null, h("div", { style: { fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: "var(--text-3xl)", color: "var(--color-text-primary)" } }, "19\u00b0"), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Partly cloudy"))),
+      h("div", { style: { display: "flex", gap: "var(--space-3)" } }, this.infoTile("water-percent", "Humidity", "62%"), this.infoTile("weather-windy", "Wind", "11 km/h")),
+      h("div", { style: { display: "flex", flexDirection: "column" } }, days.map((day, i) => h("div", { key: day.d, style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) 0", borderTop: i === 0 ? "none" : "1px solid var(--color-border-subtle)" } },
+        h("span", { style: { width: 44, fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, day.d),
+        h(Icon, { name: day.i, size: 22, style: { color: "var(--color-text-secondary)", flex: "none" } }),
+        h("div", { style: { flex: 1 } }),
+        h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", color: "var(--color-text-primary)" } }, day.hi + "\u00b0"),
+        h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", width: 32, textAlign: "right" } }, day.lo + "\u00b0")))));
+  }
+
+  // ---------- section chrome ----------
+  sec(kicker, title, desc, body) {
+    const h = React.createElement;
+    return h("section", { style: { display: "flex", flexDirection: "column", gap: "var(--space-6)" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)", maxWidth: 760 } },
+        h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" } }, kicker),
+        h("h2", { style: { margin: 0, fontFamily: "var(--font-display)", fontSize: "var(--text-2xl)", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--color-text-primary)" } }, title),
+        desc ? h("p", { style: { margin: 0, fontSize: "var(--text-base)", color: "var(--color-text-secondary)", lineHeight: 1.55 } }, desc) : null),
+      body);
+  }
+  colHead(label) {
+    const h = React.createElement;
+    return h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--color-text-tertiary)" } }, label);
+  }
+  segControl(value, options, onChange) {
+    const h = React.createElement;
+    const b = (o) => h("button", { key: o.v, type: "button", onClick: (e) => { e.stopPropagation(); onChange(o.v); }, style: { padding: "6px 12px", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-xs)", fontWeight: 600, whiteSpace: "nowrap", background: value === o.v ? "var(--color-surface)" : "transparent", color: value === o.v ? "var(--color-text-primary)" : "var(--color-text-tertiary)", transition: "all 150ms ease-out" } }, o.label);
+    return h("div", { style: { display: "inline-flex", gap: 4, padding: 4, background: "var(--color-surface-raised)", borderRadius: "var(--radius-md)" } }, options.map(b));
+  }
+
+  // ---------- overlay (live demo) ----------
+  overlay() {
+    const h = React.createElement; const spec = this.specs().find((s) => s.id === this.state.open); if (!spec) return null;
+    const bp = this.bp();
+    const scrim = h("div", { onClick: () => this.setState({ open: null }), style: { position: "absolute", inset: 0, background: "var(--color-scrim)", animation: "cc-scrim-in 200ms ease-out" } });
+    if (bp === "mobile") {
+      const panel = h("div", { onClick: (e) => e.stopPropagation(), style: { position: "absolute", left: 0, right: 0, bottom: 0, maxHeight: "92vh", overflowY: "auto", background: "var(--color-surface)", borderTopLeftRadius: "var(--radius-2xl)", borderTopRightRadius: "var(--radius-2xl)", padding: "var(--space-5) var(--space-5) calc(var(--space-6) + env(safe-area-inset-bottom))", animation: "cc-sheet-in 300ms cubic-bezier(0.34,1.56,0.64,1)" } }, this.dialogInner(spec));
+      return h("div", { style: { position: "fixed", inset: 0, zIndex: 1000 } }, scrim, panel);
+    }
+    const card = h("div", { style: { animation: "cc-dialog-in 200ms ease-out" } }, this.dialogFrame(spec));
+    return h("div", { style: { position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-4)" } }, scrim, h("div", { style: { position: "relative", zIndex: 1001 } }, card));
+  }
+
+  // ---------- live demo tiles ----------
+  demoTile(spec) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("button", { key: spec.id, type: "button", onClick: () => this.setState({ open: spec.id }), style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-4)", background: "var(--color-surface)", borderRadius: "var(--radius-lg)", border: "none", cursor: "pointer", textAlign: "left", width: "100%", transition: "background-color 150ms ease-out" } },
+      this.iconBadge(spec, 40),
+      h("div", { style: { flex: 1, minWidth: 0 } }, h("div", { style: { fontSize: "var(--text-base)", fontWeight: 600, color: "var(--color-text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, spec.name), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, spec.sub)),
+      h(Icon, { name: "chevron-right", size: 20, style: { color: "var(--color-text-tertiary)", flex: "none" } }));
+  }
+
+  buildApp() {
+    const h = React.createElement; const { Icon } = this.C;
+    const all = this.specs();
+    const groups = ["Rich controls", "Value and history", "Helpers and actions"];
+    const gallery = h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-8)" } }, groups.map((g) => h("div", { key: g, style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+      this.colHead(g),
+      h("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "var(--space-5)", alignItems: "start" } }, all.filter((s) => s.group === g).map((s) => this.galleryCard(s))))));
+
+    const demoRoom = h("div", { style: { maxWidth: 460, display: "flex", flexDirection: "column", gap: "var(--space-2)", background: "var(--color-bg)", borderRadius: "var(--radius-xl)", padding: "var(--space-5)", border: "1px solid var(--color-border-subtle)" } },
+      h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 600, marginBottom: "var(--space-2)" } }, "Tap to open"),
+      ["light", "climate", "speaker", "lock", "sensor", "person"].map((id) => this.demoTile(all.find((s) => s.id === id))));
+
+    // anatomy: dialog + sheet side by side using the light spec
+    const lightSpec = all.find((s) => s.id === "light");
+    const sheetPreview = h("div", { style: { width: 320, maxWidth: "100%", background: "var(--color-surface)", borderTopLeftRadius: "var(--radius-2xl)", borderTopRightRadius: "var(--radius-2xl)", padding: "var(--space-5)", maxHeight: 520, overflow: "hidden", position: "relative" } },
+      h("div", { style: { position: "absolute", left: 0, right: 0, bottom: 0, height: 40, background: "linear-gradient(180deg, transparent, var(--color-surface))" } }), this.dialogInner(lightSpec));
+    const dialogPreview = h("div", { style: { width: 360, maxWidth: "100%" } }, this.galleryCard(lightSpec));
+    const labelChip = (n, t) => h("div", { style: { display: "flex", gap: "var(--space-2)", alignItems: "flex-start", fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", color: "var(--color-accent)", flex: "none", marginTop: 2 } }, n), t);
+    const anatomy = h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-8)", alignItems: "flex-start" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } }, this.colHead("Desktop \u2265 768px \u00b7 centered dialog"), dialogPreview),
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)" } }, this.colHead("Mobile < 768px \u00b7 bottom sheet"), sheetPreview),
+      h("div", { style: { flex: 1, minWidth: 260, display: "flex", flexDirection: "column", gap: "var(--space-4)", paddingTop: "var(--space-6)" } },
+        labelChip("01", "One shell, two frames. Content and controls are identical, only the frame changes with the viewport (per docs/overlays.md)."),
+        labelChip("02", "Close X sits top-left; a settings cog top-right links to the full entity settings page."),
+        labelChip("03", "Identity block: device-class icon, name, and an honest one-line state."),
+        labelChip("04", "The control block is the archetype, brightness slider, dial, transport, and so on."),
+        labelChip("05", "Below a hairline: History (a trend graph for sensors, a logbook for the rest), a collapsible Attributes list, and a link out to device settings.")));
+
+    return h("div", { style: { minHeight: "100vh", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", padding: "clamp(20px,4vw,56px)" } },
+      h("div", { style: { maxWidth: 1180, margin: "0 auto", display: "flex", flexDirection: "column", gap: "var(--space-16)" } },
+        h("header", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)" } },
+          h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--color-accent)" } }, "Concept Car \u00b7 more-info dialogs"),
+          h("h1", { style: { margin: 0, fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 } }, "Entity dialogs, every archetype"),
+          h("p", { style: { margin: 0, maxWidth: 680, fontSize: "var(--text-md)", color: "var(--color-text-secondary)", lineHeight: 1.55 } }, "The control panel you get when you tap an entity, the companion to the tile card. One shell renders as a centered dialog on desktop and a bottom sheet on mobile. The control block changes per archetype; every dialog closes with History and Attributes. Drag the sliders, spin the dials, tap through modes.")),
+        this.sec("The shell", "One shell, two frames", "Header, identity, control, then history and attributes. The frame is the only thing the viewport changes.", anatomy),
+        this.sec("The set", "Twenty-eight dialogs, one system", "Every Home Assistant domain, grouped by how it is controlled. Rich controls carry a bespoke widget; value entities lead with the number and history; helpers keep it to a single action or field. Each is live, shown here in its desktop dialog frame.", gallery),
+        this.sec("In context", "Tap an entity, get the dialog", "The real overlay: a centered dialog on a wide screen, a bottom sheet on a narrow one. Resize the window across 768px to see it switch.", demoRoom),
+        h("div", { style: { height: 1 } })),
+      this.overlay());
+  }
+
+  renderVals() { return { app: this.buildApp() }; }
+}
+</script>
+</body>
+</html>

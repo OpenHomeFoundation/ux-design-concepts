@@ -5,24 +5,37 @@
      · Open Home Device Database  → structure & discipline (4px grid, hairlines,
        token semantics, type hierarchy, "color is signal, not decoration").
      · HA Concept direction       → warmth & openness (larger radii, generous
-       mobile/tablet spacing, warm-tinted dark surfaces).
+       mobile/tablet spacing, warm-tinted surfaces).
 
-   DARK-FIRST. Desktop stays dense; mobile is roomy.
-   Every component reads from these custom properties — never a hard-coded hex.
+   TWO THEMES, ONE SYSTEM.
+     · DARK  — warm-tinted dark surfaces, the original primary voice.
+     · LIGHT — graphite on warm paper, inherited from the Device Database's
+       light-first roots.
+
+   THEMING MODEL (see README → Theming):
+     · No attribute        → follow the OS (prefers-color-scheme), fall back to
+                             DARK when the OS has no preference.
+     · [data-theme="dark"] → force dark, ignore the OS.
+     · [data-theme="light"]→ force light, ignore the OS.
+   `color-scheme` is set per theme so native controls (scrollbars, form
+   widgets, autofill, date pickers) match the active theme.
+
+   Color is the only thing that changes between themes. Type, spacing, radii,
+   and motion are theme-agnostic and declared once. Every component reads from
+   these custom properties — never a hard-coded hex.
    ========================================================================= */
 
+/* =========================================================================
+   DARK  —  default base on :root. Explicit [data-theme="dark"] (below) lets a
+   consumer FORCE dark even when the OS prefers light.
+   ---------------------------------------------------------------------------
+   Backgrounds form an ELEVATION SCALE — the primary tool for grouping and
+   separating content with no borders:  bg → surface → surface-raised.
+   Page sits on --color-bg; a card on the page is --color-surface; content
+   nested inside that card is --color-surface-raised. Tone, not lines.
+   ========================================================================= */
 :root {
   color-scheme: dark;
-
-  /* ----------------------------------------------------------------------
-     COLOR
-     Backgrounds form an ELEVATION SCALE — the primary tool for grouping and
-     separating content with no borders:
-       bg  →  surface  →  surface-raised
-     Page sits on --color-bg; a card on the page is --color-surface; content
-     nested inside that card (entity tiles in a dashboard card, a widget in a
-     panel) is --color-surface-raised. Distinction comes from tone, not lines.
-     ---------------------------------------------------------------------- */
 
   /* Backgrounds — warm-tinted dark, never pure black */
   --color-bg:             #18181a;   /* page base */
@@ -73,6 +86,181 @@
   /* Scrim — sheet & modal backdrops */
   --color-scrim:          rgba(0, 0, 0, 0.55);
 
+  /* Controls — values components can't derive from the surface scale:
+     · toggle-track  = the OFF-state switch track (a thumb sits on it)
+     · toggle-thumb  = the switch thumb / knob
+     · inverse-hover = hover target for the "inverse" high-contrast surface
+                       (the SpeakerCard play button) */
+  --color-toggle-track:   #2c2c32;   /* = surface-raised */
+  --color-toggle-thumb:   #ffffff;
+  --color-inverse-hover:  #ffffff;   /* brighten the light thumb on hover */
+}
+
+/* =========================================================================
+   LIGHT  —  graphite on warm near-white.
+   ---------------------------------------------------------------------------
+   Elevation runs the same way the dark scale does, inverted: the PAGE is the
+   lightest surface, and surfaces step DARKER (warmer grey) as they elevate, so
+   cards and popovers always separate from the page. Accent and semantics
+   darken just enough to clear WCAG AA on the light grounds.
+
+   Applied in two places (CSS has no mixins, so the block is mirrored):
+     1. @media (prefers-color-scheme: light) on :root — the OS-driven default
+        when the consumer has NOT pinned a theme. An explicit [data-theme]
+        block below comes later in the cascade and overrides it.
+     2. Explicit [data-theme="light"]  →  always light, regardless of OS.
+   Keep the two blocks in sync.
+   ========================================================================= */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --color-bg:             #faf9f6;
+    --color-surface:        #eeebe5;
+    --color-surface-raised: #e4dfd7;
+    --color-overlay:        #d8d2c8;
+
+    --color-border:         #ccc6bb;
+    --color-border-subtle:  #ddd8ce;
+
+    --color-text-primary:   #1d1c1a;
+    --color-text-secondary: #5a564f;
+    --color-text-tertiary:  #8a857b;
+    --color-text-disabled:  #b3ada1;
+
+    --color-accent:         #1559b8;   /* darkened for AA on paper */
+    --color-accent-hover:   #114a99;
+    --color-accent-subtle:  rgba(21, 89, 184, 0.10);
+    --color-on-accent:      #ffffff;
+
+    --color-success:        #2f7a36;
+    --color-warning:        #9a5a12;
+    --color-error:          #b22d22;
+    --color-active:         #1d1c1a;   /* active entity state — graphite */
+    --color-inactive:       #8a857b;
+
+    --color-success-subtle: rgba(47, 122, 54, 0.12);
+    --color-warning-subtle: rgba(154, 90, 18, 0.12);
+    --color-error-subtle:   rgba(178, 45, 34, 0.10);
+
+    --color-space-shared:   #2c7349;
+    --color-space-personal: #1559b8;
+    --color-space-admin:    #6a479e;
+
+    --color-space-shared-subtle:   rgba(44, 115, 73, 0.12);
+    --color-space-personal-subtle: rgba(21, 89, 184, 0.12);
+    --color-space-admin-subtle:    rgba(106, 71, 158, 0.12);
+
+    --color-scrim:          rgba(28, 26, 22, 0.45);
+
+    --color-toggle-track:   #cbc4b6;   /* mid warm grey so the white thumb reads */
+    --color-toggle-thumb:   #ffffff;
+    --color-inverse-hover:  #000000;   /* darken the graphite surface on hover */
+  }
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-bg:             #faf9f6;
+  --color-surface:        #eeebe5;
+  --color-surface-raised: #e4dfd7;
+  --color-overlay:        #d8d2c8;
+
+  --color-border:         #ccc6bb;
+  --color-border-subtle:  #ddd8ce;
+
+  --color-text-primary:   #1d1c1a;
+  --color-text-secondary: #5a564f;
+  --color-text-tertiary:  #8a857b;
+  --color-text-disabled:  #b3ada1;
+
+  --color-accent:         #1559b8;
+  --color-accent-hover:   #114a99;
+  --color-accent-subtle:  rgba(21, 89, 184, 0.10);
+  --color-on-accent:      #ffffff;
+
+  --color-success:        #2f7a36;
+  --color-warning:        #9a5a12;
+  --color-error:          #b22d22;
+  --color-active:         #1d1c1a;
+  --color-inactive:       #8a857b;
+
+  --color-success-subtle: rgba(47, 122, 54, 0.12);
+  --color-warning-subtle: rgba(154, 90, 18, 0.12);
+  --color-error-subtle:   rgba(178, 45, 34, 0.10);
+
+  --color-space-shared:   #2c7349;
+  --color-space-personal: #1559b8;
+  --color-space-admin:    #6a479e;
+
+  --color-space-shared-subtle:   rgba(44, 115, 73, 0.12);
+  --color-space-personal-subtle: rgba(21, 89, 184, 0.12);
+  --color-space-admin-subtle:    rgba(106, 71, 158, 0.12);
+
+  --color-scrim:          rgba(28, 26, 22, 0.45);
+
+  --color-toggle-track:   #cbc4b6;
+  --color-toggle-thumb:   #ffffff;
+  --color-inverse-hover:  #000000;
+}
+
+/* =========================================================================
+   DARK (explicit pin)  —  mirrors the :root dark base, placed AFTER the
+   prefers-color-scheme block so [data-theme="dark"] forces dark even when the
+   OS prefers light. Keep in sync with the :root dark block above.
+   ========================================================================= */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg:             #18181a;
+  --color-surface:        #222226;
+  --color-surface-raised: #2c2c32;
+  --color-overlay:        #36363e;
+
+  --color-border:         #3a3a42;
+  --color-border-subtle:  #2a2a30;
+
+  --color-text-primary:   #f0eff8;
+  --color-text-secondary: #9e9daa;
+  --color-text-tertiary:  #6a6974;
+  --color-text-disabled:  #4a4952;
+
+  --color-accent:         #1C6FD6;
+  --color-accent-hover:   #1a5fb8;
+  --color-accent-subtle:  rgba(28, 111, 214, 0.12);
+  --color-on-accent:      #ffffff;
+
+  --color-success:        #4a8c47;
+  --color-warning:        #c47a1a;
+  --color-error:          #b8342a;
+  --color-active:         #f0eff8;
+  --color-inactive:       #6a6974;
+
+  --color-success-subtle: rgba(74, 140, 71, 0.15);
+  --color-warning-subtle: rgba(196, 122, 26, 0.15);
+  --color-error-subtle:   rgba(184, 52, 42, 0.15);
+
+  --color-space-shared:   #2e7d52;
+  --color-space-personal: #1C6FD6;
+  --color-space-admin:    #7c5ab8;
+
+  --color-space-shared-subtle:   rgba(46, 125, 82, 0.14);
+  --color-space-personal-subtle: rgba(28, 111, 214, 0.14);
+  --color-space-admin-subtle:    rgba(124, 90, 184, 0.14);
+
+  --color-scrim:          rgba(0, 0, 0, 0.55);
+
+  --color-toggle-track:   #2c2c32;
+  --color-toggle-thumb:   #ffffff;
+  --color-inverse-hover:  #ffffff;
+}
+
+/* =========================================================================
+   THEME-AGNOSTIC TOKENS — identical in both themes, declared once.
+   Typography, spacing, radii, motion, touch targets, layout.
+   ========================================================================= */
+:root {
   /* ----------------------------------------------------------------------
      TYPOGRAPHY
      Inter Tight for display, Inter for body/UI, JetBrains Mono for data.
@@ -150,12 +338,6 @@
   --touch-target-tablet:  44px;
   --touch-target-desktop: 32px;
 
-  /* Buttons get their own comfortable touch height (44px) on mobile AND
-     tablet, instead of the full 56px row touch target, so action buttons stay
-     compact while list rows / nav still meet the 56px tap minimum. Desktop
-     buttons stay dense, reading the touch-target-desktop token. */
-  --button-height-touch: 44px;
-
   /* ----------------------------------------------------------------------
      LAYOUT — shell dimensions (reference)
        breakpoints: mobile <768 · tablet 768–1279 · desktop ≥1280 · big ≥1920
@@ -178,7 +360,8 @@
 }
 
 /* =========================================================================
-   BASE — minimal element resets so consumers inherit the dark, warm ground.
+   BASE — minimal element resets so consumers inherit the active theme's
+   warm ground without extra setup.
    ========================================================================= */
 html {
   background: var(--color-bg);

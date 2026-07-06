@@ -17,7 +17,7 @@
       try {
         var pid = sessionStorage.getItem("cc-persona") || "daan";
         var inst = localStorage.getItem("cc-theme-instance") || "system";
-        var user = localStorage.getItem("cc-theme-" + pid) || "default";
+        var user = localStorage.getItem("cc-theme-" + pid) || (pid === "daan" ? "dark" : "default");
         var mode = user === "default" ? inst : user;
         var resolved = (mode === "light" || mode === "dark") ? mode
           : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
@@ -582,7 +582,7 @@ class Component extends DCLogic {
       home: { name: "Abbey Road", units: "metric", tz: "Europe/Amsterdam", elevation: "13", currency: "EUR", country: "NL", language: "nl" },
       profileFilled: null,
       presenceCfg: { share: true, source: "iphone", automations: "precise", people: "everyone" },
-      theme: (() => { let inst = "system", user = "default"; try { inst = localStorage.getItem("cc-theme-instance") || "system"; } catch (e) {} try { user = localStorage.getItem("cc-theme-" + _pid0) || "default"; } catch (e) {} return { inst, user }; })(),
+      theme: (() => { let inst = "system", user = "default"; try { inst = localStorage.getItem("cc-theme-instance") || "system"; } catch (e) {} try { user = localStorage.getItem("cc-theme-" + _pid0) || (_pid0 === "daan" ? "dark" : "default"); } catch (e) {} return { inst, user }; })(),
       landing: (() => { let inst = "home", user = "default"; try { inst = localStorage.getItem("cc-landing-instance") || "home"; } catch (e) {} try { user = localStorage.getItem("cc-landing-" + _pid0) || "default"; } catch (e) {} return { inst, user }; })(),
       a11y: (() => { let v = {}; try { v = JSON.parse(localStorage.getItem("cc-a11y-" + _pid0) || "{}") || {}; } catch (e) {} return v; })(),
       osDark: (() => { try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); } catch (e) { return true; } })(),
@@ -973,7 +973,7 @@ class Component extends DCLogic {
     try { sessionStorage.setItem("cc-persona", id); } catch (e) {}
     let fy = {};
     try { fy = JSON.parse(sessionStorage.getItem("cc-fy-" + id) || "{}") || {}; } catch (e) {}
-    let uTheme = "default"; try { uTheme = localStorage.getItem("cc-theme-" + id) || "default"; } catch (e) {}
+    let uTheme = "default"; try { uTheme = localStorage.getItem("cc-theme-" + id) || (id === "daan" ? "dark" : "default"); } catch (e) {}
     let uLanding = "default"; try { uLanding = localStorage.getItem("cc-landing-" + id) || "default"; } catch (e) {}
     let a11y = {}; try { a11y = JSON.parse(localStorage.getItem("cc-a11y-" + id) || "{}") || {}; } catch (e) {}
     this.setState((s) => ({ personaId: id, settingsSel: null, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false,
@@ -1109,7 +1109,7 @@ class Component extends DCLogic {
       home3dBg ? h("div", { "aria-hidden": true, ref: this._h3dRefDesktop, style: { position: "absolute", inset: 0, zIndex: 0 } }) : null,
       this.renderRail(railNav, persona, isMap ? "var(--color-surface)" : (home3dBg ? "transparent" : "var(--color-bg)"), isMap),
       page.submenu || null,
-      h("div", { ref: this._h3dOverlayRef, onPointerDown: home3dBg ? (e) => this.home3dPointer("down", e) : undefined, onPointerMove: home3dBg ? (e) => this.home3dPointer("move", e) : undefined, onPointerUp: home3dBg ? (e) => this.home3dPointer("up", e) : undefined, onPointerCancel: home3dBg ? (e) => this.home3dPointer("cancel", e) : undefined, style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative", zIndex: 1 } },
+      h("div", { ref: this._h3dOverlayRef, onPointerDown: home3dBg ? (e) => this.home3dPointer("down", e) : undefined, onPointerMove: home3dBg ? (e) => this.home3dPointer("move", e) : undefined, onPointerUp: home3dBg ? (e) => this.home3dPointer("up", e) : undefined, onPointerCancel: home3dBg ? (e) => this.home3dPointer("cancel", e) : undefined, style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative", zIndex: (bp !== "mobile" && this.state.menu) ? 901 : 1 } },
         this.state.route === "/map" ? null : topbar,
         h("div", { style: { flex: 1, minHeight: 0, display: "flex" } },
           page.filterSidebar || null,
@@ -2351,7 +2351,7 @@ class Component extends DCLogic {
     const idRow = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)" } }, lead, h("div", { style: { flex: 1, minWidth: 0 } }, areaEl, nameEl, subEl));
     const rows = [idRow];
     if (feature && !opts.noFeature) rows.push(h("div", { key: "ft" }, feature));
-    return h("div", { key: e.id, style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)", minWidth: 0, transition: "background-color var(--duration-normal) var(--easing-out)" } }, rows);
+    return h("div", { key: e.id, style: { background: opts.tileBg || "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)", minWidth: 0, transition: "background-color var(--duration-normal) var(--easing-out)" } }, rows);
   }
 
   // ====================================================================
@@ -9330,9 +9330,9 @@ class Component extends DCLogic {
           h("div", { style: { fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", color: "var(--color-text-secondary)" } }, "No favorites yet"),
           h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", maxWidth: 260, lineHeight: 1.4 } }, "Star an entity from its page to pin it here for quick access."));
       } else {
-        body = h("div", { style: this.gridStyle(2) }, favs.map((e) => this.featureTile(e, persona, { area: true, noFeature: true })));
+        body = h("div", { style: this.gridStyle(2) }, favs.map((e) => this.featureTile(e, persona, { area: true, noFeature: true, tileBg: "var(--color-surface-raised)" })));
       }
-      return this.fyCard(id, "Favorites", "star", body, { bg: "var(--color-bg)" });
+      return this.fyCard(id, "Favorites", "star", body);
     }
     if (id === "alert-power") {
       const body = h("div", { style: { display: "flex", gap: "var(--space-3)" } },

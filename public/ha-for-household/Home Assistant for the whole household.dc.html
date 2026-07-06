@@ -671,9 +671,9 @@ class Component extends DCLogic {
     this._onMotion = () => { this.applyAppearance(); this.forceUpdate(); };
     if (this._mqDark) { if (this._mqDark.addEventListener) this._mqDark.addEventListener("change", this._onScheme); else if (this._mqDark.addListener) this._mqDark.addListener(this._onScheme); }
     if (this._mqMotion) { if (this._mqMotion.addEventListener) this._mqMotion.addEventListener("change", this._onMotion); else if (this._mqMotion.addListener) this._mqMotion.addListener(this._onMotion); }
-    this._onHash = () => { this._lastScrollY = 0; this.setState({ route: this.parseHash(), settingsSel: this._pendingSettingsSel || null, serviceEdit: false, tagsEdit: false, voiceEdit: false, entitiesEdit: false, dashEdit: false, dashMenu: null, dashCardPick: null, dashManagerOpen: false, camMode: "live", camSel: null, camClip: null, camScrub: 62, camEventType: "all", camEventCam: "all", camEventQ: "", filesPath: [], filesEdit: false, filesDraft: null, filesChecked: false, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false, customizeId: null, filtersSheet: null, acctMenu: false, fabHidden: false, sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "", sheetClosing: false, mapSheetClosed: false, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null, mapDetent: 0, fyEdit: false, addWidgetOpen: false, widgetConfig: null, confirm: null }); this._pendingSettingsSel = null; if (this._pendingZoneReview) { const pr = this._pendingZoneReview; this._pendingZoneReview = null; const zs = this.sugById && this.sugById(pr.id); if (zs) this.enterZoneReview(zs, pr.bp); } };
+    this._onHash = () => { this._lastScrollY = 0; this.setState({ route: this.parseHash(), settingsSel: this._pendingSettingsSel || null, integrationSel: this._pendingIntegrationSel || null, serviceEdit: false, tagsEdit: false, voiceEdit: false, entitiesEdit: false, dashEdit: false, dashMenu: null, dashCardPick: null, dashManagerOpen: false, camMode: "live", camSel: null, camClip: null, camScrub: 62, camEventType: "all", camEventCam: "all", camEventQ: "", filesPath: [], filesEdit: false, filesDraft: null, filesChecked: false, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false, customizeId: null, filtersSheet: null, acctMenu: false, fabHidden: false, sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "", sheetClosing: false, mapSheetClosed: false, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null, mapDetent: 0, fyEdit: false, addWidgetOpen: false, widgetConfig: null, confirm: null }); this._pendingSettingsSel = null; this._pendingIntegrationSel = null; if (this._pendingZoneReview) { const pr = this._pendingZoneReview; this._pendingZoneReview = null; const zs = this.sugById && this.sugById(pr.id); if (zs) this.enterZoneReview(zs, pr.bp); } };
     window.addEventListener("hashchange", this._onHash);
-    this._onKey = (e) => { if (e.key !== "Escape") return; if (this.state.confirm) { this.setState({ confirm: null }); return; } if (this.state.dashCardPick) { this.setState({ dashCardPick: null }); return; } if (this.state.dashDraft) { this.setState({ dashDraft: null }); return; } if (this.state.dashManagerOpen) { this.setState({ dashManagerOpen: false, dashMenu: null }); return; } if (this.state.dashMenu) { this.setState({ dashMenu: null }); return; } if (this.state.mapDetail && this.state.route === "/map") { this.setState({ mapDetail: null, mapFocus: null }); return; } if (this.state.mapFocus && this.state.route === "/map") { this.setState({ mapFocus: null }); return; } if (this.state.sheetSub) { this.setState({ sheetSub: null, sheetSearch: "" }); return; } if (this.state.filtersSheet) { this.closeSheet({ id: this.state.filtersSheet, backdrop: true, dismissible: true }); return; } if (this.state.widgetConfig) { if (this.state.widgetConfig.mode === "add") { this.setState({ widgetConfig: null, addWidgetOpen: true }); } else { this.setState({ widgetConfig: null }); } return; } if (this.state.addWidgetOpen) { this.setState({ addWidgetOpen: false }); return; } if (this.state.menu) { this.setState({ menu: null }); return; } this.setState({ searchOpen: false, menu: null, customizeId: null, acctMenu: false, toolbarMenu: null }); };
+    this._onKey = (e) => { if (e.key !== "Escape") return; if (this.state.confirm) { this.setState({ confirm: null }); return; } if (this.state.integrationSel) { this.setState({ integrationSel: null }); return; } if (this.state.planArea) { this.setState({ planArea: null }); return; } if (this.state.planFloorOpen && this.state.settingsSel === "floors-areas") { this.setState({ planFloorOpen: false }); return; } if (this.state.fmh && this.state.fmh.sel && this.state.settingsSel === "floors-areas") { this.setFmh({ sel: null }); return; } if (this.state.dashCardPick) { this.setState({ dashCardPick: null }); return; } if (this.state.dashDraft) { this.setState({ dashDraft: null }); return; } if (this.state.dashManagerOpen) { this.setState({ dashManagerOpen: false, dashMenu: null }); return; } if (this.state.dashMenu) { this.setState({ dashMenu: null }); return; } if (this.state.mapDetail && this.state.route === "/map") { this.setState({ mapDetail: null, mapFocus: null }); return; } if (this.state.mapFocus && this.state.route === "/map") { this.setState({ mapFocus: null }); return; } if (this.state.sheetSub) { this.setState({ sheetSub: null, sheetSearch: "" }); return; } if (this.state.filtersSheet) { this.closeSheet({ id: this.state.filtersSheet, backdrop: true, dismissible: true }); return; } if (this.state.widgetConfig) { if (this.state.widgetConfig.mode === "add") { this.setState({ widgetConfig: null, addWidgetOpen: true }); } else { this.setState({ widgetConfig: null }); } return; } if (this.state.addWidgetOpen) { this.setState({ addWidgetOpen: false }); return; } if (this.state.menu) { this.setState({ menu: null }); return; } this.setState({ searchOpen: false, menu: null, customizeId: null, acctMenu: false, toolbarMenu: null }); };
     window.addEventListener("keydown", this._onKey);
     this._fyOutside = (e) => {
       if (!this.state.fyEdit) return;
@@ -683,10 +683,18 @@ class Component extends DCLogic {
       this.setState({ fyEdit: false });
     };
     document.addEventListener("pointerdown", this._fyOutside, true);
-    // The 3D home mounts directly in this page (no iframe). When the Fit My
-    // Home editor (an iframe on the settings page, or another tab) saves a
-    // new plan, a storage event fires here: rebuild the scene from it.
-    this._onPlanStorage = (e) => { if (e.key === "cc-home3d-plan-v1") this.rebuildHome3d(); };
+    // The Fit My Home editor mounts inline on the settings page and calls
+    // rebuildHome3d directly on save. This storage listener only covers
+    // edits made from another tab.
+    this._onPlanStorage = (e) => {
+      if (e.key !== "cc-home3d-plan-v1") return;
+      this.rebuildHome3d();
+      // Refresh the Floors and areas editor too, if it is loaded.
+      if (this.state.fmh && this._P3) {
+        const plan = this._P3.loadPlan();
+        this.setFmh({ plan, floorIdx: Math.min(this.state.fmh.floorIdx, Math.max(0, plan.floors.length - 1)), sel: null }, () => this.fmhFitView());
+      }
+    };
     window.addEventListener("storage", this._onPlanStorage);
     // Reveal once the app paints fully styled, in one shot. Two things must be
     // true first, and neither is guaranteed by data/bundle readiness alone:
@@ -1165,7 +1173,7 @@ class Component extends DCLogic {
     if (route === "/map") return h("div", { style: { height: "100%", minHeight: 0 } }, page.body);
     const narrow = route === "/settings" || route === "/my/settings" || route === "/my/profile" || route === "/extensions" || (route || "").indexOf("/my/data") === 0;
     const isHome = (route || "").split("/").filter(Boolean)[0] === "home";
-    const maxW = narrow ? 760 : ((page.fullWidth || isHome) ? "none" : 1320);
+    const maxW = (page.fullWidth || isHome) ? "none" : (narrow ? 760 : 1320);
     // Mobile pages clear the floating action button (104px); pages without a FAB
     // only need normal bottom breathing room (the bookmark bar is a sibling, not an overlay).
     const hasFab = bp === "mobile" && !!this.mobileFabSpec(persona);
@@ -1615,7 +1623,7 @@ class Component extends DCLogic {
     const admin = persona.spaces.includes("admin");
     const personal = persona.spaces.includes("personal");
     const banner = persona.scoped ? this.scopedBanner(persona) : null;
-    const wrap = (title, body, opt) => { opt = opt || {}; return { title, subtitle: opt.subtitle, onBack: opt.onBack, cta: opt.cta, submenu: opt.submenu, filterSidebar: null, fullWidth: !!this._collectionRail, accountLanding: opt.accountLanding, body, banner }; };
+    const wrap = (title, body, opt) => { opt = opt || {}; return { title, subtitle: opt.subtitle, onBack: opt.onBack, cta: opt.cta, submenu: opt.submenu, filterSidebar: null, fullWidth: !!this._collectionRail || !!opt.fullWidth, accountLanding: opt.accountLanding, body, banner }; };
     const backHome = () => this.go(this._prevRoute === "/more" ? "/more" : "/home");
 
     const isAdminRoute = route === "/settings" || route === "/extensions" || route === "/logs" || route === "/files" || route === "/entities" || parts[0] === "settings" || parts[0] === "entities" || (["automations", "scenes", "scripts", "devices", "people"].includes(parts[0]) && parts[1] === "edit");
@@ -2104,7 +2112,7 @@ class Component extends DCLogic {
       h("div", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface-raised)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: g.icon, size: "md" })),
       h("div", { style: { flex: 1, minWidth: 0 } }, h("div", { style: { fontWeight: "var(--weight-medium)" } }, g.name), h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, g.desc)),
       this.svcPill("Connected", "#2e9e5b"),
-      h(Button, { variant: "ghost", size: "sm", icon: "cog-outline", "aria-label": "Configure " + g.name, onClick: () => {} }));
+      h(Button, { variant: "ghost", size: "sm", icon: "cog-outline", "aria-label": "Configure " + g.name, onClick: () => { if (this.intgById("svc_" + g.id)) this.goIntegration("svc_" + g.id); } }));
     const connectedCard = h("div", { style: this.col("var(--space-2)") },
       h("div", { style: { paddingLeft: "var(--space-6)", fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em" } }, "Connected"),
       this.svcCard(connected.length ? h("div", null, connected.map(connRow)) : h("div", { style: { color: "var(--color-text-tertiary)" } }, "Nothing connected yet. Add a service below.")));
@@ -2289,8 +2297,8 @@ class Component extends DCLogic {
       style: { display: "inline-flex", alignItems: "center", gap: "var(--space-2)", alignSelf: "flex-start", border: "none", background: "transparent", padding: 0, cursor: "pointer", fontFamily: "var(--font-display)", fontSize: big ? "var(--text-2xl)" : "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } },
       label, h(Icon, { name: "chevron-right", size: big ? "md" : "sm" }));
   }
-  featureTile(e, persona) {
-    const h = React.createElement; const { Icon, Chip } = this.C;
+  featureTile(e, persona, opts) {
+    const h = React.createElement; const { Icon, Chip } = this.C; opts = opts || {};
     if (this.larsLocked(e, persona)) {
       return h("div", { key: e.id, style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", alignItems: "center", gap: "var(--space-3)", opacity: 0.55, minWidth: 0 } },
         h("div", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-full)", background: "var(--color-surface-raised)", color: "var(--color-inactive)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: e.icon, size: "md" })),
@@ -2334,14 +2342,15 @@ class Component extends DCLogic {
       sub = e.state || this.typeLabel(e.type);
       lead = this.tileIcon(e, { active: false, color: dom.color });
     }
+    const areaEl = opts.area ? h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.3, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, this.areaName(e.area)) : null;
     const nameEl = h("div", { style: { fontSize: "var(--text-base)", fontWeight: 600, color: "var(--color-text-primary)", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, e.name);
     const subKids = [];
     if (badge) subKids.push(h(Icon, { key: "b", name: badge.icon, size: "xs", style: { color: badge.color, flex: "none" } }));
     subKids.push(h("span", { key: "s", style: { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, sub));
     const subEl = h("div", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.3, marginTop: 2, minWidth: 0 } }, subKids);
-    const idRow = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)" } }, lead, h("div", { style: { flex: 1, minWidth: 0 } }, nameEl, subEl));
+    const idRow = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)" } }, lead, h("div", { style: { flex: 1, minWidth: 0 } }, areaEl, nameEl, subEl));
     const rows = [idRow];
-    if (feature) rows.push(h("div", { key: "ft" }, feature));
+    if (feature && !opts.noFeature) rows.push(h("div", { key: "ft" }, feature));
     return h("div", { key: e.id, style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: "var(--space-3) var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)", minWidth: 0, transition: "background-color var(--duration-normal) var(--easing-out)" } }, rows);
   }
 
@@ -2584,7 +2593,7 @@ class Component extends DCLogic {
   // The engine canvas lives in a persistent host element adopted by whichever
   // homepage container is on screen (desktop background layer or the mobile
   // hero), so switching breakpoints never reboots the scene.
-  _h3dRefDesktop = (el) => this.home3dAttach(el, { zoom: 0.52, shift: 0.15 });
+  _h3dRefDesktop = (el) => this.home3dAttach(el, { zoom: 0.62, shift: 0.15 });
   _h3dRefMobile = (el) => this.home3dAttach(el, { zoom: 1, shift: 0 });
   // Wheel-to-zoom on desktop: the shell covers the canvas, so wheel events
   // over bare background are forwarded to it. Native listener (not React's
@@ -3626,10 +3635,16 @@ class Component extends DCLogic {
     if (v === "good") return e.battery > 50;
     return false;
   }
-  integrationOf(e) { return ({ light: "Philips Hue", climate: "Google Nest", lock: "Z-Wave", camera: "Reolink", sensor: "Zigbee", media: "Google Cast", voice: "Assist" })[e.type] || "Other"; }
+  // Integration per device, derived from the entity registry so the Devices
+  // page, the device detail and the Integrations page all agree (a device's
+  // integration is the integration of its entities).
+  integrationOf(e) {
+    if (!this._intgByDev) { this._intgByDev = {}; this.REG.forEach((x) => { if (x.deviceId && x.integration && !this._intgByDev[x.deviceId]) this._intgByDev[x.deviceId] = x.integration; }); }
+    return this._intgByDev[e.id] || "Other";
+  }
   manufacturerOf(e) { return ({ light: "Signify", climate: "Google", lock: "Yale", camera: "Reolink", sensor: "Aqara", media: "Sonos", voice: "Home Assistant" })[e.type] || "Other"; }
   brandDomain(kind, name) {
-    const integ = { "Philips Hue": "hue", "Google Nest": "nest", "Z-Wave": "zwave_js", "Reolink": "reolink", "Zigbee": "zha", "Google Cast": "cast", "Assist": "assist_pipeline" };
+    const integ = { "Philips Hue": "hue", "Google Nest": "nest", "Z-Wave": "zwave_js", "Reolink": "reolink", "Zigbee": "zha", "Google Cast": "cast", "Assist": "assist_pipeline", "Sonos": "sonos", "ESPHome": "esphome", "MQTT": "mqtt", "Template": "template", "TP-Link Kasa": "tplink" };
     const manu = { "Signify": "hue", "Google": "google", "Yale": "yale", "Reolink": "reolink", "Aqara": "aqara", "Sonos": "sonos", "Home Assistant": "homeassistant" };
     return (kind === "integration" ? integ : manu)[name] || null;
   }
@@ -3682,7 +3697,7 @@ class Component extends DCLogic {
   deviceFilterGroups() {
     return [
       { key: "floorArea", label: "Floors and areas", multi: true, tree: true, options: this.floorAreaOptions(), match: (e, v) => this.matchFloorArea(e.area, v) },
-      { key: "integration", label: "Integrations", multi: true, options: [{ value: "all", label: "All" }].concat(["Philips Hue", "Google Nest", "Z-Wave", "Reolink", "Zigbee", "Google Cast", "Assist"].map((x) => ({ value: x, label: x, logo: this.brandLogo(this.brandDomain("integration", x)) }))), match: (e, v) => this.integrationOf(e) === v },
+      { key: "integration", label: "Integrations", multi: true, options: [{ value: "all", label: "All" }].concat([...new Set(this.H.entities.map((e) => this.integrationOf(e)))].filter((x) => x && x !== "Other").sort().map((x) => ({ value: x, label: x, logo: this.brandLogo(this.brandDomain("integration", x)) }))), match: (e, v) => this.integrationOf(e) === v },
       { key: "manufacturer", label: "Manufacturers", multi: true, options: [{ value: "all", label: "All" }].concat(["Signify", "Google", "Yale", "Reolink", "Aqara", "Sonos", "Home Assistant"].map((x) => ({ value: x, label: x }))), match: (e, v) => this.manufacturerOf(e) === v },
       { key: "battery", label: "Battery", slider: true, sliderMin: 0, sliderMax: 100, sliderStep: 5, sliderDefault: 100, sliderUnit: "%", match: (e, v) => typeof e.battery === "number" && e.battery <= v },
       { key: "label", label: "Labels", multi: true, options: [{ value: "all", label: "All" }].concat(["Security", "Energy", "Outdoor", "Favorite"].map((x) => ({ value: x, label: x }))), match: (e, v) => this.deviceLabels(e).includes(v) },
@@ -4295,7 +4310,7 @@ class Component extends DCLogic {
       { label: "Read-only", value: ent.readOnly ? "Yes, no unique ID" : "No", icon: "pencil-off-outline" },
     ];
     const detailsRows = [
-      { label: "Integration", value: ent.integration, icon: "power-plug-outline" },
+      { label: "Integration", value: ent.integration, icon: "power-plug-outline", onClick: this.intgByName(ent.integration) ? () => this.goIntegration(this.intgByName(ent.integration).id) : null },
       dev ? { label: "Device", value: dev.name, icon: "devices", onClick: () => this.go("/devices/" + dev.id) } : { label: "Device", value: "No device", icon: "devices" },
       { label: "Domain", value: ent.domain, icon: "shape-outline", mono: true },
       { label: "Space", value: "Admin", icon: "shield-lock-outline" },
@@ -5090,7 +5105,7 @@ class Component extends DCLogic {
   dashEntity(e, persona, bp) {
     const h = React.createElement; const { ThermostatCard, SpeakerCard, CameraCard, EntityCard } = this.C;
     if (!e) return null;
-    if (e.type === "light") return this.tile(e, persona);
+    if (e.type === "light") return this.featureTile(e, persona);
     if (e.type === "climate") return h(ThermostatCard, { mode: e.mode, current: e.current, unit: "\u00b0", target: this.curTarget(e), onStep: (d) => this.step(e, d) });
     if (e.type === "media") return h(SpeakerCard, { name: e.name, state: e.playing ? e.track : "Idle", playing: e.playing, onPlayPause: () => {}, onPrev: () => {}, onNext: () => {} });
     if (e.type === "camera") return h(CameraCard, { name: e.name, live: e.live });
@@ -5946,18 +5961,783 @@ class Component extends DCLogic {
           this.notice(areaCount + (areaCount === 1 ? " area is" : " areas are") + " on this floor. Manage them from the floors and areas list.", "information-outline"),
           actions)));
   }
-  // The floors-and-areas settings ARE the map now: the "Fit my home" drawing
-  // editor, embedded. Rooms are areas (name, icon, color on the shape),
-  // outdoor areas are green patches, buildings and floors are managed in the
-  // drawing. Saved to the shared plan the 3D home renders.
+  // ====================================================================
+  //  Floors and areas: the plan editor, built directly into this page.
+  //  Left: the floor list with a draggable street-level line (floors under
+  //  it sit below the ground). Right: the directly editable layout canvas
+  //  with the floor below as a dashed ghost. Tapping a selected room opens
+  //  the area subpage. Saves go to the shared plan the 3D home renders.
+  // ====================================================================
+  FMH_FLOOR_ICONS = ["home-floor-g", "home-floor-1", "home-floor-2", "home-floor-3", "stairs-down", "home-roof"];
+  FMH_FLOOR_NAMES = ["Ground floor", "First floor", "Second floor", "Third floor"];
+  fmhEnsure() {
+    if (this.state.fmh || this._fmhLoading) return;
+    this._fmhLoading = true;
+    import("./home3d/plan.js").then((P) => {
+      this._P3 = P;
+      const plan = P.loadPlan();
+      let idx = plan.floors.findIndex((f) => !f.belowGround);
+      if (idx < 0) idx = 0;
+      this.setState({ fmh: { plan, floorIdx: idx, outside: false, sel: null, listDrag: null, vb: null } }, () => this.fmhFitView());
+    });
+  }
+  setFmh(patch, cb) { this.setState((s) => ({ fmh: Object.assign({}, s.fmh, patch) }), cb); }
+  fmhSave(plan) { this._P3.savePlan(plan); this.rebuildHome3d(); }
+  fmhMut(fn, cb) {
+    const plan = JSON.parse(JSON.stringify(this.state.fmh.plan));
+    fn(plan);
+    this.fmhSave(plan);
+    this.setFmh({ plan }, cb);
+  }
+  fmhFloor() { const m = this.state.fmh; return m ? (m.plan.floors[m.floorIdx] || null) : null; }
+  fmhRooms(plan) {
+    const m = this.state.fmh;
+    if (m.outside) return plan.outdoor || [];
+    const f = plan.floors[m.floorIdx];
+    return f ? f.rooms : [];
+  }
+  fmhObstacles(plan) {
+    const m = this.state.fmh;
+    return this._P3.obstacleRects(plan, m.outside ? { type: "outdoor" } : { type: "floor", floorIdx: m.floorIdx });
+  }
+  fmhRoomName(room) {
+    if (room.name) return room.name;
+    if (room.area && this.H.areas[room.area]) return this.H.areas[room.area].name;
+    return "Room";
+  }
+  fmhRoomArea(room) { return (room.rects || []).reduce((a, rc) => a + (rc[2] - rc[0]) * (rc[3] - rc[1]), 0); }
+  fmhIconForFloor(plan, f) {
+    if (f.icon) return f.icon;
+    if (f.belowGround) return "stairs-down";
+    const above = plan.floors.filter((x) => !x.belowGround);
+    const i = above.indexOf(f);
+    return ["home-floor-g", "home-floor-1", "home-floor-2", "home-floor-3"][Math.min(Math.max(i, 0), 3)];
+  }
+  // The visual floor sequence (top-down) with the street line in it.
+  // plan.floors is bottom-up; floors after the line are belowGround.
+  fmhSeq(plan) {
+    const rev = plan.floors.map((f, i) => ({ f, i })).reverse();
+    return rev.filter((x) => !x.f.belowGround).concat([{ line: true }]).concat(rev.filter((x) => x.f.belowGround));
+  }
+  fmhFitView() {
+    const m = this.state.fmh;
+    if (!m || !m.plan) return;
+    const rects = [];
+    this.fmhRooms(m.plan).forEach((r) => r.rects.forEach((rc) => rects.push(rc)));
+    if (m.outside) m.plan.floors.forEach((fl) => fl.rooms.forEach((r) => r.rects.forEach((rc) => rects.push(rc))));
+    let x1 = 1e9, z1 = 1e9, x2 = -1e9, z2 = -1e9;
+    rects.forEach((rc) => {
+      x1 = Math.min(x1, rc[0]); z1 = Math.min(z1, rc[1]);
+      x2 = Math.max(x2, rc[2]); z2 = Math.max(z2, rc[3]);
+    });
+    if (x1 > x2) { x1 = -6; z1 = -6; x2 = 6; z2 = 6; }
+    const pad = 2.2;
+    x1 -= pad; z1 -= pad; x2 += pad; z2 += pad;
+    const minSpan = 13;
+    if (x2 - x1 < minSpan) { const c = (x1 + x2) / 2; x1 = c - minSpan / 2; x2 = c + minSpan / 2; }
+    if (z2 - z1 < minSpan) { const c = (z1 + z2) / 2; z1 = c - minSpan / 2; z2 = c + minSpan / 2; }
+    this.setFmh({ vb: { x: x1, z: z1, w: x2 - x1, d: z2 - z1 } }, () => this.fmhApplyVB());
+  }
+  fmhApplyVB() {
+    const m = this.state.fmh;
+    if (this._fmhSvg && m && m.vb) this._fmhSvg.setAttribute("viewBox", m.vb.x + " " + m.vb.z + " " + m.vb.w + " " + m.vb.d);
+  }
+  fmhSvgRef = (n) => { this._fmhSvg = n; this.fmhApplyVB(); };
+  fmhCanvasRef = (n) => {
+    if (this._fmhRO) { this._fmhRO.disconnect(); this._fmhRO = null; }
+    if (n) {
+      this._fmhRO = new ResizeObserver(() => this.fmhApplyVB());
+      this._fmhRO.observe(n);
+    }
+  };
+  fmhClientToPlan(e) {
+    if (!this._fmhSvg) return null;
+    const pt = this._fmhSvg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const mtx = this._fmhSvg.getScreenCTM();
+    if (!mtx) return null;
+    const p = pt.matrixTransform(mtx.inverse());
+    return { x: p.x, z: p.y };
+  }
+  // ---- Canvas dragging (move + resize) ----
+  fmhStartDrag(drag) {
+    this._fmhDrag = drag;
+    this._fmhMv = (e) => this.fmhDragMove(e);
+    this._fmhUp = () => this.fmhEndDrag();
+    window.addEventListener("pointermove", this._fmhMv);
+    window.addEventListener("pointerup", this._fmhUp);
+    window.addEventListener("pointercancel", this._fmhUp);
+  }
+  fmhStopDrag() {
+    if (!this._fmhMv) return;
+    window.removeEventListener("pointermove", this._fmhMv);
+    window.removeEventListener("pointerup", this._fmhUp);
+    window.removeEventListener("pointercancel", this._fmhUp);
+    this._fmhMv = null; this._fmhUp = null;
+  }
+  fmhDragMove(e) {
+    const d = this._fmhDrag;
+    if (!d) return;
+    const p = this.fmhClientToPlan(e);
+    if (!p) return;
+    const dx = p.x - d.start.x, dz = p.z - d.start.z;
+    if (!d.moved && Math.hypot(dx, dz) < 0.12) return;
+    d.moved = true;
+    const P = this._P3;
+    const m = this.state.fmh;
+    const rooms = this.fmhRooms(m.plan);
+    const obstacles = this.fmhObstacles(m.plan);
+    const room = rooms.find((r) => r.key === d.roomKey);
+    if (!room) return;
+    const tryPoly = (poly) => {
+      const tidy = P.tidyPoly(poly);
+      if (!P.validPoly(tidy)) return null;
+      const rects = P.rectsFromPoly(tidy);
+      if (!rects.length) return null;
+      if (P.roomOverlaps(rects, rooms, d.roomKey, obstacles)) return null;
+      return { poly: tidy, rects };
+    };
+    let applied = null;
+    if (d.kind === "move") {
+      const tries = [[P.snap(dx), P.snap(dz)], [P.snap(dx), 0], [0, P.snap(dz)]];
+      for (const [tx, tz] of tries) {
+        const rects = d.origRects.map((rc) => [rc[0] + tx, rc[1] + tz, rc[2] + tx, rc[3] + tz]);
+        if (!P.roomOverlaps(rects, rooms, d.roomKey, obstacles)) {
+          applied = { poly: d.orig.map(([x, z]) => [P.snap(x + tx), P.snap(z + tz)]), rects };
+          break;
+        }
+      }
+    } else if (d.kind === "corner") {
+      const o = d.orig, n = o.length, k = d.vertIdx;
+      const cand = (ax, az) => {
+        const poly = o.map((pt) => pt.slice());
+        const np = [P.snap(o[k][0] + ax), P.snap(o[k][1] + az)];
+        poly[k] = np;
+        [(k - 1 + n) % n, (k + 1) % n].forEach((nb) => {
+          if (o[nb][0] === o[k][0]) poly[nb][0] = np[0];
+          if (o[nb][1] === o[k][1]) poly[nb][1] = np[1];
+        });
+        return poly;
+      };
+      for (const [ax, az] of [[dx, dz], [dx, 0], [0, dz]]) {
+        const r = tryPoly(cand(ax, az));
+        if (r) { applied = r; break; }
+      }
+    } else if (d.kind === "edge") {
+      const w = d.work.map((pt) => pt.slice());
+      const cand = P.snap(d.base + (d.horiz ? dz : dx));
+      if (d.horiz) { w[d.ei][1] = cand; w[d.ej][1] = cand; }
+      else { w[d.ei][0] = cand; w[d.ej][0] = cand; }
+      applied = tryPoly(w);
+    }
+    if (applied) {
+      const plan = JSON.parse(JSON.stringify(m.plan));
+      const r2 = this.fmhRooms(plan).find((r) => r.key === d.roomKey);
+      if (r2) { r2.poly = applied.poly; r2.rects = applied.rects; }
+      this.setFmh({ plan });
+    }
+  }
+  fmhEndDrag() {
+    const d = this._fmhDrag;
+    this.fmhStopDrag();
+    this._fmhDrag = null;
+    if (!d) return;
+    if (d.moved) { this.fmhSave(this.state.fmh.plan); this.fmhFitView(); return; }
+    const P = this._P3;
+    // A tap (no movement) on an already-selected room opens its subpage.
+    if (d.kind === "move" && d.wasSel) {
+      this.setState({ planArea: d.roomKey });
+      return;
+    }
+    // Taps on dots: a midpoint dot adds a corner, a redundant corner removes itself.
+    if (d.kind === "edge") {
+      this.fmhMut((plan) => {
+        const room = this.fmhRooms(plan).find((r) => r.key === d.roomKey);
+        if (!room || !room.poly) return;
+        const n = room.poly.length;
+        const a = room.poly[d.edgeIdx], b = room.poly[(d.edgeIdx + 1) % n];
+        const mid = [P.snap((a[0] + b[0]) / 2), P.snap((a[1] + b[1]) / 2)];
+        if (a[1] === b[1]) mid[1] = a[1]; else mid[0] = a[0];
+        room.poly.splice(d.edgeIdx + 1, 0, mid);
+      });
+    } else if (d.kind === "corner") {
+      this.fmhMut((plan) => {
+        const room = this.fmhRooms(plan).find((r) => r.key === d.roomKey);
+        if (!room || !room.poly || room.poly.length <= 4) return;
+        const poly = room.poly, n = poly.length, k = d.vertIdx;
+        const prev = poly[(k - 1 + n) % n], nxt = poly[(k + 1) % n];
+        const collinear = (prev[0] === poly[k][0] && poly[k][0] === nxt[0]) || (prev[1] === poly[k][1] && poly[k][1] === nxt[1]);
+        if (collinear) {
+          poly.splice(k, 1);
+          room.rects = P.rectsFromPoly(poly);
+        }
+      });
+    }
+  }
+  // ---- List dragging: reorder floors and move the street line ----
+  fmhListDragStart(e, kind, floorId) {
+    e.preventDefault();
+    e.stopPropagation();
+    this._fmhLMv = (ev) => this.fmhListDragMove(ev);
+    this._fmhLUp = () => this.fmhListDragEnd();
+    window.addEventListener("pointermove", this._fmhLMv);
+    window.addEventListener("pointerup", this._fmhLUp);
+    window.addEventListener("pointercancel", this._fmhLUp);
+    this.setFmh({ listDrag: { kind, floorId, target: null } });
+  }
+  fmhStopListDrag() {
+    if (!this._fmhLMv) return;
+    window.removeEventListener("pointermove", this._fmhLMv);
+    window.removeEventListener("pointerup", this._fmhLUp);
+    window.removeEventListener("pointercancel", this._fmhLUp);
+    this._fmhLMv = null; this._fmhLUp = null;
+  }
+  fmhListDragMove(e) {
+    const list = this._fmhListEl;
+    const m = this.state.fmh;
+    const ld = m && m.listDrag;
+    if (!list || !ld) return;
+    const els = Array.from(list.querySelectorAll("[data-fmh-slot]"))
+      .map((el) => ({ slot: parseInt(el.getAttribute("data-fmh-slot"), 10), r: el.getBoundingClientRect() }))
+      .filter((x) => !isNaN(x.slot))
+      .sort((a, b) => a.slot - b.slot);
+    if (!els.length) return;
+    let t = els.length;
+    for (const q of els) {
+      if (e.clientY < q.r.top + q.r.height / 2) { t = q.slot; break; }
+    }
+    if (t !== ld.target) this.setFmh({ listDrag: Object.assign({}, ld, { target: t }) });
+  }
+  fmhListDragEnd() {
+    this.fmhStopListDrag();
+    const m = this.state.fmh;
+    const ld = m && m.listDrag;
+    this.setFmh({ listDrag: null });
+    if (!ld || ld.target == null) return;
+    const cur = this.fmhFloor();
+    const selId = cur ? cur.id : null;
+    this.fmhMut((plan) => {
+      const seq = this.fmhSeq(plan).map((x) => (x.line ? { line: true } : plan.floors[x.i]));
+      const from = ld.kind === "line" ? seq.findIndex((x) => x.line) : seq.findIndex((x) => x.id === ld.floorId);
+      if (from < 0) return;
+      let t = ld.target;
+      const [it] = seq.splice(from, 1);
+      if (from < t) t--;
+      seq.splice(t, 0, it);
+      const li = seq.findIndex((x) => x.line);
+      const fl = [];
+      seq.forEach((x, i) => {
+        if (x.line) return;
+        x.belowGround = i > li;
+        fl.push(x);
+      });
+      plan.floors = fl.reverse();
+    }, () => {
+      const plan = this.state.fmh.plan;
+      let idx = selId ? plan.floors.findIndex((f) => f.id === selId) : -1;
+      if (idx < 0) idx = Math.max(0, plan.floors.findIndex((f) => !f.belowGround));
+      this.setFmh({ floorIdx: idx < 0 ? 0 : idx }, () => this.fmhFitView());
+    });
+  }
+  // ---- Floor + room operations ----
+  fmhAddFloor() {
+    const P = this._P3;
+    let newIdx = 0;
+    this.fmhMut((plan) => {
+      if (!plan.buildings || !plan.buildings.length) plan.buildings = [{ id: "main-house", name: "House" }];
+      const bid = plan.buildings[0].id;
+      const nAbove = plan.floors.filter((x) => !x.belowGround).length;
+      plan.floors.push({
+        id: P.uid("f"), name: this.FMH_FLOOR_NAMES[nAbove] || "Floor " + (nAbove + 1),
+        building: bid, height: nAbove === 0 ? 2.75 : 2.55, rooms: [],
+      });
+      newIdx = plan.floors.length - 1;
+    }, () => {
+      this.setState({ planArea: null, planFloorOpen: true });
+      this.setFmh({ outside: false, floorIdx: newIdx, sel: null }, () => this.fmhFitView());
+    });
+  }
+  fmhAddRoom() {
+    const P = this._P3;
+    const m = this.state.fmh;
+    const outside = m.outside;
+    if (!outside && !this.fmhFloor()) return;
+    const key = P.uid(outside ? "o" : "r");
+    this.fmhMut((plan) => {
+      const list = this.fmhRooms(plan);
+      const spot = P.findFreeSpot(list, 3, 3, this.fmhObstacles(plan));
+      list.push({
+        key, area: null,
+        name: outside ? "New area" : "New room",
+        icon: outside ? "tree" : null, color: null,
+        rects: [spot],
+        poly: [[spot[0], spot[1]], [spot[2], spot[1]], [spot[2], spot[3]], [spot[0], spot[3]]],
+      });
+    }, () => this.setFmh({ sel: key }, () => this.fmhFitView()));
+  }
+  fmhAskDeleteRoom(key) {
+    const rooms = this.fmhRooms(this.state.fmh.plan);
+    const room = rooms.find((r) => r.key === key);
+    if (!room) return;
+    const name = this.fmhRoomName(room);
+    const devices = room.area ? (this.H.entities || []).filter((e) => e.area === room.area).length : 0;
+    this.askConfirm({
+      title: "Delete " + name + "?",
+      body: "This deletes the area." + (devices ? " Its " + devices + (devices === 1 ? " device becomes" : " devices become") + " unassigned." : ""),
+      confirmLabel: "Delete area", danger: true,
+      onConfirm: () => {
+        this.fmhMut((plan) => {
+          const list = this.fmhRooms(plan);
+          const i = list.findIndex((r) => r.key === room.key);
+          if (i >= 0) list.splice(i, 1);
+        }, () => {
+          this.setState({ planArea: null });
+          this.setFmh({ sel: null }, () => this.fmhFitView());
+        });
+      },
+    });
+  }
+  fmhAskDeleteFloor() {
+    const f = this.fmhFloor();
+    if (!f) return;
+    const n = f.rooms.length;
+    const devices = f.rooms.reduce((c, r) => c + (r.area ? (this.H.entities || []).filter((e) => e.area === r.area).length : 0), 0);
+    this.askConfirm({
+      title: "Delete " + f.name + "?",
+      body: "This removes the floor" + (n ? " and its " + n + (n === 1 ? " area" : " areas") : "") + "." + (devices ? " " + devices + (devices === 1 ? " device becomes" : " devices become") + " unassigned." : ""),
+      confirmLabel: "Delete floor", danger: true,
+      onConfirm: () => {
+        this.fmhMut((plan) => {
+          const gone = plan.floors[this.state.fmh.floorIdx];
+          plan.floors.splice(this.state.fmh.floorIdx, 1);
+          if (gone && plan.buildings && !plan.floors.some((x) => x.building === gone.building)) {
+            plan.buildings = plan.buildings.filter((b) => b.id !== gone.building);
+          }
+          if (!plan.buildings || !plan.buildings.length) plan.buildings = [{ id: "main-house", name: "House" }];
+        }, () => {
+          const plan = this.state.fmh.plan;
+          let idx = plan.floors.findIndex((x) => !x.belowGround);
+          if (idx < 0) idx = 0;
+          this.setState({ planFloorOpen: false });
+          this.setFmh({ floorIdx: Math.min(idx, Math.max(0, plan.floors.length - 1)), sel: null }, () => this.fmhFitView());
+        });
+      },
+    });
+  }
+  // ---- Canvas rendering (dynamic SVG) ----
+  fmhBuildCanvas() {
+    const h = React.createElement;
+    const m = this.state.fmh;
+    const rooms = this.fmhRooms(m.plan);
+    const vb = m.vb;
+    if (!vb) return null;
+    const kids = [];
+    kids.push(h("rect", {
+      key: "bg", x: vb.x, y: vb.z, width: vb.w, height: vb.d, fill: "transparent",
+      onPointerDown: () => this.setFmh({ sel: null }),
+    }));
+    let dstr = "";
+    for (let x = Math.ceil(vb.x); x <= vb.x + vb.w; x += 1) dstr += "M" + x + " " + vb.z + "V" + (vb.z + vb.d);
+    for (let z = Math.ceil(vb.z); z <= vb.z + vb.d; z += 1) dstr += "M" + vb.x + " " + z + "H" + (vb.x + vb.w);
+    kids.push(h("path", { key: "grid", d: dstr, fill: "none", stroke: "var(--color-border)", strokeWidth: 0.02, opacity: 0.4, style: { pointerEvents: "none" } }));
+    if (m.outside) {
+      // The buildings' ground floors as a muted, untouchable reference.
+      m.plan.floors.forEach((fl) => {
+        const isGrade = !fl.belowGround && fl === m.plan.floors.find((x) => x.building === fl.building && !x.belowGround);
+        if (!isGrade) return;
+        fl.rooms.forEach((r) => {
+          if (!r.poly || r.poly.length < 4) return;
+          kids.push(h("path", {
+            key: "ref-" + r.key,
+            d: "M" + r.poly.map((pt) => pt[0] + " " + pt[1]).join("L") + "Z",
+            fill: "var(--color-surface)", opacity: 0.6,
+            stroke: "var(--color-border)", strokeWidth: 0.04,
+            style: { pointerEvents: "none" },
+          }));
+        });
+      });
+    } else {
+      // The floor below the one being edited, as a dashed ghost to align against.
+      const f = m.plan.floors[m.floorIdx];
+      const bf = m.floorIdx > 0 ? m.plan.floors[m.floorIdx - 1] : null;
+      if (f && bf && bf.building === f.building) {
+        bf.rooms.forEach((r) => {
+          if (!r.poly || r.poly.length < 4) return;
+          kids.push(h("path", {
+            key: "ghost-" + r.key,
+            d: "M" + r.poly.map((pt) => pt[0] + " " + pt[1]).join("L") + "Z",
+            fill: "none",
+            stroke: "var(--color-border)", strokeWidth: 0.05,
+            strokeDasharray: "0.3 0.18",
+            style: { pointerEvents: "none" },
+          }));
+        });
+      }
+    }
+    const fillFor = (room, selected) => {
+      if (m.outside) {
+        const c = room.color || "#2E8B57";
+        return "color-mix(in oklab, " + (selected ? "var(--color-overlay)" : "var(--color-surface)") + " 52%, " + c + ")";
+      }
+      if (room.color) return "color-mix(in oklab, " + (selected ? "var(--color-overlay)" : "var(--color-surface)") + " 74%, " + room.color + ")";
+      return selected ? "var(--color-overlay)" : "var(--color-surface)";
+    };
+    rooms.forEach((room) => {
+      const selected = room.key === m.sel;
+      const poly = room.poly && room.poly.length >= 4 ? room.poly : null;
+      if (poly) {
+        kids.push(h("path", {
+          key: room.key,
+          d: "M" + poly.map((pt) => pt[0] + " " + pt[1]).join("L") + "Z",
+          fill: fillFor(room, selected),
+          stroke: selected ? "var(--color-accent)" : "var(--color-border)",
+          strokeWidth: selected ? 0.05 : 0.03,
+          strokeLinejoin: "round",
+          style: { cursor: "grab" },
+          onPointerDown: (e) => {
+            e.stopPropagation(); e.preventDefault();
+            const p = this.fmhClientToPlan(e);
+            if (!p) return;
+            const wasSel = room.key === m.sel;
+            this.setFmh({ sel: room.key });
+            this.fmhStartDrag({ kind: "move", roomKey: room.key, start: p, orig: JSON.parse(JSON.stringify(poly)), origRects: JSON.parse(JSON.stringify(room.rects)), moved: false, wasSel });
+          },
+        }));
+      }
+      const lp = this._P3.roomLabel(room);
+      kids.push(h("text", {
+        key: room.key + "-label", x: lp[0], y: lp[1], dy: "-0.1",
+        textAnchor: "middle", fontSize: 0.48, fontWeight: 500,
+        fontFamily: "var(--font-body)", fill: selected ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+        style: { pointerEvents: "none", userSelect: "none" },
+      }, this.fmhRoomName(room)));
+      const rc = room.rects[0];
+      if (rc) {
+        let best = rc;
+        room.rects.forEach((r) => { if ((r[2] - r[0]) * (r[3] - r[1]) > (best[2] - best[0]) * (best[3] - best[1])) best = r; });
+        kids.push(h("text", {
+          key: room.key + "-size", x: lp[0], y: lp[1], dy: "0.62",
+          textAnchor: "middle", fontSize: 0.4, fontFamily: "var(--font-mono)",
+          fill: "var(--color-text-secondary)",
+          style: { pointerEvents: "none", userSelect: "none" },
+        }, (best[2] - best[0]).toFixed(1) + " x " + (best[3] - best[1]).toFixed(1) + " m"));
+      }
+    });
+    // Dots on the selected room: corners reshape, midpoints extend walls.
+    const selRoom = rooms.find((r) => r.key === m.sel);
+    const selPoly = selRoom && selRoom.poly && selRoom.poly.length >= 4 ? selRoom.poly : null;
+    if (selPoly) {
+      const n = selPoly.length;
+      const seenDims = new Set();
+      for (let i = 0; i < n; i++) {
+        const a = selPoly[i], b = selPoly[(i + 1) % n];
+        const len = Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]);
+        if (len < 1.0) continue;
+        const horiz = a[1] === b[1];
+        const dimKey = (horiz ? "h" : "v") + len.toFixed(1);
+        if (seenDims.has(dimKey)) continue;
+        seenDims.add(dimKey);
+        const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2;
+        let nx = horiz ? 0 : 1, nz = horiz ? 1 : 0;
+        if (this._P3.pointInPoly(mx + nx * 0.3, mz + nz * 0.3, selPoly)) { nx = -nx; nz = -nz; }
+        kids.push(h("text", {
+          key: "dim-" + i,
+          x: mx + nx * 0.62, y: mz + nz * 0.62, dy: "0.16",
+          textAnchor: "middle", fontSize: 0.4,
+          fontFamily: "var(--font-mono)", fill: "var(--color-text-secondary)",
+          style: { pointerEvents: "none", userSelect: "none" },
+        }, len.toFixed(1) + " m"));
+      }
+      for (let i = 0; i < n; i++) {
+        const a = selPoly[i], b = selPoly[(i + 1) % n];
+        const len = Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]);
+        if (len < 0.9) continue;
+        const horiz = a[1] === b[1];
+        const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2;
+        kids.push(h("circle", {
+          key: "eh-" + i, cx: mx, cy: mz, r: 0.5, fill: "transparent",
+          style: { cursor: horiz ? "ns-resize" : "ew-resize", touchAction: "none" },
+          onPointerDown: (e) => {
+            e.stopPropagation(); e.preventDefault();
+            const p = this.fmhClientToPlan(e);
+            if (!p) return;
+            let work = selPoly.slice(i).concat(selPoly.slice(0, i)).map((pt) => pt.slice());
+            let ei = 0, ej = 1;
+            const par = (u, v) => (horiz ? u[1] === v[1] : u[0] === v[0]);
+            if (par(work[work.length - 1], work[0])) { work = [work[0].slice()].concat(work); ei = 1; ej = 2; }
+            if (par(work[(ej + 1) % work.length], work[ej])) work.splice(ej + 1, 0, work[ej].slice());
+            this.fmhStartDrag({
+              kind: "edge", roomKey: selRoom.key, start: p, moved: false,
+              work, ei, ej, horiz, edgeIdx: i,
+              base: horiz ? work[ei][1] : work[ei][0],
+            });
+          },
+        }));
+        kids.push(h("circle", {
+          key: "ehv-" + i, cx: mx, cy: mz, r: 0.12,
+          fill: "rgba(255,255,255,0.92)", stroke: "rgba(0,0,0,0.4)", strokeWidth: 0.03,
+          strokeDasharray: "0.07 0.05",
+          style: { pointerEvents: "none" },
+        }));
+      }
+      selPoly.forEach((pt, k) => {
+        kids.push(h("circle", {
+          key: "vh-" + k, cx: pt[0], cy: pt[1], r: 0.5, fill: "transparent",
+          style: { cursor: "move", touchAction: "none" },
+          onPointerDown: (e) => {
+            e.stopPropagation(); e.preventDefault();
+            const p = this.fmhClientToPlan(e);
+            if (!p) return;
+            this.fmhStartDrag({ kind: "corner", roomKey: selRoom.key, vertIdx: k, start: p, orig: JSON.parse(JSON.stringify(selPoly)), moved: false });
+          },
+        }));
+        kids.push(h("circle", {
+          key: "vv-" + k, cx: pt[0], cy: pt[1], r: 0.17,
+          fill: "#ffffff", stroke: "rgba(0,0,0,0.28)", strokeWidth: 0.06,
+          style: { pointerEvents: "none" },
+        }));
+      });
+    }
+    return kids;
+  }
+  // ---- The floor list (left column) ----
+  // The floor stack. Reads as stacked slabs (top floor on top, below-ground
+  // floors under the dashed street line). Tap a floor to make it active
+  // (desktop rail) or open its detail (mobile). Drag the handle to restack.
+  fmhFloorList(bp) {
+    const h = React.createElement; const { Button, Icon } = this.C;
+    const m = this.state.fmh;
+    const plan = m.plan;
+    const ld = m.listDrag;
+    const seq = this.fmhSeq(plan);
+    const lineSeq = seq.findIndex((x) => x.line);
+    const aboveGround = plan.floors.filter((f) => !f.belowGround);
+    const groundFloor = aboveGround.length ? aboveGround[0] : null;
+    const mobile = bp === "mobile";
+    const push = bp !== "desktop";
+    const pick = (idx) => { this.setState({ planArea: null }); this.setFmh({ outside: false, floorIdx: idx, sel: null }, () => this.fmhFitView()); if (push) this.setState({ planFloorOpen: true }); };
+    const gap = (on) => on ? h("div", { style: { height: 2, borderRadius: 1, background: "var(--color-accent)", margin: "1px var(--space-2)" } }) : null;
+    const slab = (x, slot) => {
+      const f = plan.floors[x.i];
+      const selected = !m.outside && x.i === m.floorIdx;
+      const below = !!f.belowGround;
+      return h("div", { key: f.id },
+        gap(!!(ld && ld.target === slot)),
+        h("div", {
+          "data-fmh-slot": slot,
+          onClick: () => pick(x.i),
+          style: { display: "flex", alignItems: "center", gap: "var(--space-3)", minHeight: mobile ? 56 : 48, padding: "0 var(--space-3) 0 var(--space-4)", borderRadius: "var(--radius-md)", cursor: "pointer",
+            background: selected ? "var(--color-surface-raised)" : "var(--color-surface)",
+            color: selected ? "var(--color-text-primary)" : "var(--color-text-secondary)",
+            borderLeft: "3px solid " + (selected ? "var(--color-accent)" : "transparent"),
+            transition: "background-color 150ms ease-out",
+            opacity: ld && ld.kind === "row" && ld.floorId === f.id ? 0.45 : (below ? 0.9 : 1) } },
+          h(Icon, { name: this.fmhIconForFloor(plan, f), size: "sm", style: { flex: "none" } }),
+          h("span", { style: { minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "var(--text-base)", fontWeight: selected ? 600 : 400 } }, f.name),
+          f === groundFloor ? h("span", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-secondary)", background: "var(--color-bg)", borderRadius: 999, padding: "1px 8px", whiteSpace: "nowrap", flex: "none" } }, "Ground") : null,
+          h("span", { style: { flex: 1 } }),
+          h("span", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontFamily: "var(--font-mono)" } }, f.rooms.length + (f.rooms.length === 1 ? " area" : " areas")),
+          h("span", {
+            onPointerDown: (e) => this.fmhListDragStart(e, "row", f.id),
+            onClick: (e) => e.stopPropagation(),
+            "aria-label": "Drag to reorder",
+            style: { cursor: "grab", touchAction: "none", color: "var(--color-text-tertiary)", display: "inline-flex", padding: "8px 2px" } },
+            h(Icon, { name: "drag-horizontal-variant", size: "sm" })),
+          push ? h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }) : null));
+    };
+    const outSel = m.outside;
+    const outClick = () => { this.setState({ planArea: null }); this.setFmh({ outside: true, sel: null }, () => this.fmhFitView()); if (push) this.setState({ planFloorOpen: true }); };
+    return h("div", { ref: (n) => { this._fmhListEl = n; }, style: { display: "flex", flexDirection: "column", gap: "var(--space-1)", alignSelf: "flex-start" } },
+      seq.slice(0, lineSeq).map((x, i) => slab(x, i)),
+      h("div", { key: "line-wrap" },
+        gap(!!(ld && ld.target === lineSeq)),
+        h("div", {
+          "data-fmh-slot": lineSeq,
+          onPointerDown: (e) => this.fmhListDragStart(e, "line", null),
+          style: { position: "relative", padding: "10px 0", cursor: "ns-resize", touchAction: "none" } },
+          h("div", { style: { borderTop: "2px dashed var(--color-accent)" } }),
+          h("span", { style: { position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: "var(--text-xs)", lineHeight: "18px", color: "var(--color-accent)", background: "var(--color-bg)", padding: "0 8px", borderRadius: 999, whiteSpace: "nowrap" } }, "Street level"))),
+      seq.slice(lineSeq + 1).map((x, i) => slab(x, lineSeq + 1 + i)),
+      gap(!!(ld && ld.target === seq.length)),
+      h("div", {
+        key: "outside",
+        onClick: outClick,
+        style: { display: "flex", alignItems: "center", gap: "var(--space-3)", minHeight: mobile ? 56 : 48, padding: "0 var(--space-3) 0 var(--space-4)", marginTop: "var(--space-2)", borderRadius: "var(--radius-md)", cursor: "pointer",
+          background: outSel ? "var(--color-surface-raised)" : "var(--color-surface)",
+          borderLeft: "3px solid " + (outSel ? "var(--color-accent)" : "transparent"),
+          color: outSel ? "var(--color-text-primary)" : "var(--color-text-secondary)" } },
+        h(this.C.Icon, { name: "tree-outline", size: "sm", style: { flex: "none" } }),
+        h("span", { style: { fontSize: "var(--text-base)", fontWeight: outSel ? 600 : 400, whiteSpace: "nowrap" } }, "Outside"),
+        h("span", { style: { flex: 1 } }),
+        h("span", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontFamily: "var(--font-mono)" } }, (plan.outdoor || []).length + " areas"),
+        push ? h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }) : null),
+      h("div", { key: "addfloor", style: { display: "flex", marginTop: "var(--space-3)" } },
+        h(Button, { variant: "secondary", size: "sm", icon: "plus", onClick: () => this.fmhAddFloor() }, "Add floor")),
+      h("span", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", padding: "var(--space-2) var(--space-3) 0", lineHeight: 1.5 } }, "Drag a floor or the street line to restack. Floors under the line sit below the ground."));
+  }
+  // ---- The area subpage (opened by tapping a selected room) ----
+  planAreaTitle() {
+    const m = this.state.fmh;
+    const room = m ? this.fmhRooms(m.plan).find((r) => r.key === this.state.planArea) : null;
+    return room ? this.fmhRoomName(room) : "Area";
+  }
+  planAreaBody(bp) {
+    const h = React.createElement; const { Button, Input, FormField, Icon } = this.C;
+    const m = this.state.fmh;
+    const P = this._P3;
+    const room = m ? this.fmhRooms(m.plan).find((r) => r.key === this.state.planArea) : null;
+    if (!room) return h("div", { style: { color: "var(--color-text-secondary)" } }, "This area no longer exists.");
+    const iconBtn = (name) => h("button", {
+      key: name, type: "button", onClick: () => this.fmhMut((p2) => { const r = this.fmhRooms(p2).find((x) => x.key === room.key); if (r) r.icon = name; }),
+      "aria-label": name,
+      style: { display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, border: "none", cursor: "pointer", borderRadius: "var(--radius-md)",
+        background: (room.icon || "") === name ? "var(--color-accent)" : "var(--color-surface-raised)",
+        color: (room.icon || "") === name ? "#ffffff" : "var(--color-text-secondary)" } },
+      h(Icon, { name, size: "md" }));
+    const ring = "0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent)";
+    const swatch = (label, css, active, val) => h("button", {
+      key: label, type: "button", onClick: () => this.fmhMut((p2) => { const r = this.fmhRooms(p2).find((x) => x.key === room.key); if (r) r.color = val; }),
+      "aria-label": label,
+      style: { width: 32, height: 32, flex: "none", borderRadius: "50%", cursor: "pointer", background: css, border: "1px solid var(--color-border)", boxShadow: active ? ring : "none" } });
+    let best = room.rects[0] || [0, 0, 0, 0];
+    room.rects.forEach((r) => { if ((r[2] - r[0]) * (r[3] - r[1]) > (best[2] - best[0]) * (best[3] - best[1])) best = r; });
+    const sizeLabel = (best[2] - best[0]).toFixed(1) + " x " + (best[3] - best[1]).toFixed(1) + " m \u00B7 " + this.fmhRoomArea(room).toFixed(1) + " m\u00B2";
+    return h("div", { style: this.col("var(--space-5)") },
+      h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-xl)", padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-5)", maxWidth: 560 } },
+        h(FormField, { label: "Name" }, h(Input, {
+          value: room.name || "",
+          onChange: (ev) => { const v = ev.target.value; this.fmhMut((p2) => { const r = this.fmhRooms(p2).find((x) => x.key === room.key); if (r) r.name = v; }); },
+          placeholder: "E.g. Study" })),
+        h("div", { style: this.col("var(--space-2)") },
+          h("span", { style: { fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-text-secondary)" } }, "Icon"),
+          h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-1)" } }, P.AREA_ICONS.map((name) => iconBtn(name)))),
+        h("div", { style: this.col("var(--space-2)") },
+          h("span", { style: { fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-text-secondary)" } }, "Color"),
+          h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-2)", alignItems: "center" } },
+            [swatch("No color", "var(--color-surface-raised)", !room.color, null)].concat(P.AREA_COLORS.map((cx) => swatch(cx, cx, room.color === cx, cx))))),
+        h("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-4)", borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-4)" } },
+          h("div", { style: this.col("2px") },
+            h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Size"),
+            h("span", { style: { fontSize: "var(--text-base)", fontFamily: "var(--font-mono)" } }, sizeLabel)),
+          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", textAlign: "right" } }, "Adjust the shape in the layout"))),
+      h("div", { style: { display: "flex" } },
+        h(Button, { variant: "danger", icon: "trash-can-outline", onClick: () => this.fmhAskDeleteRoom(room.key) }, "Delete this area")));
+  }
+  // ---- The Floors and areas settings page ----
+  // Desktop / tablet: the floor stack rail + the selected floor's detail side
+  // by side (switch floors in one tap, stacking always visible, editor right
+  // there). Mobile: the stack is the overview; tapping a floor opens the
+  // detail (fmhFloorDetail) as a pushed subpage.
   floorsAreasBody(bp) {
     const h = React.createElement;
-    const height = bp === "mobile" ? "max(480px, calc(100vh - 210px))" : "640px";
-    return h("div", { style: this.col("var(--space-3)") },
-      h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-base)", maxWidth: "60ch" } },
-        "Shape your home by drawing it: buildings, floors, rooms and outdoor areas. What you draw here is what everyone sees in the 3D home."),
-      h("div", { style: { position: "relative", height: height, borderRadius: "var(--radius-xl)", overflow: "hidden", background: "var(--color-surface)" } },
-        h("iframe", { key: "fitmyhome", src: "Fit My Home.dc.html?embed=1", title: "Fit your home", style: { position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" } })));
+    this.fmhEnsure();
+    const m = this.state.fmh;
+    if (!m) return h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-base)", minHeight: 200 } }, "Loading your home");
+    if (bp !== "desktop") return this.fmhFloorList(bp);
+    const railW = 300;
+    return h("div", { style: { display: "flex", gap: "var(--space-6)", alignItems: "flex-start" } },
+      h("div", { style: { flex: "0 0 " + railW + "px", maxWidth: railW, minWidth: 0 } }, this.fmhFloorList(bp)),
+      h("div", { style: { flex: "1 1 0", minWidth: 0 } }, this.fmhFloorDetail(bp)));
+  }
+  fmhDetailTitle() {
+    const m = this.state.fmh;
+    if (!m) return "Floor";
+    if (m.outside) return "Outside";
+    const f = this.fmhFloor();
+    return f ? f.name : "Floor";
+  }
+  // A compact, horizontally scrolling floor switcher shown on the mobile
+  // detail so you can jump floors without going back to the overview. The
+  // dashed divider marks street level; chips left of it sit above ground.
+  fmhStackStrip() {
+    const h = React.createElement; const { Icon } = this.C;
+    const m = this.state.fmh; const plan = m.plan;
+    const seq = this.fmhSeq(plan); const lineSeq = seq.findIndex((x) => x.line);
+    const chipBase = { display: "inline-flex", alignItems: "center", gap: "var(--space-2)", flex: "none", padding: "8px 14px", borderRadius: 999, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: "var(--text-sm)", whiteSpace: "nowrap" };
+    const chip = (x) => {
+      const f = plan.floors[x.i];
+      const sel = !m.outside && x.i === m.floorIdx;
+      return h("button", { key: f.id, type: "button", onClick: () => { this.setState({ planArea: null }); this.setFmh({ outside: false, floorIdx: x.i, sel: null }, () => this.fmhFitView()); },
+        style: Object.assign({}, chipBase, { background: sel ? "var(--color-accent)" : "var(--color-surface)", color: sel ? "#ffffff" : "var(--color-text-secondary)", fontWeight: sel ? 600 : 400 }) },
+        h(Icon, { name: this.fmhIconForFloor(plan, f), size: "sm" }), h("span", null, f.name));
+    };
+    const items = [];
+    seq.slice(0, lineSeq).forEach((x) => items.push(chip(x)));
+    if (seq.length > lineSeq + 1) items.push(h("div", { key: "div", style: { flex: "none", alignSelf: "stretch", borderLeft: "1px dashed var(--color-accent)", margin: "4px 2px" } }));
+    seq.slice(lineSeq + 1).forEach((x) => items.push(chip(x)));
+    const outSel = m.outside;
+    items.push(h("button", { key: "out", type: "button", onClick: () => { this.setState({ planArea: null }); this.setFmh({ outside: true, sel: null }, () => this.fmhFitView()); },
+      style: Object.assign({}, chipBase, { background: outSel ? "var(--color-accent)" : "var(--color-surface)", color: outSel ? "#ffffff" : "var(--color-text-secondary)", fontWeight: outSel ? 600 : 400 }) },
+      h(Icon, { name: "tree-outline", size: "sm" }), h("span", null, "Outside")));
+    return h("div", { style: { display: "flex", gap: "var(--space-2)", overflowX: "auto", paddingBottom: "var(--space-1)", WebkitOverflowScrolling: "touch" } }, items);
+  }
+  // The detail for one floor (or Outside): name + icon in the Home-information
+  // titled-card pattern, then the editable floor plan, then Delete.
+  fmhFloorDetail(bp) {
+    const h = React.createElement; const { Button, Input, Icon } = this.C;
+    const m = this.state.fmh; const plan = m.plan;
+    const f = this.fmhFloor();
+    const rooms = this.fmhRooms(plan);
+    const mobile = bp === "mobile";
+    const canvasH = mobile ? "max(340px, calc(100dvh - 520px))" : "max(420px, min(680px, calc(100dvh - 340px)))";
+    const field = (label, control) => h("div", null,
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginBottom: "var(--space-2)" } }, label), control);
+    const titled = (label, card) => h("div", { style: this.col("var(--space-2)") },
+      h("div", { style: { paddingLeft: "var(--space-6)", fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, label), card);
+    // ---- name + icon card (or Outside note) ----
+    let headerCard = null;
+    if (!m.outside && f) {
+      const cur = this.fmhIconForFloor(plan, f);
+      const iconGrid = h("div", { style: { display: "flex", flexWrap: "wrap", gap: "var(--space-2)" } }, this.FMH_FLOOR_ICONS.map((name) => h("button", {
+        key: name, type: "button", "aria-label": name,
+        onClick: () => this.fmhMut((p2) => { const f2 = p2.floors[this.state.fmh.floorIdx]; if (f2) f2.icon = name; }),
+        style: { display: "flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, border: "none", cursor: "pointer", borderRadius: "var(--radius-md)",
+          background: cur === name ? "var(--color-accent)" : "var(--color-surface-raised)",
+          color: cur === name ? "#ffffff" : "var(--color-text-secondary)" } },
+        h(Icon, { name, size: "md" }))));
+      const card = h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-xl)" } },
+        this.cloudPad([
+          h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-5)" } },
+            field("Name", h(Input, { value: f.name, "aria-label": "Floor name", placeholder: "E.g. Ground floor", style: { width: "100%" },
+              onChange: (ev) => { const v = ev.target.value; this.fmhMut((p2) => { const f2 = p2.floors[this.state.fmh.floorIdx]; if (f2) f2.name = v; }); } })),
+            field("Icon", iconGrid)),
+        ]));
+      headerCard = titled("Floor", card);
+    } else if (m.outside) {
+      headerCard = titled("Outside", h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-xl)" } },
+        this.cloudPad([h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-base)", lineHeight: 1.5 } }, "The outdoor areas around your home, at ground level. Add areas like a garden or a driveway.")])));
+    }
+    // ---- editable floor plan ----
+    const selRoom = rooms.find((r) => r.key === m.sel);
+    const bf = !m.outside && f && m.floorIdx > 0 ? plan.floors[m.floorIdx - 1] : null;
+    const showGhostHint = !selRoom && bf && bf.building === f.building && bf.rooms.length > 0;
+    const connWarn = !m.outside && rooms.length > 0 && this._P3 && !this._P3.floorConnected(rooms);
+    let emptyText = null;
+    if (!rooms.length) {
+      emptyText = (!f && !m.outside) ? "No floors yet. Add a floor to start shaping your home."
+        : m.outside ? "Nothing outside yet. Add an outdoor area like a garden or a driveway."
+        : "This floor is empty. Add a room to start shaping it.";
+    }
+    const pill = (text, warn) => h("span", { style: { padding: "6px 14px", borderRadius: 999, background: "var(--color-overlay)", color: warn ? "var(--color-warning, #d9832e)" : "var(--color-text-secondary)", fontSize: "var(--text-xs)", fontWeight: warn ? 600 : 400, textAlign: "center" } }, text);
+    const total = rooms.reduce((a, r) => a + this.fmhRoomArea(r), 0);
+    const canvas = h("div", { ref: this.fmhCanvasRef, style: { position: "relative", height: canvasH, borderRadius: "var(--radius-xl)", background: "var(--color-surface-raised)", overflow: "hidden" } },
+      h("svg", { ref: this.fmhSvgRef, style: { position: "absolute", inset: 0, width: "100%", height: "100%", touchAction: "none", display: "block" } }, this.fmhBuildCanvas()),
+      emptyText ? h("div", { style: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", padding: "var(--space-6)", textAlign: "center", color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" } }, emptyText) : null,
+      selRoom ? h("div", { style: { position: "absolute", left: 12, right: 12, top: 12, display: "flex", justifyContent: "center", pointerEvents: "none" } }, pill("Drag to move, drag a dot to reshape. Tap the room again to open it.")) : null,
+      connWarn ? h("div", { style: { position: "absolute", left: 12, right: 12, bottom: 12, display: "flex", justifyContent: "center", pointerEvents: "none" } }, pill("Rooms need to touch so the home reads as one shape", true))
+        : (showGhostHint ? h("div", { style: { position: "absolute", left: 12, right: 12, bottom: 12, display: "flex", justifyContent: "center", pointerEvents: "none" } }, pill("Dashed outline is " + bf.name + ", the floor below")) : null));
+    const actions = (m.outside || f) ? h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)" } },
+      h(Button, { variant: "primary", icon: "plus", onClick: () => this.fmhAddRoom() }, m.outside ? "Add outdoor area" : "Add room"),
+      h("span", { style: { flex: 1 } }),
+      h("span", { style: { fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", fontFamily: "var(--font-mono)" } }, rooms.length + (rooms.length === 1 ? " area" : " areas") + " \u00B7 " + total.toFixed(0) + " m\u00B2")) : null;
+    const del = (!m.outside && f) ? h("div", { style: { display: "flex", paddingTop: "var(--space-2)" } },
+      h(Button, { variant: "danger", icon: "trash-can-outline", onClick: () => this.fmhAskDeleteFloor() }, "Delete this floor")) : null;
+    const planBlock = titled("Layout", h("div", { style: this.col("var(--space-3)") }, canvas, actions));
+    return h("div", { style: this.col("var(--space-6)") },
+      mobile ? this.fmhStackStrip() : null,
+      headerCard,
+      planBlock,
+      del);
   }
   settingsDetail(sel, bp, groups) {
     const custom = this.customSettings()[sel];
@@ -5992,7 +6772,7 @@ class Component extends DCLogic {
       if (id === "my-profile") return this.go("/my/profile");
       if (id === "my-data") return this.go("/my/data");
       if (id === "sign-out") return this.signOut();
-      this.setState({ settingsSel: id, cloudSub: null, titleCollapsed: false, areaEdit: null, floorEdit: null });
+      this.setState({ settingsSel: id, cloudSub: null, integrationSel: null, titleCollapsed: false, areaEdit: null, floorEdit: null, planArea: null, planFloorOpen: false });
     };
     const navGroups = isPersonal
       ? [{ items: [{ id: "my-profile", label: "My profile", icon: "account-circle-outline" }, { id: "my-data", label: "My data", icon: "shield-account-outline" }] }].concat(groups)
@@ -6001,13 +6781,20 @@ class Component extends DCLogic {
       if (isPersonal && !this.state.settingsSel) return wrap("My account", this.myAccountMobileBody(this.persona, groups), { accountLanding: true, onBack: () => { const p = this._prevRoute; this.go(p && p.indexOf("/my") !== 0 ? p : "/home"); } });
       if (!this.state.settingsSel) return wrap(sectionTitle, this.settingsMobileBody(navGroups, onSelect));
       const sel = this.state.settingsSel;
+      if (sel === "integrations") {
+        if (this.state.integrationSel) return wrap(this.intgDetailTitle(), this.integrationDetailBody(this.state.integrationSel, bp), { onBack: () => this.setState({ integrationSel: null }), fullWidth: true });
+        return wrap(this.settingsLabel(groups, sel), this.integrationsBody(this.persona, bp), { onBack: () => this.setState({ settingsSel: null }), fullWidth: true });
+      }
       if (sel === "ha-cloud") {
         if (subMeta) return wrap(subMeta.title, subMeta.build.call(this, bp), { onBack: () => this.setState({ cloudSub: null, titleCollapsed: false }) });
         return wrap("Home Assistant Cloud", this.cloudAccountBody(bp), { onBack: () => this.setState({ settingsSel: null }) });
       }
-      if (sel === "floors-areas" && this.state.areaEdit) { const e = this.state.areaEdit; return wrap(e.isNew ? "Add area" : (e.name || "Edit area"), this.areaEditorBody(e, bp), { onBack: () => this.cancelAreaEdit() }); }
-      if (sel === "floors-areas" && this.state.floorEdit) { const e = this.state.floorEdit; return wrap(e.name || "Edit floor", this.floorEditorBody(e, bp), { onBack: () => this.cancelFloorEdit() }); }
-      return wrap(this.settingsLabel(groups, sel), this.settingsDetail(sel, bp, groups), { onBack: () => this.setState({ settingsSel: null }), cta: this.settingsCta(sel) });
+      if (sel === "floors-areas") {
+        if (this.state.planArea) return wrap(this.planAreaTitle(), this.planAreaBody(bp), { onBack: () => this.setState({ planArea: null }), fullWidth: true });
+        if (this.state.planFloorOpen) return wrap(this.fmhDetailTitle(), this.fmhFloorDetail(bp), { onBack: () => this.setState({ planFloorOpen: false }), fullWidth: true });
+        return wrap(this.settingsLabel(groups, sel), this.floorsAreasBody(bp), { onBack: () => this.setState({ settingsSel: null }), fullWidth: true });
+      }
+      return wrap(this.settingsLabel(groups, sel), this.settingsDetail(sel, bp, groups), { onBack: () => this.setState({ settingsSel: null }), cta: this.settingsCta(sel), fullWidth: sel === "floors-areas" });
     }
     const sel = this.state.settingsSel || groups[0].items[0].id;
     // Back lives in the settings rail (left of the title), not the topbar.
@@ -6019,13 +6806,20 @@ class Component extends DCLogic {
     const submenu = isPersonal
       ? this.personalSubmenu(sel, bp)
       : h("div", { style: { flex: "none", width: railW, display: "flex", flexDirection: "column", background: "var(--color-bg)" } }, this.railCards(navGroups, sel, onSelect, submenuTitle, true));
+    if (sel === "integrations") {
+      if (this.state.integrationSel) return wrap(this.intgDetailTitle(), this.integrationDetailBody(this.state.integrationSel, bp), { submenu, onBack: () => this.setState({ integrationSel: null }), fullWidth: true });
+      return wrap(this.settingsLabel(groups, sel), this.integrationsBody(this.persona, bp), { submenu, fullWidth: true });
+    }
     if (sel === "ha-cloud") {
       if (subMeta) return wrap(subMeta.title, subMeta.build.call(this, bp), { submenu, onBack: () => this.setState({ cloudSub: null, titleCollapsed: false }) });
       return wrap("Home Assistant Cloud", this.cloudAccountBody(bp), { submenu });
     }
-    if (sel === "floors-areas" && this.state.areaEdit) { const e = this.state.areaEdit; return wrap(e.isNew ? "Add area" : (e.name || "Edit area"), this.areaEditorBody(e, bp), { submenu, onBack: () => this.cancelAreaEdit() }); }
-    if (sel === "floors-areas" && this.state.floorEdit) { const e = this.state.floorEdit; return wrap(e.name || "Edit floor", this.floorEditorBody(e, bp), { submenu, onBack: () => this.cancelFloorEdit() }); }
-    return wrap(this.settingsLabel(groups, sel), this.settingsDetail(sel, bp, groups), { submenu, cta: this.settingsCta(sel) });
+    if (sel === "floors-areas") {
+      if (this.state.planArea) return wrap(this.planAreaTitle(), this.planAreaBody(bp), { submenu, onBack: () => this.setState({ planArea: null }) });
+      if (bp !== "desktop" && this.state.planFloorOpen) return wrap(this.fmhDetailTitle(), this.fmhFloorDetail(bp), { submenu, onBack: () => this.setState({ planFloorOpen: false }) });
+      return wrap(this.settingsLabel(groups, sel), this.floorsAreasBody(bp), { submenu, fullWidth: true });
+    }
+    return wrap(this.settingsLabel(groups, sel), this.settingsDetail(sel, bp, groups), { submenu, cta: this.settingsCta(sel), fullWidth: sel === "floors-areas" });
   }
 
   // ====================================================================
@@ -6071,7 +6865,7 @@ class Component extends DCLogic {
   entityControl(e, persona, bp) {
     const h = React.createElement; const { ThermostatCard, SpeakerCard, CameraCard, EntityCard } = this.C;
     const wrap = (node, mw) => h("div", { style: { maxWidth: mw } }, node);
-    if (e.type === "light") return wrap(this.tile(e, persona), 320);
+    if (e.type === "light") return wrap(this.featureTile(e, persona), 320);
     if (e.type === "climate") return wrap(h(ThermostatCard, { mode: e.mode, current: e.current, unit: "\u00b0", target: this.curTarget(e), onStep: (d) => this.step(e, d) }), 560);
     if (e.type === "media") return wrap(h(SpeakerCard, { name: e.name, state: e.playing ? e.track : "Idle", playing: e.playing, onPlayPause: () => {}, onPrev: () => {}, onNext: () => {} }), 560);
     if (e.type === "camera") return wrap(h(CameraCard, { name: e.name, live: e.live }), 560);
@@ -6080,11 +6874,13 @@ class Component extends DCLogic {
   deviceDetail(e, persona, bp) {
     const h = React.createElement;
     const area = this.H.areas[e.area];
+    const intgName = this.integrationOf(e);
+    const intg = this.intgByName(intgName);
     const rows = [
       { label: "Area", value: area ? area.name : "Unknown", icon: "map-marker", onClick: area ? () => this.go("/home/area/" + e.area) : null },
       { label: "Type", value: this.typeLabel(e.type), icon: "shape-outline" },
       { label: "Status", value: this.deviceStateLabel(e), icon: "information-outline" },
-      { label: "Integration", value: this.integrationOf(e), icon: "power-plug-outline" },
+      { label: "Integration", value: intgName, icon: "power-plug-outline", onClick: intg ? () => this.goIntegration(intg.id) : null },
       { label: "Manufacturer", value: this.manufacturerOf(e), icon: "factory" },
       { label: "Model", value: this.modelOf(e), icon: "chip" },
       typeof e.battery === "number" ? { label: "Battery", value: e.battery + "%", icon: e.battery <= 20 ? "battery-alert-variant-outline" : e.battery <= 50 ? "battery-50" : "battery-high", mono: true } : null,
@@ -6094,7 +6890,9 @@ class Component extends DCLogic {
       { label: "Modified", value: this.modifiedOf(e), icon: "calendar-edit", mono: true },
       { label: "Entity ID", value: e.type + "." + e.id, icon: "identifier", mono: true },
     ];
-    return h("div", { style: this.col() }, this.detailSection("Controls", this.entityControl(e, persona, bp)), this.detailSection("Information", this.detailInfoCard(rows)));
+    const devEnts = this.REG.filter((x) => x.deviceId === e.id);
+    const entsSection = devEnts.length ? this.detailSection("Entities (" + devEnts.length + ")", this.intgEntityList(devEnts)) : null;
+    return h("div", { style: this.col() }, this.detailSection("Controls", this.entityControl(e, persona, bp)), entsSection, this.detailSection("Information", this.detailInfoCard(rows)));
   }
   routineDetail(kind, a, persona, bp) {
     const h = React.createElement; const { Toggle } = this.C;
@@ -6147,6 +6945,166 @@ class Component extends DCLogic {
       rec.expiresAt ? { label: "Access until", value: rec.expiresAt + " today", icon: "clock-outline", mono: true } : null,
     ];
     return h("div", { style: this.col() }, header, this.detailSection("Access", this.detailInfoCard(rows)));
+  }
+
+  // ====================================================================
+  //  INTEGRATIONS (Settings -> Integrations, the connector layer, admin)
+  // ====================================================================
+  get INTG() { return this.mod.integrations || []; }
+  intgById(id) { return this.INTG.find((it) => it.id === id) || null; }
+  intgByName(name) { return this.INTG.find((it) => it.name === name) || null; }
+  goIntegration(id) { this._pendingIntegrationSel = id; this.go("/settings", "integrations"); }
+  openEntitiesForIntegration(name) { this.setCol("entities", { filters: { integration: [name] } }); this.setState({ showFilters: true }); this.go("/entities"); }
+  andList(a) { a = a || []; return a.length <= 1 ? (a[0] || "") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; }
+  intgStatusMeta(status) {
+    if (status === "error") return { label: "Needs attention", color: "var(--color-warning)" };
+    if (status === "disabled") return { label: "Disabled", color: "var(--color-text-tertiary)" };
+    if (status === "partial") return { label: "Partly on", color: "var(--color-warning)" };
+    return null;
+  }
+  intgMetaLine(it) {
+    if (it.category === "service") return (it.powers && it.powers.length) ? "Powers " + this.andList(it.powers) : "Service";
+    if (it.category === "system") return (it.powers && it.powers.length) ? this.andList(it.powers) : "System";
+    const d = it.deviceCount, e = it.entityCount;
+    const dp = d + (d === 1 ? " device" : " devices");
+    const ep = e + (e === 1 ? " entity" : " entities");
+    return d ? dp + " and " + ep : ep;
+  }
+  intgLogo(it, size) {
+    const h = React.createElement; const { Icon } = this.C;
+    size = size || 40;
+    const logo = it.domain ? this.brandLogo(it.domain) : null;
+    const box = { position: "relative", width: size, height: size, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface-raised)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" };
+    return h("div", { style: box },
+      h(Icon, { name: it.icon || "power-plug", size: size >= 48 ? "lg" : "md", style: { color: "var(--color-text-secondary)" } }),
+      logo ? h("img", { src: logo, alt: "", onError: (ev) => { ev.currentTarget.style.display = "none"; },
+        style: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", padding: Math.round(size * 0.19), boxSizing: "border-box", background: "var(--color-surface-raised)" } }) : null);
+  }
+  intgEntityList(ents) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", overflow: "hidden" } },
+      ents.map((e, i) => h("button", { key: e.id, type: "button", onClick: () => this.go("/entities/" + e.id),
+        style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", background: "transparent", cursor: "pointer", color: "var(--color-text-primary)", font: "inherit", padding: "var(--space-3) var(--space-5)", borderTop: i ? "1px solid var(--color-border-subtle)" : "none", transition: "background-color var(--duration-normal) var(--easing-out)" },
+        onMouseEnter: (ev) => { ev.currentTarget.style.background = "var(--color-surface-raised)"; }, onMouseLeave: (ev) => { ev.currentTarget.style.background = "transparent"; } },
+        h(Icon, { name: this.entIcon(e), size: "md", style: { color: "var(--color-text-secondary)", flex: "none" } }),
+        h("div", { style: { flex: 1, minWidth: 0 } },
+          h("div", { style: { fontSize: "var(--text-sm)", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, e.name),
+          h("div", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-xs)", color: "var(--color-text-tertiary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, e.id)),
+        h("span", { style: { fontFamily: "var(--font-mono)", fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", flex: "none", whiteSpace: "nowrap" } }, this.entStateText(e)),
+        h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }))));
+  }
+  integrationCard(it, bp) {
+    const h = React.createElement; const { Icon } = this.C; const sp = (n) => "var(--space-" + n + ")";
+    const sm = this.intgStatusMeta(it.status);
+    return h("button", { key: it.id, type: "button", className: "cc-chip3d", onClick: () => this.setState({ integrationSel: it.id, titleCollapsed: false }),
+      style: { display: "flex", alignItems: "center", gap: sp(4), width: "100%", textAlign: "left", border: "none", cursor: "pointer", background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: sp(4), font: "inherit", color: "var(--color-text-primary)", minWidth: 0, transition: "background-color var(--duration-normal) var(--easing-out)" } },
+      this.intgLogo(it, 48),
+      h("div", { style: { flex: 1, minWidth: 0 } },
+        h("div", { style: { display: "flex", alignItems: "center", gap: sp(2), minWidth: 0 } },
+          h("span", { style: { fontSize: "var(--text-base)", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, it.name),
+          sm ? h("span", { title: sm.label, style: { width: 8, height: 8, flex: "none", borderRadius: "50%", background: sm.color } }) : null),
+        h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, this.intgMetaLine(it))),
+      h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }));
+  }
+  integrationsBody(persona, bp) {
+    const h = React.createElement; const { Icon, SectionHeader } = this.C; const sp = (n) => "var(--space-" + n + ")";
+    const st = this.cs("integrations");
+    const q = (st.q || "").trim().toLowerCase();
+    const cat = (st.filters && st.filters.category) || "all";
+    const sort = st.sort || "name";
+    let items = this.INTG.slice();
+    if (q) items = items.filter((it) => it.name.toLowerCase().indexOf(q) >= 0 || (it.author || "").toLowerCase().indexOf(q) >= 0);
+    if (cat !== "all") items = items.filter((it) => it.category === cat);
+    items.sort(sort === "entities" ? (a, b) => (b.entityCount - a.entityCount) || a.name.localeCompare(b.name) : (a, b) => a.name.localeCompare(b.name));
+    const note = h("p", { style: { margin: 0, color: "var(--color-text-secondary)", fontSize: "var(--text-sm)", lineHeight: 1.6, maxWidth: "72ch" } },
+      "Integrations are the connectors that power your devices and services. New ones are added when you add a device or add a service.");
+    const search = h("div", { style: { flex: "1 1 240px", minWidth: 0, maxWidth: 360 } }, this.ccSearch({ value: st.q || "", placeholder: "Search " + this.INTG.length + " integrations", onChange: (e) => this.setCol("integrations", { q: e.target.value }) }));
+    const catChips = [["all", "All"], ["device", "Devices and hubs"], ["service", "Services"], ["system", "System"]];
+    const chip = (val, label) => { const on = cat === val; return h("button", { key: val, type: "button", onClick: () => this.setCol("integrations", { filters: Object.assign({}, st.filters || {}, { category: val }) }),
+      style: { border: "none", cursor: "pointer", borderRadius: "var(--radius-full)", padding: "7px var(--space-4)", fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", font: "inherit", background: on ? "var(--color-accent)" : "var(--color-surface-raised)", color: on ? "var(--color-on-accent)" : "var(--color-text-secondary)", transition: "background-color 150ms var(--easing-out)" } }, label); };
+    const chips = h("div", { style: { display: "flex", flexWrap: "wrap", gap: sp(2) } }, catChips.map(([v, l]) => chip(v, l)));
+    const sortSel = this.ccOverlaySelect("intg-sort", sort, [{ value: "name", label: "Sort by name" }, { value: "entities", label: "Most entities" }], (v) => this.setCol("integrations", { sort: v }), { align: "right", label: "Sort" });
+    const controls = h("div", { style: { display: "flex", alignItems: "center", gap: sp(3), flexWrap: "wrap" } }, search, chips, h("div", { style: { marginLeft: "auto" } }, sortSel));
+    const groups = [];
+    [["device", "Devices and hubs"], ["service", "Services"], ["system", "System"]].forEach(([key, label]) => {
+      const g = items.filter((it) => it.category === key);
+      if (!g.length) return;
+      groups.push(h("div", { key: key, style: this.col(sp(3)) }, h(SectionHeader, { label: label + " (" + g.length + ")" }), h("div", { style: this.cardGrid(bp, 1, 3, 300) }, g.map((it) => this.integrationCard(it, bp)))));
+    });
+    const body = groups.length ? h("div", { style: this.col(sp(6)) }, ...groups) : this.empty("No integrations match your search.");
+    return h("div", { style: this.col(sp(6)) }, note, controls, body);
+  }
+  intgDetailTitle() { const it = this.intgById(this.state.integrationSel); return it ? it.name : "Integration"; }
+  intgReload(it) { this.askConfirm({ title: "Reload " + it.name + "?", body: "This reconnects the integration and reloads its devices and entities.", confirmLabel: "Reload", onConfirm: () => {} }); }
+  intgReauth(it) { this.askConfirm({ title: "Reauthenticate " + it.name + "?", body: "You will be asked to sign in again so the home can reconnect.", confirmLabel: "Continue", onConfirm: () => {} }); }
+  intgDelete(it) { this.askConfirm({ title: "Delete " + it.name + "?", body: "This removes the integration and everything it provides. Its devices and entities will disappear. This cannot be undone.", confirmLabel: "Delete", danger: true, onConfirm: () => { const arr = this.mod.integrations; const i = arr.findIndex((x) => x.id === it.id); if (i >= 0) arr.splice(i, 1); this.setState({ integrationSel: null }); } }); }
+  integrationDetailBody(id, bp) {
+    const h = React.createElement; const { Icon, Button, Chip } = this.C; const sp = (n) => "var(--space-" + n + ")";
+    const it = this.intgById(id);
+    if (!it) return this.empty("That integration does not exist.");
+    const chipRow = h("div", { style: { display: "flex", flexWrap: "wrap", gap: sp(2), marginTop: sp(2) } },
+      h(Chip, { variant: "default" }, it.iotClass),
+      h(Chip, { variant: "default" }, it.category === "device" ? "Device" : this.cap(it.category)));
+    const identity = h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-xl)", overflow: "hidden" } },
+      h("div", { style: { padding: sp(6), display: "flex", gap: sp(4), alignItems: "center" } },
+        this.intgLogo(it, 64),
+        h("div", { style: { flex: 1, minWidth: 0 } },
+          h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.01em" } }, it.name),
+          h("div", { style: { color: "var(--color-text-secondary)", marginTop: 2 } }, "by " + it.author + " \u00b7 ", h("span", { style: { fontFamily: "var(--font-mono)" } }, "v" + it.version)),
+          chipRow)),
+      this.cloudFooter(this.cloudLink("Documentation", () => {}), h("div", { style: { display: "flex", gap: sp(2) } },
+        h(Button, { variant: "secondary", size: "sm", icon: "reload", onClick: () => this.intgReload(it) }, "Reload"),
+        h(Button, { variant: "danger", size: "sm", icon: "trash-can-outline", onClick: () => this.intgDelete(it) }, "Delete"))));
+    let attention = null;
+    if (it.issues && it.issues.length) {
+      attention = h("div", { style: { background: "var(--color-surface)", borderLeft: "3px solid var(--color-warning)", borderRadius: "var(--radius-lg)", padding: sp(5), display: "flex", gap: sp(4), alignItems: "center", flexWrap: "wrap" } },
+        h(Icon, { name: "alert-outline", size: "md", style: { color: "var(--color-warning)", flex: "none" } }),
+        h("div", { style: { flex: "1 1 240px", minWidth: 0 } },
+          h("div", { style: { fontWeight: 600, marginBottom: 2 } }, "Needs attention"),
+          h("div", { style: { color: "var(--color-text-secondary)", fontSize: "var(--text-sm)", lineHeight: 1.5 } }, it.issues[0].text)),
+        h(Button, { variant: "primary", size: "sm", onClick: () => this.intgReauth(it) }, it.issues[0].kind === "reauth" ? "Reauthenticate" : "Reconfigure"));
+    }
+    let entriesSection = null;
+    if (it.entries.length > 1) {
+      const rows = it.entries.map((en, i) => {
+        const sm = this.intgStatusMeta(en.status);
+        const counts = (en.deviceCount ? en.deviceCount + (en.deviceCount === 1 ? " device" : " devices") : "") + (en.deviceCount && en.entityCount ? " and " : "") + (en.entityCount ? en.entityCount + (en.entityCount === 1 ? " entity" : " entities") : (en.deviceCount ? "" : "No entities"));
+        return h("div", { key: en.id, style: { display: "flex", alignItems: "center", gap: sp(3), padding: sp(4) + " " + sp(5), borderTop: i ? "1px solid var(--color-border-subtle)" : "none" } },
+          h("span", { style: { width: 8, height: 8, flex: "none", borderRadius: "50%", background: sm ? sm.color : "var(--color-success)" } }),
+          h("div", { style: { flex: 1, minWidth: 0 } },
+            h("div", { style: { fontWeight: "var(--weight-medium)" } }, en.title),
+            h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, (sm ? sm.label : "Working") + " \u00b7 " + counts)));
+      });
+      const card = h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-lg)", overflow: "hidden" } }, ...rows);
+      entriesSection = this.detailSection("Hubs and accounts", card);
+    }
+    let devicesSection = null;
+    if (it.deviceIds && it.deviceIds.length) {
+      const devs = it.deviceIds.map((did) => this.entity(did)).filter(Boolean);
+      const grid = h("div", { style: this.cardGrid(bp, 1, 2, 260) }, devs.map((d) => h("button", { key: d.id, type: "button", className: "cc-chip3d", onClick: () => this.go("/devices/" + d.id),
+        style: { display: "flex", alignItems: "center", gap: sp(3), textAlign: "left", border: "none", cursor: "pointer", background: "var(--color-surface)", borderRadius: "var(--radius-lg)", padding: sp(4), font: "inherit", color: "var(--color-text-primary)", minWidth: 0, transition: "background-color var(--duration-normal) var(--easing-out)" } },
+        this.leadBox(d.icon),
+        h("div", { style: { flex: 1, minWidth: 0 } },
+          h("div", { style: { fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, d.name),
+          h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, this.areaName(d.area) || this.typeLabel(d.type))),
+        h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }))));
+      devicesSection = this.detailSection("Devices (" + devs.length + ")", grid);
+    }
+    let powersSection = null;
+    if (it.category === "service" && it.powerRoutes && it.powerRoutes.length) {
+      const rows = it.powerRoutes.map((p) => ({ label: p.name, value: "Open", icon: "puzzle-outline", onClick: () => this.go(p.route) }));
+      powersSection = this.detailSection("Powers", this.detailInfoCard(rows));
+    }
+    let entitiesSection = null;
+    if (it.entityIds && it.entityIds.length) {
+      const ents = it.entityIds.map((eid) => this.regEntity(eid)).filter(Boolean);
+      const shown = ents.slice(0, 6);
+      const linkBtn = ents.length > shown.length
+        ? h("button", { type: "button", onClick: () => this.openEntitiesForIntegration(it.name), style: { alignSelf: "flex-start", background: "none", border: "none", padding: sp(1) + " 0", cursor: "pointer", color: "var(--color-accent)", font: "inherit", fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)" } }, "View all " + ents.length + " entities in Entities")
+        : h("button", { type: "button", onClick: () => this.openEntitiesForIntegration(it.name), style: { alignSelf: "flex-start", background: "none", border: "none", padding: sp(1) + " 0", cursor: "pointer", color: "var(--color-accent)", font: "inherit", fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)" } }, "Open in Entities");
+      entitiesSection = this.detailSection("Entities (" + ents.length + ")", h("div", { style: this.col(sp(3)) }, this.intgEntityList(shown), linkBtn));
+    }
+    return h("div", { style: this.col() }, identity, attention, entriesSection, devicesSection, powersSection, entitiesSection);
   }
 
   // ====================================================================
@@ -8372,9 +9330,9 @@ class Component extends DCLogic {
           h("div", { style: { fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", color: "var(--color-text-secondary)" } }, "No favorites yet"),
           h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)", maxWidth: 260, lineHeight: 1.4 } }, "Star an entity from its page to pin it here for quick access."));
       } else {
-        body = h("div", { style: this.gridStyle(2) }, favs.map((e) => this.tile(e, persona)));
+        body = h("div", { style: this.gridStyle(2) }, favs.map((e) => this.featureTile(e, persona, { area: true, noFeature: true })));
       }
-      return this.fyCard(id, "Favorites", "star", body);
+      return this.fyCard(id, "Favorites", "star", body, { bg: "var(--color-bg)" });
     }
     if (id === "alert-power") {
       const body = h("div", { style: { display: "flex", gap: "var(--space-3)" } },

@@ -3,7 +3,11 @@
 Note: the standalone `Home 3D.dc.html` wrapper page was removed. The engine
 now mounts directly in `Home Assistant for the whole household.dc.html`
 (no iframe): see `ensureHome3d` / `home3dAttach` in its logic class. The
-notes below predate that change where they mention the wrapper page.
+`Fit My Home.dc.html` editor page was removed too: the plan editor is now
+built directly into the Floors and areas settings page (`floorsAreasBody` and
+the `fmh*` methods in the app's logic class), saving to the same shared plan
+and calling `rebuildHome3d` directly. The notes below predate these changes
+where they mention wrapper pages, iframes, or Fit My Home as a page.
 
 An interactive 3D visualization of the household, built with three.js. Soft
 abstract "concept car" rendering: the home as a friendly abstraction, not a

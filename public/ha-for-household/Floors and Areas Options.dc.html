@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="design_doc_mode" content="canvas">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/fonts.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css">
+  <link rel="stylesheet" href="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/styles.css">
+  <script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;background:#f0eee9;font-family:system-ui,sans-serif}
+    .dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+    .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+    .dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+    .dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+    .dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+    .dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+    .dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+    .dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+    .dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+    .dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+    .dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+    .dv-sub{font:600 11px system-ui,sans-serif;color:rgba(0,0,0,.45);margin:26px 0 14px}
+  </style>
+</helmet>
+
+<section class="dv-turn" id="t4">
+  <div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">The onboarding idea in editing: the overview is the control, presets know their place</span></div>
+  <div class="dv-opts">
+
+    <!-- 4a Preset picker builds the stack -->
+    <div class="dv-opt" id="4a">
+      <div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Add floor = pick what your home has. Each preset knows where it belongs and names itself</div>
+      <div class="dv-card" style="width: 640px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; gap: var(--space-6); align-items: flex-start;">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3);">
+            <span style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-base); letter-spacing: -0.01em;">What does your home have?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2);">
+              <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">Ground floor</span>
+                <span style="position: absolute; right: 8px; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-accent); display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="check" size="xs" hint-size="12px,12px"></x-import></span>
+              </div>
+              <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">First floor</span>
+                <span style="position: absolute; right: 8px; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-accent); display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="check" size="xs" hint-size="12px,12px"></x-import></span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-2" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">Second floor</span>
+              </div>
+              <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="stairs-down" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">Basement</span>
+                <span style="position: absolute; right: 8px; top: 8px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-accent); display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="check" size="xs" hint-size="12px,12px"></x-import></span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-roof" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">Attic</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="office-building-outline" size="md" hint-size="24px,24px"></x-import>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary); text-align: center;">Apartment level</span>
+              </div>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3);">
+            <span style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary);">Builds this, live</span>
+            <div style="display: flex; flex-direction: column; gap: var(--space-1);">
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); white-space: nowrap;">First floor</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); white-space: nowrap;">Ground floor</span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-secondary); background: var(--color-surface-raised); border-radius: 999px; padding: 1px 8px; white-space: nowrap;">Ground</span>
+              </div>
+              <div style="border-top: 2px dashed var(--color-accent); margin: 6px 0; position: relative;"><span style="position: absolute; right: 8px; top: -9px; font-size: 10px; line-height: 16px; color: var(--color-accent); background: var(--color-bg); padding: 0 6px; border-radius: 999px;">street</span></div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); opacity: 0.75;">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="stairs-down" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); white-space: nowrap;">Basement</span>
+              </div>
+            </div>
+            <span style="font-size: var(--text-sm); color: var(--color-text-tertiary);">A basement always drops below the street, an attic lands on top, the ground floor pins the street line. Names are defaults you can change on the floor page <a href="#3a" style="color: var(--color-accent); text-decoration: none;">3a</a>. Choosing only apartment levels lifts the whole stack above the street.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4b Street line + add above/below -->
+    <div class="dv-opt" id="4b">
+      <div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>The floor list wears the same logic: street line in the list, add above or below</div>
+      <div class="dv-card" style="width: 400px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3);">
+          <div style="display: flex;">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="plus" hint-size="auto,32px">Add floor on top</x-import>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-1);">
+            <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface);">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-roof" size="sm" hint-size="20px,20px"></x-import>
+              <span style="font-size: var(--text-base); white-space: nowrap;">Attic</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-raised);">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="sm" hint-size="20px,20px"></x-import>
+              <span style="font-size: var(--text-base); font-weight: 600; white-space: nowrap;">First floor</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface);">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="sm" hint-size="20px,20px"></x-import>
+              <span style="font-size: var(--text-base); white-space: nowrap;">Ground floor</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+            </div>
+            <div style="position: relative; border-top: 2px dashed var(--color-accent); margin: var(--space-3) 0;">
+              <span style="position: absolute; right: 8px; top: -10px; font-size: var(--text-xs); line-height: 18px; color: var(--color-accent); background: var(--color-bg); padding: 0 8px; border-radius: 999px;">Street level · drag to move</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface); opacity: 0.75;">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="stairs-down" size="sm" hint-size="20px,20px"></x-import>
+              <span style="font-size: var(--text-base); white-space: nowrap;">Basement</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+            </div>
+          </div>
+          <div style="display: flex;">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="plus" hint-size="auto,32px">Add floor below</x-import>
+          </div>
+          <span style="font-size: var(--text-sm); color: var(--color-text-tertiary);">The street line lives between the rows: floors above it stack up, below it dig down. Drag it above every floor and the home is an apartment (with storeys above the street on the line). Replaces the radio list of <a href="#3b" style="color: var(--color-accent); text-decoration: none;">3b</a> and the per-floor toggle of <a href="#3a" style="color: var(--color-accent); text-decoration: none;">3a</a>.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="dv-next">Try next: "build <a class="dv-oid" href="#2a">2a</a> + <a class="dv-oid" href="#2b">2b</a> + <a class="dv-oid" href="#3a">3a</a> with <a class="dv-oid" href="#4a">4a</a> presets and the <a class="dv-oid" href="#4b">4b</a> street line into the app" · "extend <a class="dv-oid" href="#4a">4a</a> presets with outdoor things (garden, balcony, shed)" · "show the apartment case end to end"</p>
+</section>
+
+<section class="dv-turn" id="t3">
+  <div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Editing a floor, setting the ground level (houses and apartments), and Outside</span></div>
+  <div class="dv-opts">
+
+    <!-- 3a Floor subpage -->
+    <div class="dv-opt" id="3a">
+      <div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Floor subpage: pencil on a floor row opens name + icon, like the area subpage <a class="dv-oid" href="#2b">2b</a></div>
+      <div class="dv-card" style="width: 420px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="md" icon="arrow-left" aria-label="Back to floors and areas" hint-size="40px,40px"></x-import>
+            <span style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: -0.01em;">First floor</span>
+          </div>
+          <div style="background: var(--color-surface); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.FormField" label="Name" hint-size="100%,72px">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Input" value="First floor" hint-size="100%,40px"></x-import>
+            </x-import>
+            <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+              <span style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary);">Icon</span>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-1);">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: #1C6FD6;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-2" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="stairs" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-roof" size="md" hint-size="24px,24px"></x-import></span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); border-top: 1px solid var(--color-border); padding-top: var(--space-4);">
+              <div style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: var(--text-base); font-weight: 500;">Sits at ground level</span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary);">The 3D home meets the street at this floor. Exactly one floor can be the ground floor, set on the Ground level page.</span>
+              </div>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Toggle" label="Sits at ground level" hint-size="52px,32px"></x-import>
+            </div>
+          </div>
+          <div style="display: flex;">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="danger" size="md" icon="trash-can-outline" hint-size="auto,40px">Delete this floor</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3b Home-level ground picker -->
+    <div class="dv-opt" id="3b">
+      <div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Ground level as one home setting: picks a floor, or none for an apartment</div>
+      <div class="dv-card" style="width: 460px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2);">
+          <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em; padding-left: var(--space-6);">Ground level</span>
+          <div style="background: var(--color-surface); border-radius: var(--radius-xl); padding: var(--space-2) 0;">
+            <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6);">
+              <span style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--color-text-tertiary); flex: none;"></span>
+              <span style="font-size: var(--text-base);">Basement</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6);">
+              <span style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--color-text-tertiary); flex: none;"></span>
+              <span style="font-size: var(--text-base);">Ground floor</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6);">
+              <span style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--color-text-tertiary); flex: none;"></span>
+              <span style="font-size: var(--text-base);">First floor</span>
+            </div>
+            <div style="display: flex; align-items: flex-start; gap: var(--space-4); padding: var(--space-3) var(--space-6);">
+              <span style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--color-accent); flex: none; display: inline-flex; align-items: center; justify-content: center; margin-top: 2px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent);"></span></span>
+              <div style="display: flex; flex-direction: column; gap: var(--space-3); min-width: 0;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: var(--text-base); font-weight: 500;">None, my home is above the ground</span>
+                  <span style="font-size: var(--text-sm); color: var(--color-text-secondary);">For an apartment. The 3D home shows your floors at their real height, the rest of the building stays abstract.</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                  <span style="font-size: var(--text-sm); color: var(--color-text-secondary);">Storeys above the street</span>
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="sm" icon="minus" aria-label="One storey lower" hint-size="32px,32px"></x-import>
+                  <span style="font-size: var(--text-base); font-family: var(--font-mono);">3</span>
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="sm" icon="plus" aria-label="One storey higher" hint-size="32px,32px"></x-import>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); padding: var(--space-2) var(--space-6) 0;">Replaces the per-floor toggle in <a href="#3a" style="color: var(--color-accent); text-decoration: none;">3a</a>: one choice for the whole home, so an apartment is a first-class case, not a missing toggle.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3c Outside attached to levels -->
+    <div class="dv-opt" id="3c">
+      <div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Outside: every outdoor area sits at a level, so a balcony can be all there is</div>
+      <div class="dv-card" style="width: 460px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-6);">
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em; padding-left: var(--space-6);">Outside · house</span>
+            <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="flower" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Garden</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary);">At the ground</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #e0a32e; color: #1a1a1a; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="balcony" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Roof terrace</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary);">On First floor</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em; padding-left: var(--space-6);">Outside · apartment</span>
+            <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="balcony" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Balcony</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary);">On Living floor</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add outdoor area</span>
+              </div>
+            </div>
+            <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); padding: 0 var(--space-6);">An outdoor area drawn next to a floor hangs off that floor in the 3D home. With no ground contact (<a href="#3b" style="color: var(--color-accent); text-decoration: none;">3b</a>), there is simply no "At the ground" option.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="dv-next">Try next: "build <a class="dv-oid" href="#2a">2a</a> + <a class="dv-oid" href="#2b">2b</a> + <a class="dv-oid" href="#3a">3a</a> with the <a class="dv-oid" href="#3b">3b</a> ground picker into the app" · "show the apartment in the 3D home" · "riff on where the Ground level setting lives"</p>
+</section>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Iterating on <a class="dv-oid" href="#1b">1b</a>: floor list + directly editable canvas, ghost from <a class="dv-oid" href="#1d">1d</a>, sizes in meters</span></div>
+  <div class="dv-opts">
+
+    <!-- 2a Floor list + live editor -->
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Floors left, editor right. Drag rooms directly; tap one to open its subpage</div>
+      <div class="dv-card" style="width: 780px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+          <div style="color: var(--color-text-secondary); font-size: var(--text-base); max-width: 60ch;">Floors and areas describe how your home is built. Drag rooms to shape a floor; tap a room to edit its name, icon and color.</div>
+          <div style="display: flex; gap: var(--space-5); align-items: flex-start;">
+
+            <div style="flex: none; width: 264px; display: flex; flex-direction: column; gap: var(--space-1);">
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-raised);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); font-weight: 600; white-space: nowrap;">First floor</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">4</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); white-space: nowrap;">Ground floor</span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-secondary); background: var(--color-surface); border-radius: 999px; padding: 1px 8px; white-space: nowrap;">Ground</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">6</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-negative-1" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); white-space: nowrap;">Basement</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">1</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="18px,18px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="tree-outline" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Outside</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">3</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add floor</span>
+              </div>
+            </div>
+
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3);">
+              <div style="position: relative; height: 320px; border-radius: var(--radius-xl); background: var(--color-surface); overflow: hidden;">
+                <div style="position: absolute; left: 16px; top: 12px; font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">Ground floor · 9.6 x 7.2 m · 69 m²</div>
+                <div style="position: absolute; left: 40px; top: 36px; width: 200px; height: 140px; border-radius: 10px; border: 1.5px dashed var(--color-border);"></div>
+                <div style="position: absolute; left: 242px; top: 36px; width: 140px; height: 140px; border-radius: 10px; border: 1.5px dashed var(--color-border);"></div>
+                <div style="position: absolute; left: 40px; top: 178px; width: 342px; height: 84px; border-radius: 10px; border: 1.5px dashed var(--color-border);"></div>
+
+                <div style="position: absolute; left: 40px; top: 36px; width: 168px; height: 128px; border-radius: 10px; background: rgba(28, 111, 214, 0.26); border: 1.5px solid #1C6FD6; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 8px;">
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--color-text-primary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed" size="sm" hint-size="16px,16px"></x-import>Main bedroom</span>
+                  <span style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-secondary);">4.2 x 3.2 m</span>
+                  <span style="position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-text-primary); border: 2px solid var(--color-bg);"></span>
+                  <span style="position: absolute; right: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-text-primary); border: 2px solid var(--color-bg);"></span>
+                  <span style="position: absolute; left: -5px; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-text-primary); border: 2px solid var(--color-bg);"></span>
+                  <span style="position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--color-text-primary); border: 2px solid var(--color-bg);"></span>
+                </div>
+                <div style="position: absolute; left: 216px; top: 36px; width: 122px; height: 128px; border-radius: 10px; background: rgba(193, 77, 138, 0.24); border: 1.5px solid #c14d8a; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 8px;">
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--color-text-primary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed-outline" size="sm" hint-size="16px,16px"></x-import>Tess's room</span>
+                  <span style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-secondary);">3.0 x 3.2 m</span>
+                </div>
+                <div style="position: absolute; left: 40px; top: 172px; width: 148px; height: 90px; border-radius: 10px; background: rgba(46, 158, 91, 0.26); border: 1.5px solid #2e9e5b; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 8px;">
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--color-text-primary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="shower" size="sm" hint-size="16px,16px"></x-import>Bathroom</span>
+                  <span style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-secondary);">3.7 x 2.2 m</span>
+                </div>
+                <div style="position: absolute; left: 196px; top: 172px; width: 142px; height: 90px; border-radius: 10px; background: rgba(224, 163, 46, 0.22); border: 1.5px solid #e0a32e; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 8px;">
+                  <span style="display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--color-text-primary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="gamepad-variant-outline" size="sm" hint-size="16px,16px"></x-import>Lars's room</span>
+                  <span style="font-size: 11px; font-family: var(--font-mono); color: var(--color-text-secondary);">3.5 x 2.2 m</span>
+                </div>
+                <div style="position: absolute; left: 12px; bottom: 12px; right: 12px; display: flex; justify-content: center; pointer-events: none;">
+                  <span style="padding: 6px 14px; border-radius: 999px; background: var(--color-overlay); color: var(--color-text-secondary); font-size: var(--text-xs);">Dashed outline is the ground floor below</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-2);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="primary" size="md" icon="plus" hint-size="auto,40px">Add area</x-import>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">First floor · 42 m²</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2b Area subpage -->
+    <div class="dv-opt" id="2b">
+      <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Tapping a room opens the area subpage (name, icon, color)</div>
+      <div class="dv-card" style="width: 420px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="md" icon="arrow-left" aria-label="Back to floors and areas" hint-size="40px,40px"></x-import>
+            <span style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: -0.01em;">Main bedroom</span>
+          </div>
+          <div style="background: var(--color-surface); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.FormField" label="Name" hint-size="100%,72px">
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Input" value="Main bedroom" hint-size="100%,40px"></x-import>
+            </x-import>
+            <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+              <span style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary);">Icon</span>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-1);">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: #1C6FD6;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed-outline" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="sofa" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="desk" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="wardrobe-outline" size="md" hint-size="24px,24px"></x-import></span>
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--color-surface-raised); color: var(--color-text-secondary);"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="television" size="md" hint-size="24px,24px"></x-import></span>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+              <span style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary);">Color</span>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center;">
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #1C6FD6; border: 1px solid var(--color-border); box-shadow: 0 0 0 3px var(--color-bg), 0 0 0 5px #1C6FD6;"></span>
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #2e9e5b; border: 1px solid var(--color-border);"></span>
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #e0a32e; border: 1px solid var(--color-border);"></span>
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #c14d8a; border: 1px solid var(--color-border);"></span>
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #a855f7; border: 1px solid var(--color-border);"></span>
+                <span style="width: 32px; height: 32px; border-radius: 50%; background: #5566d6; border: 1px solid var(--color-border);"></span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--color-border); padding-top: var(--space-4);">
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: var(--text-sm); color: var(--color-text-secondary);">Size</span>
+                <span style="font-size: var(--text-base); font-family: var(--font-mono);">4.2 x 3.2 m · 13.4 m²</span>
+              </div>
+              <span style="font-size: var(--text-sm); color: var(--color-text-secondary);">Adjust in the layout</span>
+            </div>
+          </div>
+          <div style="display: flex;">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="danger" size="md" icon="trash-can-outline" hint-size="auto,40px">Delete this area</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="dv-next">Try next: "build <a class="dv-oid" href="#2a">2a</a> and <a class="dv-oid" href="#2b">2b</a> into the app" · "show <a class="dv-oid" href="#2a">2a</a> on mobile" · "riff on how Add area places the new room"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Floors and areas, simplified: page structure</span></div>
+  <div class="dv-opts">
+
+    <!-- 1a List first -->
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>List first. Layout editing behind a per-floor action</div>
+      <div class="dv-card" style="width: 720px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-6);">
+          <div style="color: var(--color-text-secondary); font-size: var(--text-base); max-width: 60ch;">Floors and areas describe how your home is built. What you set here is what everyone sees in the 3D home.</div>
+
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <div style="display: flex; align-items: center; gap: var(--space-2); padding-left: var(--space-6);">
+              <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em;">Ground floor</span>
+              <span style="font-size: var(--text-xs); color: var(--color-text-secondary); background: var(--color-surface); border-radius: 999px; padding: 2px 10px;">Ground</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="floor-plan" hint-size="auto,32px">Edit layout</x-import>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="pencil-outline" aria-label="Floor settings" hint-size="32px,32px"></x-import>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+            </div>
+            <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="sofa" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Living room</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">12 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #e0a32e; color: #1a1a1a; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="fridge" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Kitchen</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">8 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #5566d6; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="door" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Hallway</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">4 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #a855f7; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="garage" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Garage</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">3 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add area</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <div style="display: flex; align-items: center; gap: var(--space-2); padding-left: var(--space-6);">
+              <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em;">First floor</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="floor-plan" hint-size="auto,32px">Edit layout</x-import>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="pencil-outline" aria-label="Floor settings" hint-size="32px,32px"></x-import>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="drag-horizontal-variant" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+            </div>
+            <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #1C6FD6; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Main bedroom</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">6 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #c14d8a; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="bed-outline" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Tess's room</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">5 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="shower" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Bathroom</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-sm); color: var(--color-text-tertiary); font-family: var(--font-mono);">2 devices</span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add area</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <div style="display: flex; align-items: center; gap: var(--space-2); padding-left: var(--space-6);">
+              <span style="font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; letter-spacing: -0.01em;">Outside</span>
+              <span style="flex: 1;"></span>
+              <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="floor-plan" hint-size="auto,32px">Edit layout</x-import>
+            </div>
+            <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="flower" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Garden</span>
+                <span style="flex: 1;"></span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 52px; padding: 0 var(--space-6); border-bottom: 1px solid var(--color-border);">
+                <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #5566d6; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="car" size="sm" hint-size="16px,16px"></x-import></span>
+                <span style="font-size: var(--text-base);">Driveway</span>
+                <span style="flex: 1;"></span>
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-6); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add outdoor area</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex;">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="md" icon="plus" hint-size="auto,40px">Add floor</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1b Split list + map -->
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Split. Floor list left, live map of the selected floor right</div>
+      <div class="dv-card" style="width: 720px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-5);">
+          <div style="color: var(--color-text-secondary); font-size: var(--text-base); max-width: 60ch;">Floors and areas describe how your home is built. Pick a floor to see and shape it.</div>
+          <div style="display: flex; gap: var(--space-5); align-items: flex-start;">
+            <div style="flex: none; width: 224px; display: flex; flex-direction: column; gap: var(--space-1);">
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); background: var(--color-surface-raised);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-g" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base); font-weight: 600;">Ground floor</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">6</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-1" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">First floor</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">4</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="home-floor-negative-1" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Basement</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">1</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-md); color: var(--color-text-secondary);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="tree-outline" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Outside</span>
+                <span style="flex: 1;"></span>
+                <span style="font-size: var(--text-xs); color: var(--color-text-tertiary); font-family: var(--font-mono);">3</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-4); color: var(--color-accent);">
+                <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                <span style="font-size: var(--text-base);">Add floor</span>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-3);">
+              <div style="position: relative; height: 240px; border-radius: var(--radius-xl); background: var(--color-surface); overflow: hidden;">
+                <div style="position: absolute; left: 36px; top: 28px; width: 160px; height: 110px; border-radius: 10px; background: rgba(46, 158, 91, 0.28); border: 1.5px solid #2e9e5b; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Living room</div>
+                <div style="position: absolute; left: 200px; top: 28px; width: 110px; height: 110px; border-radius: 10px; background: rgba(224, 163, 46, 0.24); border: 1.5px solid #e0a32e; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Kitchen</div>
+                <div style="position: absolute; left: 36px; top: 142px; width: 130px; height: 68px; border-radius: 10px; background: rgba(85, 102, 214, 0.24); border: 1.5px solid #5566d6; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Hallway</div>
+                <div style="position: absolute; left: 170px; top: 142px; width: 140px; height: 68px; border-radius: 10px; background: rgba(168, 85, 247, 0.22); border: 1.5px solid #a855f7; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Garage</div>
+                <div style="position: absolute; right: 12px; bottom: 12px;">
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="sm" icon="floor-plan" hint-size="auto,32px">Edit layout</x-import>
+                </div>
+              </div>
+              <div style="background: var(--color-surface); border-radius: var(--radius-xl);">
+                <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-5); border-bottom: 1px solid var(--color-border);">
+                  <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #2e9e5b; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="sofa" size="sm" hint-size="16px,16px"></x-import></span>
+                  <span style="font-size: var(--text-base);">Living room</span>
+                  <span style="flex: 1;"></span>
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 48px; padding: 0 var(--space-5); border-bottom: 1px solid var(--color-border);">
+                  <span style="width: 26px; height: 26px; border-radius: var(--radius-md); background: #e0a32e; color: #1a1a1a; display: inline-flex; align-items: center; justify-content: center;"><x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="fridge" size="sm" hint-size="16px,16px"></x-import></span>
+                  <span style="font-size: var(--text-base);">Kitchen</span>
+                  <span style="flex: 1;"></span>
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="chevron-right" size="sm" style="color: var(--color-text-tertiary);" hint-size="20px,20px"></x-import>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-4); min-height: 44px; padding: 0 var(--space-5); color: var(--color-accent);">
+                  <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Icon" name="plus" size="sm" hint-size="20px,20px"></x-import>
+                  <span style="font-size: var(--text-base);">Add area</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1c Canvas-first stripped -->
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Canvas first, noise stripped. Tap a room to edit it</div>
+      <div class="dv-card" style="width: 560px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4);">
+          <div style="color: var(--color-text-secondary); font-size: var(--text-base);">Shape your home by drawing it. Tap a room to rename it or change its icon and color.</div>
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="sm" hint-size="auto,32px">Ground floor</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">First floor</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">Basement</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">Outside</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" icon="plus" aria-label="Add floor" hint-size="32px,32px"></x-import>
+          </div>
+          <div style="position: relative; height: 300px; border-radius: var(--radius-xl); background: var(--color-surface); overflow: hidden;">
+            <div style="position: absolute; left: 48px; top: 32px; width: 200px; height: 140px; border-radius: 10px; background: rgba(46, 158, 91, 0.28); border: 1.5px solid #2e9e5b; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Living room</div>
+            <div style="position: absolute; left: 252px; top: 32px; width: 140px; height: 140px; border-radius: 10px; background: rgba(224, 163, 46, 0.24); border: 1.5px solid #e0a32e; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Kitchen</div>
+            <div style="position: absolute; left: 48px; top: 176px; width: 160px; height: 88px; border-radius: 10px; background: rgba(85, 102, 214, 0.24); border: 1.5px solid #5566d6; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Hallway</div>
+            <div style="position: absolute; left: 212px; top: 176px; width: 180px; height: 88px; border-radius: 10px; background: rgba(168, 85, 247, 0.22); border: 1.5px solid #a855f7; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Garage</div>
+          </div>
+          <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="primary" size="lg" icon="plus" hint-size="100%,48px">Add area to Ground floor</x-import>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dv-sub">Layout editor scope (opens in the full settings detail area, back arrow returns)</div>
+  <div class="dv-opts">
+
+    <!-- 1d Per-floor editor with ghost -->
+    <div class="dv-opt" id="1d">
+      <div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>One floor at a time. The floor below shows as a ghost to align against</div>
+      <div class="dv-card" style="width: 480px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3);">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="md" icon="arrow-left" aria-label="Back" hint-size="40px,40px"></x-import>
+            <span style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: -0.01em;">First floor layout</span>
+          </div>
+          <div style="position: relative; height: 280px; border-radius: var(--radius-xl); background: var(--color-surface); overflow: hidden;">
+            <div style="position: absolute; left: 40px; top: 28px; width: 200px; height: 140px; border-radius: 10px; border: 1.5px dashed var(--color-border); "></div>
+            <div style="position: absolute; left: 242px; top: 28px; width: 140px; height: 140px; border-radius: 10px; border: 1.5px dashed var(--color-border);"></div>
+            <div style="position: absolute; left: 40px; top: 170px; width: 342px; height: 80px; border-radius: 10px; border: 1.5px dashed var(--color-border);"></div>
+            <div style="position: absolute; left: 40px; top: 28px; width: 160px; height: 120px; border-radius: 10px; background: rgba(28, 111, 214, 0.26); border: 1.5px solid #1C6FD6; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Main bedroom</div>
+            <div style="position: absolute; left: 202px; top: 28px; width: 120px; height: 120px; border-radius: 10px; background: rgba(193, 77, 138, 0.24); border: 1.5px solid #c14d8a; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Tess's room</div>
+            <div style="position: absolute; left: 12px; bottom: 12px; right: 12px; display: flex; justify-content: center; pointer-events: none;">
+              <span style="padding: 6px 14px; border-radius: 999px; background: var(--color-overlay); color: var(--color-text-secondary); font-size: var(--text-xs);">Dashed outline is the ground floor below</span>
+            </div>
+          </div>
+          <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="primary" size="lg" icon="plus" hint-size="100%,48px">Add area</x-import>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1e Whole home editor -->
+    <div class="dv-opt" id="1e">
+      <div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Whole home in one editor, floor switcher inside (like today, stripped)</div>
+      <div class="dv-card" style="width: 480px">
+        <div data-theme="dark" style="background: var(--color-bg); color: var(--color-text-primary); font-family: var(--font-body); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3);">
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="md" icon="arrow-left" aria-label="Back" hint-size="40px,40px"></x-import>
+            <span style="font-family: var(--font-display); font-weight: 700; font-size: var(--text-lg); letter-spacing: -0.01em;">Home layout</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: var(--space-2);">
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="secondary" size="sm" hint-size="auto,32px">Ground floor</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">First floor</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">Basement</x-import>
+            <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="ghost" size="sm" hint-size="auto,32px">Outside</x-import>
+          </div>
+          <div style="position: relative; height: 260px; border-radius: var(--radius-xl); background: var(--color-surface); overflow: hidden;">
+            <div style="position: absolute; left: 40px; top: 24px; width: 200px; height: 130px; border-radius: 10px; background: rgba(46, 158, 91, 0.28); border: 1.5px solid #2e9e5b; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Living room</div>
+            <div style="position: absolute; left: 242px; top: 24px; width: 140px; height: 130px; border-radius: 10px; background: rgba(224, 163, 46, 0.24); border: 1.5px solid #e0a32e; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Kitchen</div>
+            <div style="position: absolute; left: 40px; top: 158px; width: 342px; height: 78px; border-radius: 10px; background: rgba(85, 102, 214, 0.24); border: 1.5px solid #5566d6; display: flex; align-items: flex-end; padding: 8px; font-size: var(--text-xs); color: var(--color-text-secondary);">Hallway and garage</div>
+          </div>
+          <x-import component-from-global-scope="HAConceptCarDesignSystem_fababd.Button" variant="primary" size="lg" icon="plus" hint-size="100%,48px">Add area</x-import>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="dv-next">Try next: "build <a class="dv-oid" href="#1a">1a</a> with <a class="dv-oid" href="#1d">1d</a> into the app" · "make <a class="dv-oid" href="#1b">1b</a> the page and drop the separate editor" · "riff on the area edit dialog"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

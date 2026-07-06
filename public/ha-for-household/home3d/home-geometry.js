@@ -62,7 +62,7 @@ export const homeGeometry = {
         { id: "tess-room", rects: [[4.2, 4, 8, 9]], label: [6.1, 6.5] },
         { id: "lars-room", rects: [[0, 0, 3.4, 4]], label: [1.7, 2] },
         { id: "bathroom", rects: [[5.0, 0, 8, 4]], label: [6.5, 2] },
-        { id: null, name: "Landing", rects: [[3.4, 0, 5.0, 4]], label: [4.2, 2] },
+        { id: "landing", name: "Landing", rects: [[3.4, 0, 5.0, 4]], label: [4.2, 2] },
       ],
     },
   },

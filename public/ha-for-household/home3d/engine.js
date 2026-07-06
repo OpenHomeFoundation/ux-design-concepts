@@ -1293,7 +1293,16 @@ export async function createEngine(opts) {
     setTime(h) { timeHours = h; updateLighting(); },
     // Re-frame for a different mount (desktop background vs mobile hero):
     // same scene, new zoom multiplier and horizontal shift.
-    setFraming(zoom, shift) { zoomK = zoom > 0 ? zoom : 1; shiftX = shift || 0; resize(); },
+    setFraming(zoom, shift) {
+      zoomK = zoom > 0 ? zoom : 1; shiftX = shift || 0;
+      // A running tween (e.g. the intro) would otherwise finish on the old
+      // framing's radius: retarget it to the refitted distance.
+      if (tween && !areaFocused) {
+        if (view === "home") tween.to.radius = fitRadius(HOME_VIEW.radius);
+        else if (view === "floor" && selectedFloor) tween.to.radius = floorCamera(selectedFloor).radius;
+      }
+      resize();
+    },
     setLatitude(lat) { latitude = lat; rebuildArc(); updateLighting(); },
     setTheme(t) { retheme(t === "light" ? "light" : "dark"); },
     updateState(s) { homeState = s; applyState(); },

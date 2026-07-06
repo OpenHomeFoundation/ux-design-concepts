@@ -23,13 +23,25 @@ The shared reference for every session. Keep it updated as the build progresses.
 > **Genuinely NOT built yet (real remaining work):**
 > 1. **Entity more-info dialog** — exists only as `Entity Dialog Spec.dc.html`;
 >    not wired into the app (no `moreInfo(entityId)`, tapping a tile just toggles).
-> 2. **Rebuilt tile card** — full per-domain controls exist only in
->    `Tile Card Spec.dc.html`; live `tile()` is identity + toggle only. Blocked
->    on (1).
-> 3. **Favoriting an entity in-app** — no star toggle; favorites are seeded per
+> 2. **Favoriting an entity in-app** — no star toggle; favorites are seeded per
 >    persona in `household.js` only.
-> 4. Smaller follow-ups: Settings -> Integrations listing device + service
->    integrations together.
+> 3. Smaller follow-ups:
+>    - (DONE 2026-07-05) Settings -> Integrations listing device + service
+>      integrations together. Built: see "Settings -> Integrations (the combined
+>      connector layer)" near the end of this file.
+>    - Wire the more-info body-tap into `featureTile` once (1) exists.
+>    - (DONE 2026-07-05) Favorites For-you widget and single-entity light render
+>      now use `featureTile`; the old `tile()` method is dead code, safe to remove.
+>
+> **Built since this index was last audited (2026-07-05):**
+> - **Rebuilt tile card** — DONE, shipped as `featureTile(e, persona)` (NOT the
+>   old `tile()`, which the earlier index grepped for and wrongly flagged as the
+>   live tile). Per-domain controls are live and wired across the whole home
+>   perspective (Lights, Climate, Security, Media, Energy, area detail): light
+>   brightness slider, fan speed slider, switch toggle, media transport row,
+>   climate radial gauge + target stepper + heat/cool badge, lock/unlock command
+>   group, device-class icon tint + honest state. Remaining: the body-tap
+>   more-info split (blocked on 1) and the two leftover `tile()` call sites above.
 >
 > When you finish a piece of work, update BOTH this index and the section label.
 
@@ -272,10 +284,37 @@ space and belongs in Settings. That settings destination was missing. Added:
 
 - New admin settings page **Settings -> Floors and areas** (`settingsSel:
   "floors-areas"`, first item of the "Home information" group in
-  `settingsNav`). `floorsAreasBody()` lists every floor as a surface card
-  (floor header + Edit floor + Add area) with its areas as ListRows carrying an
-  edit affordance, plus top-level Add floor / Order floors and areas actions.
-  Admin-gated like the rest of `/settings`; edit/add actions are placeholders.
+  `settingsNav`). Admin-gated like the rest of `/settings`.
+- **Rebuilt (2026-07) as the plan editor, directly on the page** (no iframe,
+  no separate Fit My Home page; `Fit My Home.dc.html` was deleted). The page
+  is **full width** (settings `wrap` gained an `opt.fullWidth` that beats the
+  narrow settings cap), two columns that wrap on mobile:
+  - **Left, the floor list** (`fmhFloorList`): floors top-down with icon,
+    name, Ground chip, area count, drag handle to restack, plus a draggable
+    dashed **street level line**: floors under it are `belowGround`
+    (apartment = drag it below every floor). Outside sits under the floors;
+    Add floor at the bottom of the list (new floors land on top, default
+    names Ground floor / First floor / ...).
+  - **Right, the editable layout canvas**: SVG floor plan, drag rooms to
+    move, dots to reshape (midpoint dot adds a corner, redundant corner
+    removes itself), sizes in meters on every room + wall dims when selected,
+    floor total (n areas, m^2) below. The floor beneath renders as a
+    **dashed ghost** to align upper floors correctly. Above the canvas an
+    inline floor header (Home-information style: Name FormField, Icon
+    picker, Delete floor) — no floor subpage.
+  - **Area subpage** (Cloud-settings pattern): tapping a selected room again
+    sets `state.planArea`; the settings detail swaps to `planAreaBody`
+    (Name, icon grid from `plan.js` AREA_ICONS, color swatches, size
+    readout, Delete) with back arrow + Escape.
+  - All `fmh*` methods live in the app's logic class; state in `state.fmh`.
+    Saves go through `fmhSave` -> `plan.js` `savePlan` + `rebuildHome3d()`
+    directly (same-document saves fire no storage event); the storage
+    listener still refreshes editor + 3D on cross-tab edits.
+  - Dropped from the old experiment: create-methods screen, 3D preview
+    button, home size slider, reset/start-over, add building.
+  - Design exploration lives in `Floors and Areas Options.dc.html`
+    (chosen: 4b street-line list + 2a direct-edit canvas + inline floor
+    header + 2b area subpage).
 - **Home topbar action change** (per review): removed the old overflow menu
   (Activity / History / Settings) from the home topbar. The home perspective
   now shows `+` (add) and, for maintainers, an **overflow (`...`) menu** whose
@@ -1620,12 +1659,17 @@ Extend the dashboards model to automations (then scenes/scripts): createdBy (per
 
 ## Tile card, rebuilt to match Home Assistant (compact + icon shape + features) — SPEC ONLY, NOT WIRED
 
-> Status (verified 2026-07-03): the full rebuild lives ONLY in the standalone
-> spec `Tile Card Spec.dc.html`. The live app's `tile()` is still identity +
-> toggle, special-casing only light/switch/fan. Per-domain controls (brightness
-> slider, climate gauge, lock, sensors, covers, media, badges) are NOT wired into
-> the app, and it depends on the more-info dialog below (tapping a tile body).
-> This is genuinely remaining work. Original plan kept below.
+> Status (verified 2026-07-05): BUILT. The rebuild shipped as
+> `featureTile(e, persona)` (NOT the old `tile()`; the 2026-07-03 index grepped
+> for `tile()` and wrongly reported the rebuild as unbuilt). Per-domain controls
+> are live and wired across the whole home perspective (Lights, Climate,
+> Security, Media, Energy, area detail): light brightness slider, fan speed
+> slider, switch toggle, media transport, climate radial gauge + target stepper +
+> heat/cool badge, lock/unlock command group, device-class icon tint + honest
+> state, plus the Lars locked "Ask Daan" variant. Remaining: the body-tap
+> more-info split (blocked on the more-info dialog below), and two leftover
+> `tile()` call sites (Favorites For-you widget, single-entity light render) that
+> should point at `featureTile`. Original plan kept below for rationale.
 
 The `EntityTile` we ship today is a **deliberately narrowed** take on Home
 Assistant's tile card: a tall (min-height 92px) vertical button, icon top-left,
@@ -1899,33 +1943,28 @@ are honest placeholders; the visual + interaction model is the real deliverable.
 
 ### Migration — STATUS
 
-**Done (first pass, in the live app `tile()`):** the app's `tile(e, persona)`
-now renders the new **compact horizontal** tile in **Icon-only mode** instead of
-the DS `EntityTile`:
-- Card stays on `--color-surface` in both states (no elevation/tint swap).
-- State reads from a **device-class icon circle** (amber light `#e0a32e`, blue
-  switch `#2f80ed`, cyan fan `#2aa6b3`, accent fallback): tinted fill + colored
-  glyph when on, `--color-surface-raised` grey circle + `--color-inactive` glyph
-  when off.
-- Layout: 40px circle left, name + On/Off stacked beside, `minHeight: 64`,
-  `cc-chip3d` hover. Whole tile taps to toggle (kept — see note).
-- The Lars locked "Ask Daan" variant is untouched.
+**Done (shipped as `featureTile(e, persona)`):** the rebuild is live and wired
+across the whole home perspective (Lights, Climate, Security, Media, Energy, area
+detail). The old `tile()` (compact icon-only, identity + toggle) is retained but
+now used only in two spots (Favorites For-you widget, single-entity light render).
+`featureTile` carries:
+- Card on `--color-surface`; device-class icon circle (amber light `#e0a32e`,
+  blue switch/media `#2f80ed`, cyan fan `#2aa6b3`, orange climate `#e0662e`,
+  green/red lock): tinted fill + colored glyph when active, grey when off.
+- **Per-domain controls in-app:** light brightness slider, fan speed slider,
+  switch icon toggle, media transport row (prev / play-pause / next), climate
+  radial gauge + target stepper + heat/cool badge, lock/unlock command group.
+- Identity row (icon + name + honest state) with an optional feature row beneath;
+  on/off domains toggle by tapping the icon, the rest drive from their control.
+- The Lars locked "Ask Daan" variant is preserved.
 
 **Still to do (follow-up):**
 - **More-info + split interaction.** The spec's model (tap icon = toggle, tap
-  body = more-info) needs a **more-info sheet/dialog** first (sheet &lt;768,
-  dialog ≥768 per `overlays.md`). Until that exists, the whole tile toggles.
-- **Features in-app.** Brightness slider (dimmable lights), target stepper
-  (climate), cover open/stop/close, media transport, etc. Currently only the
-  spec page carries these; the live tile is identity + toggle only.
-- **Per-domain coverage.** Live `tile()` only special-cases light/switch/fan
-  colors. Extend to the full domain map from the spec (climate gauge, lock
-  green/red, sensors comfort band, covers, media, helpers) with the right
-  control per domain.
-- **Decisions still open:** D2 background (currently Icon-only / no tint — revisit
-  if we want the subtle active tint), D4 sensor comfort bands.
-- **Density.** Revisit the `cols(4,3,2)` counts and gaps now that tiles are
-  ~64px rows.
+  body = more-info) still needs the **more-info sheet/dialog** first (sheet
+  &lt;768, dialog ≥768 per `overlays.md`). Until that exists, `featureTile` drives
+  its controls but has no body-tap target.
+- **Two leftover `tile()` call sites.** Point the Favorites For-you widget and
+  the single-entity light render at `featureTile` for consistency.
 
 Reference for all of the above: `Tile Card Spec.dc.html` (anatomy, matrix,
 controls, sensors, badges, and the full "Every domain and feature" gallery).
@@ -2009,39 +2048,61 @@ entity page rather than folding it in; both sheet and dialog shown.
 Reference: `Entity Dialog Spec.dc.html` (shell anatomy, the 28-dialog gallery,
 and a live tap-to-open room that switches sheet/dialog across 768px).
 
-## 3D home embedded on the homepage — BUILT
+## 3D home on the homepage — BUILT (direct mount, no iframe)
 
-The standalone 3D home (`Home 3D.dc.html` + `home3d/engine.js`, three.js) is
-now embedded in the app homepage as a live, navigable layer, not a preview.
+The 3D home (`home3d/engine.js`, three.js) mounts **directly in the app**
+as a live, navigable layer. The old standalone wrapper page (`Home 3D.dc.html`)
+and its iframe embed were removed (decision: homepage only, iframe boot caused
+a white flash + unstyled loading state and doubled scene boots across
+breakpoints). The Fit My Home editor page was later removed too: the plan
+editor is now built directly into Settings -> Floors and areas (see that
+section).
 
 ### Presentation per breakpoint
 
 - **Desktop and tablet:** the 3D renders as a **full-page background layer**
-  behind the whole shell (`renderShell` mounts the iframe at z 0; rail, topbar
-  and title go transparent above it, like the Map page). Widgets/cards sit in
-  the left column (440px), the home fills the space to the right. Camera uses
-  `shift=0.15` + `zoom=0.52` query params so the home centers in the free area.
+  behind the whole shell (`renderShell` mounts the engine host at z 0; rail,
+  topbar and title go transparent above it, like the Map page). Widgets/cards
+  sit in the left column (440px), the home fills the space to the right.
+  Desktop framing is `zoom=0.62`, `shift=0.15` (zoom bumped from 0.52 on
+  request) so the home centers, larger, in the free area.
 - **Mobile:** inline slot (240px tall) in the page flow, full-bleed width, with
   the canvas overhanging 140px up (behind the big title) and 200px down (behind
   the cards scrolling over it). No card, no mask on any breakpoint.
-- The horizon in embed mode (`?embed=1`) is a small radial wash that fades into
-  `--color-bg` (engine `ambient` option); no sun-path arc, no tweaks column, no
-  in-3D status pill or floor chrome.
+- The horizon uses a small radial wash that fades into `--color-bg` (engine
+  `ambient` option); no sun-path arc, no tweaks column, no in-3D status pill or
+  floor chrome. (The standalone page's demo tweaks panel, time of day, city,
+  etc. was dropped with the page; time of day follows the real clock, ticked
+  every 30s.)
 
-### Embed protocol (postMessage, both directions)
+### Direct mount (replaces the old postMessage embed protocol)
 
-- 3D -> app: `home3d:floor` (floor tapped -> `/home/floor/:id`), `home3d:area`
-  (area tapped -> `/home/area/:id`), `home3d:home` (tap outside -> back), and
-  `home3d:ready` (handshake on load).
-- App -> 3D: `home3d:focus {floor, area}` on route change (drill in / zoom out;
-  `_applyingFocus` guard stops echo loops), `home3d:state` (live entity mirror:
-  per-light on/off, per-area lights/temp/humidity/climate action, so the 3D
-  never shows stale state), and `home3d:pointer` (forwarded pointer stream).
-- **Pointer forwarding:** on desktop/tablet the shell overlay forwards
-  down/move/up events that land on bare background (`home3dPointer`; anything
-  with its own background, buttons, links, etc. is ignored) and replays them as
-  synthetic PointerEvents on the engine canvas, so hover lift, taps and
-  drag-to-orbit work through the page.
+One engine instance for the whole app, in a persistent host div
+(`home3dHost()`), adopted by whichever homepage container is on screen
+(`_h3dRefDesktop` / `_h3dRefMobile` -> `home3dAttach`), so switching
+breakpoints re-frames (`engine.setFraming(zoom, shift)`, which also retargets
+a running intro tween) instead of rebooting the scene.
+
+- Engine is `import()`ed lazily with `home-geometry.js` + `plan.js` on first
+  attach (`ensureHome3d`). The saved plan wins over hand-authored geometry.
+  The Floors and areas editor calls `rebuildHome3d()` directly on save; a
+  `storage` listener on `cc-home3d-plan-v1` covers edits from another tab
+  (and refreshes the editor's own copy of the plan).
+- 3D -> app: `onViewChange` / `onAreaPick` callbacks drive the router
+  (floor -> `/home/floor/:id`, area -> `/home/area/:id`, tap outside -> back);
+  `_h3dApplying` guard stops route echo loops.
+- App -> 3D: `syncHome3d()` calls `focusFloor` / `focusArea` / `backHome`
+  directly on route change; `pushHome3dState()` calls `engine.updateState`
+  (live entity mirror, keyed diff). Theme changes call `engine.setTheme`
+  from `applyAppearance`.
+- **Pointer forwarding:** on desktop/tablet the shell overlay replays
+  down/move/up events that land on bare background (`home3dPointer` ->
+  `home3dFwd`) as synthetic PointerEvents on the engine canvas, so hover lift,
+  taps and drag-to-orbit work through the page. **Wheel-to-zoom** is forwarded
+  the same way via a non-passive native `wheel` listener (`_h3dOverlayRef`).
+- **Text selection:** same-document canvas means drag-to-orbit is also a text
+  drag; orbit-drag start prevents the selection anchor, clears any selection,
+  and sets `user-select: none` on body until pointer-up.
 
 ### Navigation model
 
@@ -2058,8 +2119,10 @@ now embedded in the app homepage as a live, navigable layer, not a preview.
 
 ### Engine additions (`home3d/engine.js`)
 
-- Options: `ambient` (embed horizon wash), `zoom` (radius multiplier), `shiftX`
-  (screen-space horizontal offset via `setViewOffset`).
+- Options: `ambient` (horizon wash), `zoom` (radius multiplier), `shiftX`
+  (screen-space horizontal offset via `setViewOffset`); `setFraming(zoom,
+  shift)` changes both live for breakpoint switches.
+- Sun and moon discs are mutually exclusive (dawn/dusk overlap bug fixed).
 - `focusArea(areaId)`, `tapAt(x, y)`, area-aware `focusFloor`/`backHome`
   (reframe when leaving an area zoom).
 - `fitRadius` now scales with viewport aspect: wide screens pull the camera in
@@ -2068,7 +2131,7 @@ now embedded in the app homepage as a live, navigable layer, not a preview.
 ### Layout notes
 
 - `floorplanPlaceholder(bp)`: desktop/tablet renders an empty spacer (the real
-  canvas is the shell layer); mobile renders the inline overhanging iframe.
+  canvas is the shell layer); mobile renders the inline overhanging host div.
 - `cardGrid` on all breakpoints is now `auto-fill, minmax(0.75 * deskMin)` so
   two cards share the narrow 440px column next to the 3D.
 - Area headings on floor subviews use the big (`text-2xl`) `sectionLink`.
@@ -2077,6 +2140,196 @@ now embedded in the app homepage as a live, navigable layer, not a preview.
   area detail needs them back, pass no opts.
 
 Reference implementations: `renderShell` (background layer + pointer overlay),
-`floorplanPlaceholder`, `homeContentTransition`, `syncHome3d` /
-`pushHome3dState` (app side); `Home 3D.dc.html` logic class `_onMsg` /
-`onViewChange` / `onAreaPick` (embed side); `home3d/engine.js` (camera).
+`floorplanPlaceholder`, `homeContentTransition`, `home3dAttach` /
+`ensureHome3d` / `rebuildHome3d`, `syncHome3d` / `pushHome3dState`,
+`home3dPointer` / `home3dFwd` / `_h3dOverlayRef` (app side);
+`home3d/engine.js` (camera, `setFraming`).
+
+## Settings -> Integrations (the combined connector layer) — PLAN
+
+> Status: BUILT (2026-07-05). All three phases shipped. `settingsSel:
+> "integrations"` now renders `integrationsBody` (grouped card grid) and, via
+> `state.integrationSel`, `integrationDetailBody`. Data is a computed
+> `integrations` export in `household.js` (added to `window.__HH_MOD`). Device
+> detail links its Integration value and lists its entities; the entity
+> inspector Integration row and the service edit "Connected" cog both open the
+> integration detail; the detail's "entities" cross-link deep-links `/entities`
+> with the integration filter pre-applied. Admin-gated via the existing
+> `/settings` gate. Original plan kept below.
+>
+> Decisions (confirmed 2026-07-05): build all three phases; keep the name
+> **Integrations**; **card grid grouped by category** (not the collection
+> shell); **full data realism** (multiple config entries, an error state);
+> **no Add-integration flow on this page** (integrations arrive through the
+> existing "Add device" and "Add a service" flows); **Discovered and
+> Attention-needed do NOT live here** (they land elsewhere, see note below);
+> also wire the device-detail and service cross-links.
+
+### What HA does (reference, so we adapt not copy)
+
+Real Home Assistant puts this under **Settings -> Devices and services**, with
+tabs Integrations / Devices / Entities / Helpers. The **Integrations tab** is:
+a **Discovered** section at the top (auto-found devices with an Add button), then
+a **grid of integration cards**, one per configured brand. Each card shows the
+brand logo, the integration name, and a count line ("3 devices and 12
+entities"); a warning badge appears when an entry needs attention (reauth,
+reconfigure). A card can hold several **config entries** (e.g. two Hue bridges).
+A floating "Add integration" button sits bottom-right. Clicking a card opens the
+**integration detail**: brand header (logo, "by {author}", version, IoT class,
+Documentation link), the config-entry list (each with status + device/entity
+counts + per-entry overflow: Reload, Rename, Delete, System options, Enable
+newly added entities), and the devices + entities that entry provides. Per-entry
+issues surface a Reconfigure / Reauthenticate action.
+
+### How it maps into our concept
+
+We keep our name **Integrations** (the honest technical connector layer, admin
+space, under `/settings`) and list **device integrations and service
+integrations together**, plus the internal/system ones. It stays a settings
+destination, not a new top-level route. Reuse our existing patterns: the
+Cloud-settings drill-in (`cloudSub`) for list -> detail, the titled-section
+card pattern (CLAUDE.md), the overlay engine (`renderSheet` / `fyScrim` /
+`askConfirm`) for Add and Delete, and the brand-logo helpers we already have
+(`brandLogo` / `brandDomain`). Copy rules apply ("and" never "&", sentence case,
+plain status words).
+
+### Data (new, in `household.js`)
+
+Add a computed builder `buildIntegrations(household)` (sibling of
+`buildEntityRegistry`), exposed as `household.integrations`. Each entry:
+
+- `id` (domain slug: `hue`, `nest`, `zwave_js`, `reolink`, `zha`, `cast`,
+  `assist`, plus service slugs `metno`, `spotify`, `google_maps`, `afvalwijzer`,
+  and system `cloud`, `mqtt`, `template`, `google_assistant`, `amazon_alexa`).
+- `name`, `domain` (for `brandLogo`), `author` (Philips, Google, Home Assistant
+  project, ...), `version` (mono), `iotClass` ("Local push" / "Local polling" /
+  "Cloud polling" / "Cloud push"), `docsUrl` (inert link).
+- `category`: `"device"` (local devices and hubs), `"service"` (external feeds
+  that power a Service page), `"system"` (internal: Cloud, MQTT, Template,
+  Google, Alexa).
+- `entries`: config entries `[{ id, title, status, deviceCount, entityCount }]`.
+  `status` in `loaded | error | setup_in_progress | disabled`. Most have one
+  entry; give **Hue two bridges** and one `error` entry (e.g. Reolink
+  "reauthentication required") for honest variety.
+- Counts derived, not hand-kept: reuse `integrationOf(device)` over
+  `household.entities` and the `integration` field on the entity registry to
+  compute device + entity counts per integration. Service integrations pull
+  their installed flag from the existing `serviceIntegrations` +
+  `household.services[*].installed`, and carry `powers: [serviceId]`.
+- `issues`: optional `[{ kind: "reauth" | "reconfigure", text }]`; reuse the
+  `repairs` demo data where it fits. Discovered devices reuse the existing
+  `discovered` demo list.
+
+### List page (`integrationsBody(persona, bp)`)
+
+Rendered from `customSettings()["integrations"]`; **admin-gated** (residents get
+the existing no-access state, same as the rest of `/settings`). `fullWidth` like
+`floors-areas` so the card grid breathes past the 760 settings cap.
+
+- **Search** (name) + **category chips** (All / Devices and hubs / Services /
+  System) + **Sort** (Name / Most entities). Small, inline; not the full
+  Filters rail (this is a settings page, not a collection).
+- **Discovered** and **Attention-needed** are NOT part of this page. Discovered
+  devices belong to the add-device flow; integration health / repairs land in
+  the repairs surface. This page is purely the listing + detail of configured
+  integrations. (An `error` config-entry status still shows as a status pill on
+  the card and an attention card inside the detail; there is just no separate
+  top-of-list Attention section here.)
+- **Integration cards**, grouped under `SectionHeader`s by category ("Devices
+  and hubs", "Services", "System"). Card = 48px brand-logo squircle (fallback
+  `power-plug` glyph on a neutral squircle), name, a mono meta line
+  ("3 devices and 12 entities" for devices; "Powers Weather" for services), an
+  optional status dot when not all entries are loaded, and an overflow (`...`).
+  Card on `--color-surface`, page `--color-bg`. Tap -> detail.
+- **No Add-integration action on this page.** Integrations are created through
+  the existing flows: hardware through **Add device**, external feeds through
+  **Add a service** (the `serviceIntegrations` gallery in `serviceEditBody`).
+  So this page has no topbar `+` for adding; it is a listing + management view.
+  (Per-integration/entry manage actions still live here, see Phase C.)
+
+### Detail page (`integrationDetailBody(id, bp)`)
+
+Drill-in via a new `state.integrationSel` (mirrors `cloudSub` / `planArea`):
+set on card tap, cleared by the back arrow and Escape; on desktop the settings
+submenu stays. `settingsDetail` swaps to this body when `integrationSel` is set,
+same as the Cloud account subpages.
+
+- **Identity card** (stands alone, no heading, per the titled-section rule):
+  large brand-logo squircle, name, "by {author}", `version` mono, an `iotClass`
+  chip, a "Documentation" link (inert), and an overflow (Reload, Rename, System
+  options, Delete). Delete uses `askConfirm` (danger).
+- **Attention card** (if issues): `warning` surface, the problem stated plainly,
+  a "Reauthenticate" / "Reconfigure" button.
+- **Entries** titled section ("Hubs and accounts"): one row per config entry
+  with title, a status pill (Working / Needs attention / Disabled), "n devices
+  and m entities", and a per-entry overflow. Folds into the identity card when
+  there is a single entry. "Add hub" / "Add entry" link at the bottom.
+- **Devices** titled section: grid of the devices this integration provides
+  (reuse the device card), each linking to `/devices/:id`. Heading carries the
+  count. Omitted for pure service integrations.
+- **Entities** titled section: first ~6 entities as compact rows into the entity
+  inspector, then "View all n entities in Entities" which routes to `/entities`
+  **with the integration filter pre-applied** (that filter already exists on the
+  entities collection). This is the key cross-link that makes the layer honest.
+- **Service integrations** replace Devices with a "Powers" row linking to the
+  Service page (`serviceEditBody`) plus that service's settings.
+
+### Cross-links to wire (make the layer honest both ways) + device/service gaps
+
+Confirmed to build alongside (device_gaps = yes, and check services):
+
+- Device detail's "Integration: Philips Hue" value -> integration detail
+  (currently plain text at `deviceDetail` details rows).
+- **Device detail lists the device's entities** (currently only a single
+  "Entity ID" row): a titled "Entities" section of the registry rows whose
+  `deviceId` matches, each into the entity inspector. This makes the
+  device<->entities cross-link two-way (the inspector already links back).
+- Entity inspector's "Integration" row -> integration detail (currently plain
+  text).
+- **Services check:** the Service edit "Connected" integrations -> integration
+  detail, and each service integration's detail "Powers" row -> the Service
+  page, so the service<->integration link is honest both ways. Confirm the
+  `serviceIntegrations` installed flags and `household.services[*].installed`
+  line up with what `buildIntegrations` reports.
+- Home extensions / repairs stay where they are; Integrations links out to them,
+  it does not absorb them.
+
+### Access, copy, design-system
+
+- Admin only; residents blocked (existing `/settings` gate).
+- Copy: "and" not "&", sentence-case status words, no marketing. Counts as raw
+  mono strings.
+- Elevation not borders (page `--color-bg` -> card `--color-surface` -> nested
+  rows `--color-surface-raised`); hairline dividers only between entry rows.
+  One accent (blue) for links + the single active/live thing; semantic colors
+  only on issue/status. Brand logos via `brandLogo`. MDI icons. No new tokens.
+- Config actions (Add, Reload, Rename, Delete, Reauth) are demonstrated, not
+  functional (flip/close locally, links inert), consistent with the rest of the
+  admin settings in this prototype.
+
+### Build phases
+
+- **A, data + list:** `buildIntegrations`, `integrationsBody`, admin gate,
+  `fullWidth`, search/category/sort, grouped cards (no Discovered/Attention
+  section, no Add). Wire the device-detail and entity-inspector "Integration"
+  values to open the (still stubbed) detail.
+- **B, detail:** `state.integrationSel` drill-in, `integrationDetailBody`
+  (identity, entries, devices, entities cross-link to filtered `/entities`,
+  service "Powers" link, issues card). Plus the device-detail entities section
+  and the service cross-links above.
+- **C, manage:** per-integration and per-entry overflow actions (Reload /
+  Rename / Delete via `askConfirm`), reauth/reconfigure action on issue cards.
+  No add flow (adding happens via Add device / Add a service).
+
+### Verification
+
+Admin (Daan) sees the full list and can drill into a device integration (Hue
+shows two bridges, one flagged), a service integration (Met.no -> "Powers
+Weather"), and a system one (Cloud). "View all entities" lands on `/entities`
+pre-filtered. Residents (Sofie) get the no-access state. No "&" in any copy.
+Mobile drill-in and Add sheet behave per `overlays.md`.
+
+Reference implementations to model on: `cloudAccountBody` / `cloudSub` (list ->
+subpage drill-in), `homeInfoBody` `titled()` (section cards), `serviceEditBody`
+(connected + gallery), `entityFilterGroups` (integration filter to deep-link),
+`brandLogo` / `brandDomain` (logos), `askConfirm` (delete).

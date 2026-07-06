@@ -49,7 +49,7 @@ export const defaultPlan = {
         { key: "tess-room", area: "tess-room", name: "Bedroom", icon: "bed", color: null, rects: [[4.2, 4, 8, 9]] },
         { key: "lars-room", area: "lars-room", name: "Bedroom", icon: "bed", color: null, rects: [[0, 0, 3.4, 4]] },
         { key: "bathroom", area: "bathroom", name: "Bathroom", icon: "shower", color: null, rects: [[5.0, 0, 8, 4]] },
-        { key: "landing", area: null, name: "Landing", icon: "stairs", color: null, rects: [[3.4, 0, 5.0, 4]] },
+        { key: "landing", area: "landing", name: "Landing", icon: "stairs", color: null, rects: [[3.4, 0, 5.0, 4]] },
       ],
     },
   ],

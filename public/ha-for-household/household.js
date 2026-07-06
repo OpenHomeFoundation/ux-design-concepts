@@ -89,7 +89,7 @@ export const household = {
   // each floor's `order` still drives the physical 3D stack and settings.
   floors: [
     { id: "ground", name: "Ground floor", building: "main-house", order: 1, isGround: true, icon: "home-floor-g", areas: ["living-room", "kitchen", "hallway", "garage", "greet-room", "greet-ensuite"] },
-    { id: "first", name: "First floor", building: "main-house", order: 2, icon: "home-floor-1", areas: ["main-bedroom", "tess-room", "lars-room", "bathroom"] },
+    { id: "first", name: "First floor", building: "main-house", order: 2, icon: "home-floor-1", areas: ["main-bedroom", "tess-room", "lars-room", "bathroom", "landing"] },
     { id: "basement", name: "Basement", building: "main-house", order: 0, icon: "home-floor-negative-1", areas: ["utility"] },
   ],
 
@@ -108,6 +108,7 @@ export const household = {
     "tess-room":    { id: "tess-room", name: "Tess's room", floor: "first", icon: "bed", temp: 20.2, humidity: 47, lights: 2, lightsOn: 0 },
     "lars-room":    { id: "lars-room", name: "Lars's room", floor: "first", icon: "teddy-bear", temp: 20.5, humidity: 48, lights: 1, lightsOn: 1 },
     "bathroom":     { id: "bathroom", name: "Bathroom", floor: "first", icon: "shower", temp: 21.0, humidity: 64, lights: 2, lightsOn: 0 },
+    "landing":      { id: "landing", name: "Landing", floor: "first", icon: "stairs", temp: 20.1, humidity: 50, lights: 1, lightsOn: 1 },
     "greet-room":   { id: "greet-room", name: "Elizabeth's room", floor: "ground", icon: "bed", temp: 22.6, humidity: 45, lights: 2, lightsOn: 1 },
     "greet-ensuite":{ id: "greet-ensuite", name: "Elizabeth's ensuite", floor: "ground", icon: "toilet", temp: 22.0, humidity: 58, lights: 1, lightsOn: 0 },
     "garden":       { id: "garden", name: "Garden", outdoor: true, icon: "tree", lights: 1, lightsOn: 0 },
@@ -160,6 +161,10 @@ export const household = {
     { id: "bathroom_ceiling", name: "Ceiling", type: "light", area: "bathroom", icon: "ceiling-light", on: false },
     { id: "bathroom_mirror", name: "Mirror", type: "light", area: "bathroom", icon: "mirror", on: false },
     { id: "bathroom_humidity", name: "Humidity", type: "sensor", area: "bathroom", icon: "water-percent", state: "64%", devType: "Humidity", mono: true, battery: 55 },
+    // Landing
+    { id: "landing_ceiling", name: "Ceiling", type: "light", area: "landing", icon: "ceiling-light", on: true },
+    { id: "landing_motion", name: "Motion", type: "sensor", area: "landing", icon: "motion-sensor", state: "Clear", devType: "Motion", battery: 78 },
+    { id: "landing_smoke", name: "Smoke detector", type: "sensor", area: "landing", icon: "smoke-detector", state: "Clear", devType: "Smoke", battery: 91 },
     // Annex (Elizabeth)
     { id: "greet_ceiling", name: "Ceiling", type: "light", area: "greet-room", icon: "ceiling-light", on: true },
     { id: "greet_lamp", name: "Bedside lamp", type: "light", area: "greet-room", icon: "lamp", on: false },
@@ -930,6 +935,104 @@ export const entityRegistry = (() => {
   return reg;
 })();
 
+// ---- Integrations (the combined connector layer, admin) ----------------
+// Computed, not hand-kept: device integrations come from the entity registry
+// (grouped by each entity's `integration`), service integrations from the
+// installed ids on each Service page, plus a few internal/system connectors.
+// This is the honest technical layer powering both Devices and the Service
+// pages. See plan.md "Settings -> Integrations (the combined connector layer)".
+export const integrations = (() => {
+  const docBase = "https://www.home-assistant.io/integrations/";
+  // Metadata per device-integration NAME (as assigned by the registry's
+  // integ()). `domain` drives the brand logo (brands.home-assistant.io).
+  const DEVICE_META = {
+    "Philips Hue":  { id: "hue", domain: "hue", author: "Signify", version: "4.2.1", iotClass: "Local push" },
+    "ESPHome":      { id: "esphome", domain: "esphome", author: "ESPHome", version: "2025.10.3", iotClass: "Local push" },
+    "Google Nest":  { id: "nest", domain: "nest", author: "Google", version: "1.9.0", iotClass: "Cloud push" },
+    "Z-Wave":       { id: "zwave_js", domain: "zwave_js", author: "Home Assistant", version: "0.7.2", iotClass: "Local push" },
+    "Reolink":      { id: "reolink", domain: "reolink", author: "Reolink", version: "0.5.4", iotClass: "Local push" },
+    "Sonos":        { id: "sonos", domain: "sonos", author: "Sonos", version: "1.3.0", iotClass: "Local push" },
+    "Zigbee":       { id: "zha", domain: "zha", author: "Home Assistant", version: "0.7.0", iotClass: "Local push" },
+    "Assist":       { id: "assist_pipeline", domain: "assist_pipeline", author: "Home Assistant", version: "1.0.0", iotClass: "Local push" },
+    "MQTT":         { id: "mqtt", domain: "mqtt", author: "Home Assistant", version: "6.5.0", iotClass: "Local push", category: "system" },
+    "Template":     { id: "template", domain: "template", author: "Home Assistant", version: "1.0.0", iotClass: "Local push", category: "system" },
+    "TP-Link Kasa": { id: "tplink", domain: "tplink", author: "TP-Link", version: "0.4.1", iotClass: "Local polling" },
+  };
+  const byName = {};
+  entityRegistry.forEach((e) => {
+    const n = e.integration; if (!n) return;
+    if (!byName[n]) byName[n] = { deviceIds: [], entityIds: [] };
+    const g = byName[n];
+    if (e.deviceId && g.deviceIds.indexOf(e.deviceId) < 0) g.deviceIds.push(e.deviceId);
+    g.entityIds.push(e.id);
+  });
+  const out = [];
+  Object.keys(byName).forEach((name) => {
+    const meta = DEVICE_META[name] || { id: name.toLowerCase().replace(/[^a-z0-9]+/g, "_"), domain: null, author: "Home Assistant", version: "1.0.0", iotClass: "Local polling" };
+    const g = byName[name];
+    const dc = g.deviceIds.length, ec = g.entityIds.length;
+    let entries;
+    if (meta.id === "hue") {
+      const d1 = Math.ceil(dc / 2), e1 = Math.ceil(ec / 2);
+      entries = [
+        { id: "hue-lr", title: "Living room bridge", status: "loaded", deviceCount: d1, entityCount: e1 },
+        { id: "hue-studio", title: "Studio bridge", status: "loaded", deviceCount: dc - d1, entityCount: ec - e1 },
+      ];
+    } else if (meta.id === "reolink") {
+      entries = [{ id: "reolink-1", title: name, status: "error", deviceCount: dc, entityCount: ec,
+        issue: { kind: "reauth", text: "Reolink needs you to sign in again. The camera password may have changed." } }];
+    } else if (meta.id === "tplink") {
+      entries = [{ id: "tplink-1", title: name, status: "disabled", deviceCount: dc, entityCount: ec }];
+    } else {
+      entries = [{ id: meta.id + "-1", title: name, status: "loaded", deviceCount: dc, entityCount: ec }];
+    }
+    out.push({ id: meta.id, name, domain: meta.domain, author: meta.author, version: meta.version,
+      iotClass: meta.iotClass, category: meta.category || "device", docsUrl: docBase + meta.id + "/",
+      deviceIds: g.deviceIds, entityIds: g.entityIds, deviceCount: dc, entityCount: ec, entries });
+  });
+  // Service integrations: each service's installed ids resolved against the
+  // per-category gallery; deduped, a shared connector accumulates the services
+  // it powers.
+  const SVC_DOMAIN = { metno: "met", spotify: "spotify", googlemaps: "google_maps", google: "google" };
+  const svcById = {};
+  Object.keys(household.services).forEach((sid) => {
+    const svc = household.services[sid];
+    const gal = household.serviceIntegrations[sid] || [];
+    (svc.installed || []).forEach((iid) => {
+      const g = gal.find((x) => x.id === iid) || { id: iid, name: iid, icon: "power-plug" };
+      if (!svcById[iid]) svcById[iid] = { key: iid, name: g.name, icon: g.icon, powers: [], powerRoutes: [] };
+      svcById[iid].powers.push(svc.name);
+      svcById[iid].powerRoutes.push({ name: svc.name, route: svc.route, id: svc.id });
+    });
+  });
+  Object.keys(svcById).forEach((iid) => {
+    const s = svcById[iid];
+    const local = /^(local|caldav)$/.test(iid) || /local/i.test(s.name);
+    out.push({ id: "svc_" + iid, name: s.name, domain: SVC_DOMAIN[iid] || null, icon: s.icon,
+      author: "Home Assistant", version: "1.0.0", iotClass: local ? "Local push" : "Cloud polling",
+      category: "service", docsUrl: docBase, powers: s.powers, powerRoutes: s.powerRoutes,
+      deviceIds: [], entityIds: [], deviceCount: 0, entityCount: 0,
+      entries: [{ id: "svc_" + iid + "-1", title: s.name, status: "loaded", deviceCount: 0, entityCount: 0 }] });
+  });
+  // Internal / system connectors that are neither devices nor feeds.
+  const sys = (id, name, domain, icon, iotClass, powers) => out.push({ id, name, domain, icon,
+    author: id === "cloud" ? "Nabu Casa" : "Home Assistant", version: "1.0.0", iotClass, category: "system",
+    docsUrl: docBase + id + "/", powers: powers || [], powerRoutes: [], deviceIds: [], entityIds: [],
+    deviceCount: 0, entityCount: 0, entries: [{ id: id + "-1", title: name, status: "loaded", deviceCount: 0, entityCount: 0 }] });
+  sys("cloud", "Home Assistant Cloud", "cloud", "cloud", "Cloud push", ["Remote access", "Voice control", "Google and Alexa"]);
+  sys("google_assistant", "Google Assistant", "google_assistant", "google-assistant", "Cloud push", ["Voice control"]);
+  sys("alexa", "Amazon Alexa", "alexa", "microphone", "Cloud push", ["Voice control"]);
+  // Roll a top-level status + issues onto each integration from its entries.
+  out.forEach((it) => {
+    const st = it.entries.map((e) => e.status);
+    it.status = st.indexOf("error") >= 0 ? "error" : st.every((s) => s === "disabled") ? "disabled" : (st.indexOf("disabled") >= 0 ? "partial" : "loaded");
+    it.issues = it.entries.filter((e) => e.issue).map((e) => e.issue);
+  });
+  const catRank = { device: 0, service: 1, system: 2 };
+  out.sort((a, b) => (catRank[a.category] - catRank[b.category]) || a.name.localeCompare(b.name));
+  return out;
+})();
+
 // ---- Bookmark targets ---------------------------------------------------
 // Bookmarks are favourite shortcuts, NOT destinations. They never appear on
 // the More page. A bookmark can point at a top-level directory entry OR at a
@@ -1421,7 +1524,7 @@ export const explore = {
 
 if (typeof window !== "undefined") {
   window.__HH_MOD = {
-    household, directory, bookmarkExtras, extensionCategories, mapData, entityRegistry,
+    household, directory, bookmarkExtras, extensionCategories, mapData, entityRegistry, integrations,
     getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, energyFor,
     normalizeStructure, floorsOfBuilding, groundFloorOf, outdoorAreaList, visibleBuildings,
     dashboards, dashboardTemplates, grantMatches, canEditDashboard, canViewDashboard, dashboardsFor, dashboardSpaceFor,

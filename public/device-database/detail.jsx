@@ -158,7 +158,7 @@ const Detail = ({ deviceId }) => {
           <div className="detail-headline">
             <h1>{device.name}</h1>
             <div className="detail-manu">
-              by <a href={`#/browse?manufacturer=${encodeURIComponent(device.manufacturer)}`} style={{ color: "var(--fg)" }}>{device.manufacturer}</a>
+              by <a href={`#/browse?manufacturer=${encodeURIComponent(device.manufacturer)}`}>{device.manufacturer}</a>
             </div>
           </div>
           {(photosOn && device.photos && device.photos.length > 0) ?

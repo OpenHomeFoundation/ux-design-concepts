@@ -158,6 +158,38 @@ function storeNameFromUrl(url) {
   return host;
 }
 
+// Format a manufacturer reference price (MSRP) for the read view. The shape
+// follows the pricing plan's reference-price object: { amount, currency,
+// source, sourceUrl, asOf }. Amount + currency render through Intl so the
+// symbol and grouping match the currency.
+function fmtMoney(amount, currency) {
+  if (amount == null || amount === '') return '-';
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD' }).format(amount);
+  } catch (e) {
+    return (currency ? currency + ' ' : '') + amount;
+  }
+}
+// "YYYY-MM" reads as "March 2026"; anything else passes through unchanged.
+function fmtAsOf(asOf) {
+  if (!asOf) return '';
+  const m = /^(\d{4})-(\d{2})$/.exec(asOf);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, 1)
+      .toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+  return asOf;
+}
+
+// Read-view list of proprietary-bridge names, each linked to its hub device
+// when one is on record. Renders one line per bridge.
+function BridgeNamesRead({ names }) {
+  return (names || []).map((nm, i) => {
+    const bd = window.deviceForBridgeName ? window.deviceForBridgeName(nm) : null;
+    return <div key={i}>{bd ? <a className="ce-link-ink" href={'#/device/' + bd.id}>{nm}</a> : nm}</div>;
+  });
+}
+
 // Additional specs for the read view, grouped under subheaders that mirror
 // the edit view (category specs, Protocols, Ecosystems and apps, Dimensions,
 // Product identifiers). Each group and row only renders when it has data.
@@ -191,6 +223,23 @@ function SpecsReadGroups({ device, onShowVersions }) {
           <dd>{fmtCustomValue(r)}</dd>
         </div>)}
       </Group>);
+  }
+
+  // Reference price (MSRP). A manufacturer-set fact, one row per currency,
+  // shown only when present, rendered like every other figure on the page.
+  {
+    const prices = (Array.isArray(device.msrp) ? device.msrp
+      : (device.msrp && device.msrp.amount != null ? [device.msrp] : []))
+      .filter((p) => p && p.amount != null);
+    if (prices.length > 0) {
+      out.push(
+        <Group title="Pricing" key="price">
+          <div className="trait-row">
+            <dt>Reference price</dt>
+            <dd>{prices.map((p, i) => <div key={i}>{fmtMoney(p.amount, p.currency)}</div>)}</dd>
+          </div>
+        </Group>);
+    }
   }
 
   if (eco) {
@@ -231,6 +280,7 @@ function SpecsReadGroups({ device, onShowVersions }) {
     map((p) => ({ key: p.key, label: p.label }));
     const reqs = bridgeRequirements(protos, device.category);
     const bridge = specs.bridge || {};
+    const bridgeNames = Array.isArray(bridge.proprietary) ? bridge.proprietary.filter(Boolean) : (bridge.proprietary ? [bridge.proprietary] : []);
     if (protoRows.length > 0) {
       out.push(
         <SpecGroup title="Connectivity" key="proto">
@@ -259,10 +309,10 @@ function SpecsReadGroups({ device, onShowVersions }) {
                   </div>
                 </dd>
               </div>}
-            {(protos.zigbee || protos.zwave) && device.category !== 'hubs' && bridge.proprietary &&
+            {(protos.zigbee || protos.zwave) && device.category !== 'hubs' && bridgeNames.length > 0 &&
             <div className="trait-row">
                 <dt>Proprietary bridge</dt>
-                <dd>{bridge.proprietary}</dd>
+                <dd><BridgeNamesRead names={bridgeNames} /></dd>
               </div>}
           </dl>
         </SpecGroup>);
@@ -347,7 +397,7 @@ function SpecsReadGroups({ device, onShowVersions }) {
   // what it connects with (Ecosystems) → vendor app → physical (Dimensions) →
   // firmware (Software version) → identity (Product identifiers). Built out of
   // order above; sorted here by stable key so read + edit views match.
-  const groupOrder = ['cat', 'proto', 'eco', 'appsub', 'dims', 'sw', 'ids'];
+  const groupOrder = ['cat', 'price', 'proto', 'eco', 'appsub', 'dims', 'sw', 'ids'];
   out.sort((a, b) => groupOrder.indexOf(a.key) - groupOrder.indexOf(b.key));
   return out.length ? <React.Fragment>{out}</React.Fragment> : null;
 }
@@ -371,7 +421,14 @@ function PendingValuePreview({ fieldKey, value, device }) {
     return <span>{on.map((k) => byKey[k] || k).join(', ') || '-'}</span>;
   }
   if (fieldKey === 'bridge') {
-    if (value && value.proprietary) return <span>{'Proprietary bridge: ' + value.proprietary}</span>;
+    const names = value && value.proprietary ? (Array.isArray(value.proprietary) ? value.proprietary.filter(Boolean) : [value.proprietary]) : [];
+    if (names.length > 0) return <span>{'Proprietary bridge: ' + names.join(', ')}</span>;
+    return <span className="ce-pending-empty">-</span>;
+  }
+  if (fieldKey === 'msrp') {
+    const arr = Array.isArray(value) ? value : (value && value.amount != null ? [value] : []);
+    const valid = arr.filter((p) => p && p.amount != null);
+    if (valid.length > 0) return <span>{valid.map((p) => fmtMoney(p.amount, p.currency)).join(' \u00b7 ')}</span>;
     return <span className="ce-pending-empty">-</span>;
   }
   if (fieldKey === 'ecosystems') {
@@ -497,7 +554,7 @@ function PendingLockedControl({ f, value }) {
     const sel = new Set(Array.isArray(value) ? value : []);
     const opts = (f.options || []).map((o) => typeof o === 'string' ? { value: o, label: o } : o);
     return (
-      <span className="ce-multi-lock" role="group" aria-label="Selected options, awaiting approval" aria-disabled="true">
+      <span className="ce-multi-lock" role="group" aria-label="Selected options, awaiting review" aria-disabled="true">
         {opts.map((o) =>
         <span className={'ce-check' + (sel.has(o.value) ? '' : ' ce-check-off')} key={o.value}>
           <input type="checkbox" checked={sel.has(o.value)} readOnly disabled />
@@ -518,7 +575,7 @@ function PendingLockedControl({ f, value }) {
 // ecosystems/app structured editors).
 function LockedYesNo({ value, onLabel = 'Yes', offLabel = 'No' }) {
   return (
-    <span className="ce-yesno ce-yesno-lock" role="radiogroup" aria-label="Selected value, awaiting approval" aria-disabled="true">
+    <span className="ce-yesno ce-yesno-lock" role="radiogroup" aria-label="Selected value, awaiting review" aria-disabled="true">
       <span className={'ce-yesno-btn' + (value === true ? ' is-on' : '')}>{onLabel}</span>
       <span className={'ce-yesno-btn' + (value === false ? ' is-on' : '')}>{offLabel}</span>
       <span className={'ce-yesno-btn ce-yesno-unset' + (value == null ? ' is-on' : '')}>Not set</span>
@@ -1021,13 +1078,54 @@ function bridgeRequirements(protos, category) {
 function ProtocolsEditor({ ctx }) {
   const protos = ctx.getVal('protocols') || {};
   const update = (patch) => ctx.setVal('protocols', { ...protos, ...patch });
-  const bridge = ctx.getVal('bridge') || {};
-  const updateBridge = (patch) => ctx.setVal('bridge', { ...bridge, ...patch });
   const reqs = bridgeRequirements(protos, ctx.device.category);
+  const protocolsPending = ctx.pending && ctx.pending.protocols;
+
+  // Proprietary bridge lives inside the Connectivity group (its own 'bridge'
+  // field). Shown for Zigbee / Z-Wave devices that are not themselves a hub.
+  // A repeatable list with autocomplete against the same manufacturer's hubs.
+  const showBridge = (protos.zigbee || protos.zwave) && ctx.device.category !== 'hubs';
+  const bridge = ctx.getVal('bridge') || {};
+  const bridgeList = Array.isArray(bridge.proprietary) ? bridge.proprietary : (bridge.proprietary ? [bridge.proprietary] : []);
+  const writeBridge = (arr) => ctx.setVal('bridge', { ...bridge, proprietary: arr.length ? arr : undefined });
+  const setBridgeAt = (i, v) => writeBridge(bridgeList.map((x, idx) => idx === i ? v : x));
+  const removeBridgeAt = (i) => writeBridge(bridgeList.filter((_, idx) => idx !== i));
+  const addBridge = () => writeBridge([...bridgeList, '']);
+  const suggestions = (window.DEVICES || [])
+    .filter((d) => d.category === 'hubs' && d.manufacturer === ctx.device.manufacturer)
+    .map((d) => d.name);
+  const listId = 'ce-bridge-suggest-' + ctx.device.id;
+  const bridgePending = ctx.pending && ctx.pending.bridge;
+  const pendingBridgeNames = bridgePending && bridgePending.value && bridgePending.value.proprietary
+    ? (Array.isArray(bridgePending.value.proprietary) ? bridgePending.value.proprietary : [bridgePending.value.proprietary])
+    : [];
+  // While a bridge edit is awaiting review the proposed bridges stay locked,
+  // but a contributor can still propose adding more. Additions live in the
+  // draft on top of the pending names.
+  const bridgeAdditions = bridgeList.filter((nm) => pendingBridgeNames.indexOf(nm) === -1);
+  const writeAdditions = (arr) => ctx.setVal('bridge', { ...bridge, proprietary: [...pendingBridgeNames, ...arr] });
+  const setAdditionAt = (i, v) => writeAdditions(bridgeAdditions.map((x, idx) => idx === i ? v : x));
+  const removeAdditionAt = (i) => writeAdditions(bridgeAdditions.filter((_, idx) => idx !== i));
+  const addPendingBridge = () => writeAdditions([...bridgeAdditions, '']);
+
   return (
-    <FieldShell ctx={ctx} fieldKey="protocols" label="Connectivity">
+    <FieldShell ctx={ctx} fieldKey="protocols" label="Connectivity" selfLock>
       <SpecGroup title="Connectivity">
         <div className="ce-form-grid">
+          {protocolsPending ?
+          <div className="ce-row ce-row-top">
+            <span className="ce-row-label">Supported</span>
+            <div className="ce-row-control ce-pending-protocontrol">
+              <div className="ce-check-col ce-check-col-lock" role="group" aria-disabled="true">
+                {(window.PROTOCOL_OPTIONS || []).map((p) =>
+                <span className={'ce-check' + ((protocolsPending.value || {})[p.key] === true ? '' : ' ce-check-off')} key={p.key}>
+                  <input type="checkbox" checked={(protocolsPending.value || {})[p.key] === true} readOnly disabled />
+                  <span className="proto-name"><window.ProtocolGlyph name={p.key} />{p.label}</span>
+                </span>)}
+              </div>
+              <PendingMeta entry={protocolsPending} />
+            </div>
+          </div> :
           <div className="ce-row ce-row-top">
             <span className="ce-row-label">Supported</span>
             <div className="ce-check-col">
@@ -1038,7 +1136,7 @@ function ProtocolsEditor({ ctx }) {
                   <span className="proto-name"><window.ProtocolGlyph name={p.key} />{p.label}</span>
                 </label>)}
             </div>
-          </div>
+          </div>}
           {reqs.length > 0 &&
           <div className="ce-row ce-row-top">
               <span className="ce-row-label">Bridge</span>
@@ -1052,14 +1150,83 @@ function ProtocolsEditor({ ctx }) {
                 </div>
               </div>
             </div>}
-          {(protos.zigbee || protos.zwave) && ctx.device.category !== 'hubs' &&
-          <label className="ce-row ce-row-top">
-              <span className="ce-row-label">Proprietary bridge</span>
-              <div className="ce-row-control ce-bridge-prop-control">
-                <CtrlText value={bridge.proprietary} placeholder="e.g. Philips Hue Bridge" onChange={(v) => updateBridge({ proprietary: v })} />
-                <span className="ce-bridge-hint">A manufacturer bridge is optional and can add extra features.</span>
-              </div>
-            </label>}
+          {showBridge && (bridgePending ?
+          <div className="ce-row ce-row-itemlock">
+            <span className="ce-row-label">Proprietary bridge</span>
+            <div className="ce-itemlock-control">
+              <div className="ce-msrp-set">{pendingBridgeNames.map((nm, i) => <LockedBridgeName key={'p' + i} name={nm} />)}</div>
+              <PendingMeta entry={bridgePending} />
+              {bridgeAdditions.map((nm, i) =>
+              <div className="ce-msrp-row" key={'a' + i}>
+                  <BridgeCombo value={nm} options={suggestions} used={[...pendingBridgeNames, ...bridgeAdditions.filter((_, idx) => idx !== i)]} onChange={(v) => setAdditionAt(i, v)} />
+                  <button type="button" className="ce-acct-quiet ce-acct-quiet-danger" onClick={() => removeAdditionAt(i)}>Remove</button>
+                </div>)}
+              <button type="button" className="btn btn-secondary btn-sm ce-msrp-add" onClick={addPendingBridge}>+ Add bridge</button>
+            </div>
+          </div> :
+          <div className="ce-row ce-row-top">
+            <span className="ce-row-label">Proprietary bridge</span>
+            <div className="ce-row-control ce-msrp-set">
+              {bridgeList.map((nm, i) =>
+              <div className="ce-msrp-row" key={i}>
+                  <BridgeCombo value={nm} options={suggestions} used={bridgeList.filter((_, idx) => idx !== i)} onChange={(v) => setBridgeAt(i, v)} />
+                  <button type="button" className="ce-acct-quiet ce-acct-quiet-danger" onClick={() => removeBridgeAt(i)}>Remove</button>
+                </div>)}
+              <span className="ce-bridge-hint">A manufacturer bridge is optional and can add extra features. Start typing to pick one of this manufacturer's hubs.</span>
+              <button type="button" className="btn btn-secondary btn-sm ce-msrp-add" onClick={addBridge}>+ Add bridge</button>
+            </div>)}
+        </div>
+      </SpecGroup>
+    </FieldShell>);
+}
+
+// Reference price (MSRP) editor. One row per currency, following the app-link
+// pattern: no row by default, an "Add price" button appends a row, each row is
+// removable. Mirrors the read page's Pricing position (after the category specs).
+function PricingEditor({ ctx }) {
+  const raw = ctx.getVal('msrp');
+  const list = Array.isArray(raw) ? raw
+    : (raw && raw.amount != null ? [{ amount: raw.amount, currency: raw.currency }] : []);
+  const write = (arr) => ctx.setVal('msrp', arr.length ? arr : undefined);
+  const setAt = (i, patch) => write(list.map((p, idx) => idx === i ? { ...p, ...patch } : p));
+  const removeAt = (i) => write(list.filter((_, idx) => idx !== i));
+  const add = () => write([...list, { amount: undefined, currency: 'USD' }]);
+  const pendingEntry = ctx.pending && ctx.pending.msrp;
+  const pendingList = pendingEntry
+    ? (Array.isArray(pendingEntry.value) ? pendingEntry.value
+      : (pendingEntry.value && pendingEntry.value.amount != null ? [pendingEntry.value] : []))
+    : [];
+  const CURRENCIES = ['USD', 'EUR', 'GBP', 'AUD', 'CAD'];
+  return (
+    <FieldShell ctx={ctx} fieldKey="msrp" label="Pricing" selfLock>
+      <SpecGroup title="Pricing">
+        <div className="ce-form-grid">
+          <div className="ce-row ce-row-top">
+            <span className="ce-row-label">Reference price</span>
+            <div className="ce-row-control ce-msrp-set">
+              {pendingEntry ?
+              <div className="ce-applink-lockitem">
+                {pendingList.filter((p) => p && p.amount != null).map((p, i) =>
+                <div className="ce-applink-row ce-applink-row-lock" key={i}>
+                    <span className="ce-applink-store">{p.currency || 'USD'}</span>
+                    <LockBox value={String(p.amount)} />
+                  </div>)}
+                <PendingMeta entry={pendingEntry} />
+              </div> :
+              <React.Fragment>
+                {list.map((p, i) =>
+                <div className="ce-msrp-row" key={i}>
+                    <CtrlNumber value={p.amount} placeholder="e.g. 59.99" onChange={(v) => setAt(i, { amount: v })} />
+                    <CtrlSelect value={p.currency || 'USD'} onChange={(v) => setAt(i, { currency: v })} options={CURRENCIES} />
+                    <button type="button" className="ce-acct-quiet ce-acct-quiet-danger" onClick={() => removeAt(i)}>Remove</button>
+                  </div>)}
+                <span className="ce-bridge-hint">Manufacturer list price (MSRP). Optional, add one per currency.</span>
+                <button type="button" className="btn btn-secondary btn-sm ce-msrp-add" onClick={add}>
+                  + Add price
+                </button>
+              </React.Fragment>}
+            </div>
+          </div>
         </div>
       </SpecGroup>
     </FieldShell>);
@@ -1227,6 +1394,48 @@ function LabelCombo({ value, onChange, category, used, placeholder }) {
     </div>);
 }
 
+// Read-only locked bridge value (awaiting review). Links to the matching hub
+// device when one is on record.
+function LockedBridgeName({ name }) {
+  const bd = window.deviceForBridgeName ? window.deviceForBridgeName(name) : null;
+  return (
+    <span className="ce-lock-input">
+      <span className="ce-lock-input-val">
+        {bd ? <a className="ce-link-ink" href={'#/device/' + bd.id}>{name}</a> : name}
+      </span>
+    </span>);
+}
+
+// Free-text input with a custom suggestion dropdown (same interaction as the
+// additional-details LabelCombo): opens on focus, filters as you type, no
+// native datalist arrow. Used for proprietary bridge names. `used` lists names
+// already added (pending or in other rows) so they're not suggested twice.
+function BridgeCombo({ value, onChange, options, used }) {
+  const [open, setOpen] = React.useState(false);
+  const q = (value || '').trim().toLowerCase();
+  const usedLower = new Set((used || []).map((u) => (u || '').trim().toLowerCase()));
+  const matches = (options || []).filter((l) => {
+    if (usedLower.has(l.toLowerCase())) return false;
+    return q === '' ? true : l.toLowerCase().indexOf(q) !== -1;
+  });
+  return (
+    <div className="ce-labelcombo"
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false); }}>
+      <input className="ce-input" value={value || ''}
+        role="combobox" aria-expanded={open} aria-autocomplete="list"
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)} />
+      {open && matches.length > 0 ?
+        <div className="ce-labelcombo-pop" role="listbox">
+          {matches.map((l) =>
+            <button type="button" className="ce-labelcombo-opt" role="option" key={l}
+              onMouseDown={(e) => { e.preventDefault(); onChange(l); setOpen(false); }}>
+              {l}
+            </button>)}
+        </div> : null}
+    </div>);
+}
+
 // The field types a contributor can pick for an additional detail. Most
 // extras are a short free-text value, but some are naturally a number (with no
 // fixed unit) or a yes / no / not set fact, so the value control adapts to the
@@ -1339,6 +1548,6 @@ Object.assign(window, {
   // edit
   PendingLock, PendingMeta, FieldShell, SuggestionRow,
   DescriptionEditor, InstructionsEditor, CategorySpecsEditor,
-  EcosystemsEditor, ProtocolsEditor, DimensionsEditor,
+  EcosystemsEditor, ProtocolsEditor, PricingEditor, DimensionsEditor,
   IdentifiersEditor, ReferencesEditor, ConnectivityEditor, AppSubscriptionEditor
 });

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Appearance · plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="plan.css" />
+<style>
+  /* ---- Inline panel mockup. Scoped under .ap-mock so nothing here
+     collides with plan.css or the shared site shell. Rebuilds the real
+     app controls (.switch, segmented theme control) from tokens. ---- */
+  .ap-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2);
+    margin: var(--space-5) 0 var(--space-2);
+    overflow: hidden;
+  }
+  .ap-mock-cap {
+    font-size: var(--fs-12); color: var(--fg-subtle);
+    font-family: var(--font-mono);
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--surface-sunken);
+  }
+  .ap-block { padding: var(--space-5); }
+  .ap-block + .ap-block { border-top: 1px solid var(--border); }
+  .ap-h {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: var(--fs-16); color: var(--fg);
+    margin: 0 0 var(--space-4);
+  }
+
+  /* Theme preview cards — the macOS / GitHub idiom: a mini window per
+     option, built from plain blocks (no SVG). Active card takes the accent. */
+  .ap-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); max-width: 480px; }
+  .ap-card { appearance: none; border: 0; background: transparent; padding: 0; cursor: default; }
+  .ap-prev {
+    display: block; position: relative; width: 100%; aspect-ratio: 4 / 3;
+    border-radius: var(--radius-4); overflow: hidden;
+    border: 1px solid var(--border);
+    transition: box-shadow var(--transition-fast) ease, border-color var(--transition-fast) ease;
+  }
+  .ap-card.is-active .ap-prev { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .ap-card-label {
+    display: block; margin-top: var(--space-3); text-align: center;
+    font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--fg-muted);
+  }
+  .ap-card.is-active .ap-card-label { color: var(--fg); font-weight: var(--fw-semibold); }
+  .ap-cards-meta { font-size: var(--fs-12); color: var(--fg-subtle); margin: var(--space-4) 0 0; max-width: none; }
+  .ap-cards-meta b { color: var(--fg-muted); font-weight: 600; }
+
+  /* The mini window inside a preview. */
+  .ap-win { position: absolute; inset: 0; padding: 9px; display: flex; flex-direction: column; gap: 6px; }
+  .ap-win-top { display: flex; gap: 5px; }
+  .ap-win-top i { height: 5px; border-radius: 999px; }
+  .ap-win-top i:nth-child(1) { width: 26%; }
+  .ap-win-top i:nth-child(2) { width: 20%; }
+  .ap-win-top i:nth-child(3) { width: 30%; }
+  .ap-win-body { flex: 1; border-radius: 4px; padding: 9px; display: flex; flex-direction: column; gap: 7px; position: relative; }
+  .ap-win-h { width: 52%; height: 5px; border-radius: 999px; }
+  .ap-win-row { width: 100%; height: 14px; border-radius: 3px; display: flex; align-items: center; padding-left: 5px; }
+  .ap-win-row i { width: 46%; height: 5px; border-radius: 999px; }
+  .ap-win-dots { position: absolute; top: 9px; right: 9px; display: flex; gap: 3px; }
+  .ap-win-dots b { width: 5px; height: 5px; border-radius: 50%; }
+
+  /* Light palette block (token values, hardcoded so the card stays light). */
+  .ap-light { background: #ffffff; }
+  .ap-light .ap-win-top i { background: #e3e2dc; }
+  .ap-light .ap-win-body { background: #f1f0eb; }
+  .ap-light .ap-win-h { background: #cac8c0; }
+  .ap-light .ap-win-row { background: #e3e2dc; }
+  .ap-light .ap-win-row i { background: #9b988f; }
+  .ap-light .ap-win-dots b.g { background: #3d6b3a; }
+  .ap-light .ap-win-dots b.r { background: #cac8c0; }
+
+  /* Dark palette block (dark-mode token values). */
+  .ap-dark { background: #11100f; }
+  .ap-dark .ap-win-top i { background: #2e2d2a; }
+  .ap-dark .ap-win-body { background: #1c1b1a; }
+  .ap-dark .ap-win-h { background: #4a4844; }
+  .ap-dark .ap-win-row { background: #2e2d2a; }
+  .ap-dark .ap-win-row i { background: #6e6c64; }
+  .ap-dark .ap-win-dots b.g { background: #7fb56e; }
+  .ap-dark .ap-win-dots b.r { background: #4a4844; }
+
+  /* System: light layer clipped to a diagonal over the dark layer. */
+  .ap-sys .ap-light { clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%); z-index: 1; }
+
+  /* Switch — faithful copy of the app's .switch component. */
+  .ap-switch { position: relative; display: inline-flex; flex: none; width: 36px; height: 20px; }
+  .ap-track { position: absolute; inset: 0; border-radius: var(--radius-pill); background: var(--border-strong); transition: background var(--transition-fast) ease; }
+  .ap-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow-1); transition: transform var(--transition-fast) ease; }
+  .ap-switch.is-on .ap-track { background: var(--primary); }
+  .ap-switch.is-on .ap-thumb { transform: translateX(16px); background: var(--fg-on-primary); }
+
+  /* Toggle rows. */
+  .ap-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: var(--space-5); padding: var(--space-4) 0;
+  }
+  .ap-row:first-of-type { padding-top: 0; }
+  .ap-row:last-of-type { padding-bottom: 0; }
+  .ap-row + .ap-row { border-top: 1px solid var(--border-subtle); }
+  .ap-row.is-nested { padding-left: var(--space-5); }
+  .ap-row-t { max-width: 52ch; }
+  .ap-row-title { font-size: var(--fs-14); font-weight: var(--fw-semibold); color: var(--fg); margin: 0 0 2px; }
+  .ap-row-hint { font-size: var(--fs-12); color: var(--fg-muted); margin: 0; line-height: var(--lh-snug); }
+  .ap-state { display: inline-flex; align-items: center; gap: var(--space-3); flex: none; }
+  .ap-nest { margin-top: var(--space-4); border-top: 1px solid var(--border-subtle); padding-top: var(--space-2); }
+
+  /* Display group: contrast sub-label, and a separator before Dim device photos. */
+  .ap-subh { font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--fg); margin: 0 0 2px; }
+  .ap-sep { border-top: 1px solid var(--border); margin: var(--space-4) 0; }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <header class="doc-head">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Planning · Stage 03 increment</span>
+      <span class="eyebrow-rule"></span>
+    </div>
+    <h1>Appearance: the same database, lit the way your eyes want it</h1>
+    <p class="lede">
+      The theme engine already runs. A boot script resolves light or dark before the first paint, and every
+      token flips cleanly, so the whole site is already dark-mode ready. What is missing is the
+      <strong>human control</strong>. This increment adds an Appearance tab to Settings: choose Light, Dark, or
+      follow your system, sharpen contrast per mode, and tune a few display and behavior options. This is the
+      plan for that, the grouping, and the lines that keep it small.
+    </p>
+    <p class="ref">
+      Builds on
+      <span class="mono">Stage 03 · Accounts and editing</span>
+      <span class="muted">·</span>
+      engine in
+      <span class="mono">tokens.css</span>
+      <span class="muted">·</span>
+      tab in
+      <span class="mono">community-edit-pages.jsx</span>
+    </p>
+  </header>
+
+  <section class="flush">
+    <div class="thesis">
+      <p>
+        <strong>The machinery exists. This is the dial.</strong>
+        Dark mode is not a rebuild, it is a token layer that already adapts. Appearance gives a person the switch
+        for it, a contrast layer on top, and a few small toggles for display and behavior. It changes how the
+        database is lit and how it behaves, never what it says. Each preference applies the instant you pick it,
+        saved to your account so it follows you to every browser and device you sign in on.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>Theme mode: System, Light, or Dark</h2>
+    <p class="muted">
+      Three preview cards, the macOS and GitHub idiom: each shows a miniature of the database in that palette, so
+      you choose by sight rather than by reading a label. System is the default and follows the operating system
+      live, so a person who never opens this tab still gets dark mode at night if their machine does. Its card is
+      split, light on one side and dark on the other, to say as much at a glance. Light and Dark are explicit
+      overrides that hold regardless of the system. The choice writes to <span class="ic">data-resolved-theme</span>
+      on the page, the same attribute the boot script already sets, so the existing dark tokens apply with no new
+      code path.
+    </p>
+
+    <table class="matrix grid">
+      <thead>
+        <tr><th>Mode</th><th>What it does</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>System</td><td class="muted">Follows the OS setting and tracks it live as it changes.</td><td class="mono-val">default</td></tr>
+        <tr><td>Light</td><td class="muted">Forces the light palette, ignores the OS.</td><td class="mono-val">explicit</td></tr>
+        <tr><td>Dark</td><td class="muted">Forces the dark palette, ignores the OS.</td><td class="mono-val">explicit</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      There is no Save button. Like the security actions on the next tab, the setting is discrete: it applies and
+      writes to your account the moment you choose it, so the change is live the instant you see it.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">What it is</p>
+    <h2>Contrast: a master switch, then one per mode</h2>
+    <p class="muted">
+      Increase contrast is one switch that, when on, reveals two nested switches: Light mode and Dark mode. Each
+      nested switch decides whether the high-contrast palette applies while that mode is the active one. So a
+      person who keeps Theme on System can ask for higher contrast in dark only, and get the normal palette by
+      day and the sharper one at night, with no further fuss.
+    </p>
+    <p class="muted">
+      High contrast is implemented the same way dark mode is: a <span class="ic">data-contrast="high"</span> layer
+      that overrides a handful of existing tokens. Hairline borders step to <span class="ic">--border-strong</span>,
+      muted text moves closer to full <span class="ic">--fg</span>, and the focus ring thickens. No element gets a
+      new color, the quiet ones simply get louder.
+    </p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">How it is organized</p>
+    <h2>Three groups, by what each control changes</h2>
+    <p class="muted">
+      Theme picks the mode. Display fine-tunes how that mode renders: contrast per mode, and dimming device
+      photos so they do not glare on dark. Behavior covers interaction: reduced motion, and whether a hovercard
+      previews a link before you open it. Each group answers a different question, so no control sits where you
+      would not look for it.
+    </p>
+
+    <!-- Concrete panel mockup -->
+    <div class="ap-mock">
+      <div class="ap-mock-cap">Settings → Appearance</div>
+
+      <div class="ap-block">
+        <h3 class="ap-h">Theme</h3>
+        <div class="ap-cards" role="radiogroup" aria-label="Theme">
+          <button type="button" class="ap-card is-active" role="radio" aria-checked="true">
+            <span class="ap-prev ap-sys">
+              <span class="ap-win ap-dark"><span class="ap-win-top"><i></i><i></i><i></i></span><span class="ap-win-body"><span class="ap-win-dots"><b class="g"></b><b class="r"></b></span><span class="ap-win-h"></span><span class="ap-win-row"><i></i></span></span></span>
+              <span class="ap-win ap-light"><span class="ap-win-top"><i></i><i></i><i></i></span><span class="ap-win-body"><span class="ap-win-dots"><b class="g"></b><b class="r"></b></span><span class="ap-win-h"></span><span class="ap-win-row"><i></i></span></span></span>
+            </span>
+            <span class="ap-card-label">System</span>
+          </button>
+          <button type="button" class="ap-card" role="radio" aria-checked="false">
+            <span class="ap-prev"><span class="ap-win ap-light"><span class="ap-win-top"><i></i><i></i><i></i></span><span class="ap-win-body"><span class="ap-win-dots"><b class="g"></b><b class="r"></b></span><span class="ap-win-h"></span><span class="ap-win-row"><i></i></span></span></span></span>
+            <span class="ap-card-label">Light</span>
+          </button>
+          <button type="button" class="ap-card" role="radio" aria-checked="false">
+            <span class="ap-prev"><span class="ap-win ap-dark"><span class="ap-win-top"><i></i><i></i><i></i></span><span class="ap-win-body"><span class="ap-win-dots"><b class="g"></b><b class="r"></b></span><span class="ap-win-h"></span><span class="ap-win-row"><i></i></span></span></span></span>
+            <span class="ap-card-label">Dark</span>
+          </button>
+        </div>
+        <p class="ap-cards-meta">Following your system, currently <b>Light</b>. Changes apply right away.</p>
+      </div>
+
+      <div class="ap-block">
+        <h3 class="ap-h">Display</h3>
+        <div class="ap-row">
+          <div class="ap-row-t">
+            <p class="ap-row-title">Increase contrast</p>
+            <p class="ap-row-hint">Use a higher-contrast palette for light or dark mode, or both.</p>
+          </div>
+          <span class="ap-state">
+            <span class="ap-switch is-on" role="switch" aria-checked="true"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+          </span>
+        </div>
+        <div class="ap-nest">
+          <div class="ap-row is-nested">
+            <div class="ap-row-t"><p class="ap-row-title">Light mode</p></div>
+            <span class="ap-state">
+              <span class="ap-switch" role="switch" aria-checked="false"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+            </span>
+          </div>
+          <div class="ap-row is-nested">
+            <div class="ap-row-t"><p class="ap-row-title">Dark mode</p></div>
+            <span class="ap-state">
+              <span class="ap-switch is-on" role="switch" aria-checked="true"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+            </span>
+          </div>
+        </div>
+        <div class="ap-sep"></div>
+        <div class="ap-row">
+          <div class="ap-row-t"><p class="ap-row-title">Dim device photos</p><p class="ap-row-hint">Applies in dark mode. Softens product shots shot on white so they do not glare against the graphite UI.</p></div>
+          <span class="ap-state">
+            <span class="ap-switch is-on" role="switch" aria-checked="true"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+          </span>
+        </div>
+      </div>
+
+      <div class="ap-block">
+        <h3 class="ap-h">Behavior</h3>
+        <div class="ap-row">
+          <div class="ap-row-t"><p class="ap-row-title">Reduce motion</p><p class="ap-row-hint">Minimize non-essential animation. On automatically when your system asks for it.</p></div>
+          <span class="ap-state">
+            <span class="ap-switch is-on" role="switch" aria-checked="true"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+          </span>
+        </div>
+        <div class="ap-row">
+          <div class="ap-row-t"><p class="ap-row-title">Show hovercards</p><p class="ap-row-hint">Preview a device, contributor, or linked page by hovering or focusing the link, before you open it.</p></div>
+          <span class="ap-state">
+            <span class="ap-switch is-on" role="switch" aria-checked="true"><span class="ap-track"></span><span class="ap-thumb"></span></span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <p class="caption">Mockup of the three groups. Theme previews each palette directly, the System card splits to show it tracks the OS. Every switch reuses the live <span class="mono">.switch</span> component.</p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Appearance, or Accessibility?</p>
+    <h2>We chose Appearance, and declined text size</h2>
+    <p class="muted">
+      Fair flag, reduce motion reads like an accessibility control, because it is one. But standing up an
+      Accessibility menu for one or two toggles is worse than no menu, it reads as a promise of an accessibility
+      story the rest of the product has not built yet. So the cheap controls ride along in
+      Appearance, where the machinery already sits: reduce motion, dim device photos, and show hovercards join
+      Theme and Contrast.
+      Text size is the one we decline, because it forces a real rem audit and genuinely wants an Accessibility
+      home we are not opening yet.
+    </p>
+    <div class="twocol">
+      <div class="pane">
+        <h4>Ships in Appearance<span class="tag">render-level, cheap</span></h4>
+        <p>Theme, Contrast, Reduce motion, Dim device photos, and Show hovercards. Each rides machinery already in the code: the theme attribute, a media query, one filter rule, and the existing hovercard component. GitHub files all of these under Appearance for the same reason.</p>
+      </div>
+      <div class="pane">
+        <h4>Declined for now<span class="tag">wants its own home</span></h4>
+        <p>Text size. A Default and Large step would help the dense tables, but it forces a rem audit across all of them and genuinely belongs in an Accessibility tab. We are not opening that menu for one control, so it waits.</p>
+      </div>
+    </div>
+    <div class="ladder" style="margin-top: var(--space-6);">
+      <div class="step now">
+        <div class="rail"><span class="id">ADD</span><span class="pill live">Ship</span></div>
+        <div class="body">
+          <h4>Reduce motion</h4>
+          <p>
+            A switch that minimizes non-essential animation. The site already gates its animations on
+            <span class="ic">prefers-reduced-motion</span>, so it ships pre-set to the system and lets a
+            person force it on or off. Render-level, cheap, and built on machinery we already have.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Low <span class="mono">· one attribute, existing media query</span></dd>
+            <dt>Decision</dt><dd>Ships in Appearance v1</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="step now">
+        <div class="rail"><span class="id">ADD</span><span class="pill live">Ship</span></div>
+        <div class="body">
+          <h4>Dim device photos</h4>
+          <p>
+            In dark mode, product shots shot on white glare against the graphite UI, so the app already dims
+            them. This exposes that as a switch, on by default, for anyone who would rather see the photos at full
+            brightness. One filter rule, already written.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Low <span class="mono">· one existing filter rule</span></dd>
+            <dt>Decision</dt><dd>Ships in Appearance v1</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="step now">
+        <div class="rail"><span class="id">ADD</span><span class="pill live">Ship</span></div>
+        <div class="body">
+          <h4>Show hovercards</h4>
+          <p>
+            A switch for the link previews: hover or focus a device, contributor, or page link and a small card
+            previews it before you click through. The hovercard component already exists, so this is a preference
+            on top of it, on by default and easy to turn off for anyone who finds the previews busy.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Low <span class="mono">· toggles an existing component</span></dd>
+            <dt>Decision</dt><dd>Ships in Appearance v1</dd>
+          </dl>
+        </div>
+      </div>
+      <div class="step">
+        <div class="rail"><span class="id">CUT</span><span class="pill later">Declined</span></div>
+        <div class="body">
+          <h4>Text size</h4>
+          <p>
+            A Default and Large step would lift the root font size for the dense spec tables and Connects with
+            tabs. We are leaving it out: it forces a rem audit across every table and genuinely wants an
+            Accessibility home, and we are not opening that menu for a single control. Revisit when there is a
+            real reason to open one.
+          </p>
+          <dl class="meta-grid">
+            <dt>Cost</dt><dd>Medium <span class="mono">· rem audit across dense tables</span></dd>
+            <dt>Decision</dt><dd>Out of scope for now</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Where we draw the line</p>
+    <h2>A reading preference, not a paint set</h2>
+    <div class="rails">
+      <div class="railrow"><span class="dot"></span><p><strong>Per account, so it follows you.</strong> Appearance saves to your profile, so the database looks the same on your laptop, your phone, and any browser you sign in on. A signed-out visitor still gets the full control, held locally until they sign in, and that same local value doubles as a pre-paint cache so a signed-in return visit never flashes the wrong theme before the account preference loads.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>System is the honest default.</strong> Until a person says otherwise, we follow the operating system and keep following it live. We do not guess, and we do not pick dark to look modern.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>One accent, no color picker.</strong> The single Braun-orange is signal, it marks active, recording, and error. A custom accent would turn signal into decoration and is exactly the thing this design system refuses. Appearance dials light, contrast, and behavior, never hue.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Everything applies instantly.</strong> No Save button anywhere on this tab. Each control is discrete, so the page is the preview.</p></div>
+    </div>
+  </section>
+
+  <section class="rec">
+    <p class="sec-kicker">Recommendation</p>
+    <h2>What to hold</h2>
+    <ol>
+      <li><p><strong>Ship five controls in three groups.</strong> Theme, then Display (contrast per mode, dim device photos), then Behavior (reduce motion, show hovercards). Theme and contrast are the same token-override trick, so pages adapt for free, and the rest ride a media query, one filter rule, and the existing hovercard component. None of it is expensive.</p></li>
+      <li><p><strong>Save to the account, cache to the device.</strong> The preference lives on the profile so it follows a person across browsers and devices, with a local copy that resolves the theme before first paint so a return visit never flashes. Default to System and track the OS live for anyone who never touches it.</p></li>
+      <li><p><strong>Decline text size, and do not open an Accessibility menu yet.</strong> Reduce motion is cheap and render-level, so it rides along in Appearance. Text size is the control that forces a rem audit and genuinely wants an Accessibility home. Do not stand that menu up for one control, revisit when there is a real reason to open it.</p></li>
+      <li><p><strong>Hold the line on accent color.</strong> Text size might one day earn an Accessibility tab. A color picker earns nothing. The accent is the one piece of color this system spends, and Appearance is not where we spend it.</p></li>
+    </ol>
+  </section>
+
+</main>
+<script src="plan-nav.js"></script>
+</body>
+</html>

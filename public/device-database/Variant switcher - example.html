@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Variants and families · model mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  body { margin: 0; background: var(--surface-sunken); color: var(--fg); }
+  .page { max-width: 940px; margin: 0 auto; padding: var(--space-9) var(--space-5) var(--space-12); }
+
+  .doc-head { margin-bottom: var(--space-7); }
+  .doc-head .eyebrow { display: block; margin-bottom: var(--space-3); }
+  .doc-head h1 { font-size: var(--fs-38); margin-bottom: var(--space-4); letter-spacing: var(--ls-tight); }
+  .doc-head p { font-size: var(--fs-18); line-height: var(--lh-loose); color: var(--fg-muted); max-width: 64ch; margin: 0; }
+  .doc-head .shift { margin-top: var(--space-4); font-size: var(--fs-14); color: var(--fg-muted); max-width: 64ch; line-height: var(--lh-normal); }
+  .doc-head .shift b { color: var(--fg); font-weight: 600; }
+
+  .ex { margin-top: var(--space-8); padding-top: var(--space-7); border-top: 1px solid var(--border); }
+  .ex-num { font-family: var(--font-mono); font-size: var(--fs-13); color: var(--accent); font-weight: 500; display: block; margin-bottom: var(--space-2); }
+  .ex h2 { font-size: var(--fs-24); letter-spacing: var(--ls-tight); }
+  .ex-note { font-size: var(--fs-14); line-height: var(--lh-normal); color: var(--fg-muted); max-width: 66ch; margin: var(--space-3) 0 var(--space-5); }
+  .ex-note strong { color: var(--fg); font-weight: 600; }
+  .ex-note code { font-family: var(--font-mono); background: var(--surface-tint-mid); padding: 1px 5px; border-radius: var(--radius-1); font-size: 0.92em; }
+
+  .surf { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-4); }
+  .surf-inner { padding: var(--space-6); }
+  .crumb { font-size: var(--fs-13); color: var(--fg-muted); margin-bottom: var(--space-4); }
+  .crumb .sep { margin: 0 8px; color: var(--border-strong); }
+  .dhead { display: grid; grid-template-columns: 96px 1fr; gap: var(--space-5); align-items: start; }
+  .dimg { width: 96px; height: 96px; border-radius: var(--radius-4); background: var(--surface-tint-mid); display: grid; place-items: center; color: var(--fg-disabled); font-size: var(--fs-12); }
+  .dtitle h3 { font-size: var(--fs-30); letter-spacing: var(--ls-tight); margin-bottom: 2px; }
+  .dmanu { font-size: var(--fs-14); color: var(--fg-muted); }
+  .dmanu a { color: var(--fg); }
+
+  /* switcher */
+  .switcher { margin-top: var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-4); background: var(--surface-sunken); }
+  .switcher-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); }
+  .switcher-row + .switcher-row { border-top: 1px solid var(--border); }
+  .axis-label { font-size: var(--fs-12); font-weight: 600; letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--fg-muted); }
+  .axis-label .axis-hint { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; font-size: var(--fs-12); color: var(--fg-subtle); margin-top: 2px; }
+  .axis-label .axis-hint.flip { color: var(--accent); }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: var(--space-2); }
+  .seg button { font: inherit; font-size: var(--fs-14); cursor: pointer; padding: 6px 14px; border-radius: var(--radius-2); border: 1px solid var(--border-strong); background: var(--surface); color: var(--fg); transition: var(--transition-fast); display: inline-flex; align-items: center; gap: 7px; }
+  .seg button:hover { border-color: var(--fg-muted); }
+  .seg button[aria-pressed="true"] { background: var(--primary); color: var(--fg-on-primary); border-color: var(--primary); }
+  .seg button[data-unset="true"] { border-style: dashed; color: var(--fg-muted); }
+  .seg button[disabled] { opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+  .seg .vd { width: 7px; height: 7px; border-radius: 50%; }
+  .vd.local { background: var(--success); }
+  .vd.cloud { background: var(--neutral-400); }
+  .vd.mixed { background: var(--warning); }
+  .seg button[aria-pressed="true"] .vd { box-shadow: 0 0 0 1.5px var(--surface); }
+  .resolved { display: flex; align-items: center; gap: 8px; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--border); font-size: var(--fs-13); color: var(--fg-muted); flex-wrap: wrap; }
+  .resolved .mono { color: var(--fg); font-family: var(--font-mono); }
+  .reset-link { margin-left: auto; background: none; border: 0; color: var(--link); font: inherit; font-size: var(--fs-13); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+  /* verdict, now firmware-qualified */
+  .verdict { display: flex; align-items: baseline; gap: 10px; margin-top: var(--space-6); flex-wrap: wrap; }
+  .verdict-dot { width: 11px; height: 11px; border-radius: 50%; flex: none; align-self: center; }
+  .verdict-text { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-20); }
+  .verdict-via { font-size: var(--fs-13); color: var(--fg-muted); font-family: var(--font-mono); }
+  .verdict-qual { width: 100%; margin-top: 6px; font-size: var(--fs-13); color: var(--fg-subtle); display: flex; gap: 14px; flex-wrap: wrap; }
+  .verdict-qual span { display: inline-flex; align-items: center; gap: 5px; }
+  .verdict-qual .mono { font-family: var(--font-mono); color: var(--fg-muted); }
+  .vq-rule { border-top: 1px solid var(--border); margin: var(--space-5) 0 0; }
+
+  /* spec block, region-decomposed */
+  .block { margin-top: var(--space-5); }
+  .block h4 { font-size: var(--fs-13); font-weight: 600; letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--fg-muted); margin-bottom: var(--space-3); }
+  .specrow { display: grid; grid-template-columns: 160px 1fr; gap: 8px 24px; font-size: var(--fs-14); }
+  .specrow dt { color: var(--fg-muted); }
+  .specrow dd { margin: 0; }
+  .specrow .mono { font-family: var(--font-mono); font-size: var(--fs-13); }
+  .bound { font-size: var(--fs-12); color: var(--fg-subtle); margin-left: 8px; }
+
+  .power-locked { display: flex; align-items: center; gap: 12px; padding: var(--space-4) var(--space-5); border: 1px dashed var(--border-strong); border-radius: var(--radius-4); background: var(--surface-sunken); }
+  .power-locked .lk { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-tint-strong); display: grid; place-items: center; flex: none; }
+  .power-locked .pl-body { font-size: var(--fs-14); }
+  .power-locked .pl-body strong { display: block; font-weight: 600; margin-bottom: 1px; }
+  .power-locked .pl-body span { color: var(--fg-muted); }
+  .pl-pick { margin-left: auto; flex: none; }
+  .btn-pick { font: inherit; font-size: var(--fs-14); font-weight: 500; cursor: pointer; padding: 7px 16px; border-radius: var(--radius-2); border: 1px solid var(--primary); background: var(--primary); color: var(--fg-on-primary); }
+
+  /* three data paths */
+  .paths { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+  .path { border: 1px solid var(--border); border-radius: var(--radius-4); background: var(--surface); padding: var(--space-5); }
+  .path .ix { font-family: var(--font-mono); font-size: var(--fs-13); color: var(--accent); }
+  .path h4 { font-size: var(--fs-18); margin: var(--space-2) 0 var(--space-2); }
+  .path p { font-size: var(--fs-13); line-height: var(--lh-normal); color: var(--fg-muted); margin: 0; }
+  .path .tagline { display: inline-block; margin-top: var(--space-3); font-size: var(--fs-12); font-weight: 600; letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--fg-subtle); }
+
+  /* variant rows list (overview / mapped vs authored) */
+  .vrows { border: 1px solid var(--border); border-radius: var(--radius-4); overflow: hidden; background: var(--surface); }
+  .vrow { display: grid; grid-template-columns: 1fr auto; gap: var(--space-4); padding: var(--space-4) var(--space-5); align-items: center; }
+  .vrow + .vrow { border-top: 1px solid var(--border); }
+  .vrow .vr-name { font-size: var(--fs-14); font-weight: 500; }
+  .vrow .vr-sub { font-size: var(--fs-13); color: var(--fg-muted); margin-top: 2px; font-family: var(--font-mono); }
+  .vrow .vr-state { font-size: var(--fs-12); display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: var(--radius-pill); border: 1px solid var(--border-strong); color: var(--fg-muted); white-space: nowrap; }
+  .vr-state .d { width: 6px; height: 6px; border-radius: 50%; }
+  .vr-state.observed .d { background: var(--success); }
+  .vr-state.mapped .d { background: var(--ink-300); }
+  .vr-state.authored .d { background: var(--accent); }
+  .vr-verdict { font-size: var(--fs-13); display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+
+  /* identity-key finder */
+  .finder { border: 1px solid var(--border-strong); border-radius: var(--radius-4); background: var(--surface); overflow: hidden; max-width: 460px; }
+  .finder-head { padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); }
+  .finder-head h5 { font-family: var(--font-display); font-weight: 600; font-size: var(--fs-16); margin: 0 0 2px; }
+  .finder-head p { margin: 0; font-size: var(--fs-13); color: var(--fg-muted); }
+  .finder-body { padding: var(--space-4) var(--space-5) var(--space-5); }
+  .finder-input { display: flex; gap: var(--space-2); }
+  .finder-input input { flex: 1; font: inherit; font-family: var(--font-mono); font-size: var(--fs-13); padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-2); background: var(--surface-sunken); color: var(--fg); }
+  .finder-input button { font: inherit; font-size: var(--fs-14); font-weight: 500; padding: 0 16px; border-radius: var(--radius-2); border: 1px solid var(--primary); background: var(--primary); color: var(--fg-on-primary); cursor: pointer; }
+  .finder-keys { margin-top: var(--space-4); display: flex; flex-direction: column; gap: 8px; }
+  .finder-key { display: flex; align-items: baseline; gap: 10px; font-size: var(--fs-13); }
+  .finder-key .fk-label { width: 130px; color: var(--fg-muted); flex: none; }
+  .finder-key .fk-val { font-family: var(--font-mono); color: var(--fg); }
+  .finder-key .fk-warn { color: var(--warning-strong); font-size: var(--fs-12); }
+  .finder-hit { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--success); border-radius: var(--radius-2); background: var(--success-soft); font-size: var(--fs-13); display: flex; align-items: center; gap: 8px; }
+  .finder-hit .mono { font-family: var(--font-mono); color: var(--success-strong); font-weight: 500; }
+
+  /* matrix */
+  .matrix { width: 100%; border-collapse: collapse; margin-top: var(--space-4); font-size: var(--fs-13); }
+  .matrix caption { text-align: left; color: var(--fg-muted); font-size: var(--fs-13); margin-bottom: var(--space-3); }
+  .matrix th, .matrix td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  .matrix thead th, .matrix tbody th { background: var(--surface-sunken); font-weight: 600; }
+  .matrix td .cell-sub { display: block; color: var(--fg-muted); font-family: var(--font-mono); font-size: var(--fs-12); margin-top: 2px; }
+  .matrix td.empty { background: repeating-linear-gradient(135deg, transparent, transparent 6px, var(--surface-sunken) 6px, var(--surface-sunken) 7px); color: var(--fg-disabled); }
+  .matrix td .vd { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .matrix td.active-cell { box-shadow: inset 0 0 0 2px var(--primary); }
+
+  .deadnote { display: flex; gap: 12px; align-items: flex-start; margin-top: var(--space-6); padding: var(--space-4) var(--space-5); border: 1px solid var(--warning); border-left-width: 3px; border-radius: var(--radius-2); background: var(--warning-soft); font-size: var(--fs-14); line-height: var(--lh-normal); }
+  .deadnote .mono { font-family: var(--font-mono); }
+  .deadnote .dn-link { color: var(--link); text-decoration: underline; }
+
+  .twoup { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); align-items: start; }
+  .mini-cap { font-size: var(--fs-12); color: var(--fg-subtle); text-align: center; margin-top: var(--space-2); font-family: var(--font-mono); }
+  .compare-head { font-size: var(--fs-13); font-weight: 600; margin-bottom: var(--space-3); }
+  .compare-head .ca { color: var(--fg-muted); font-weight: 400; }
+
+  @media (max-width: 780px) {
+    .twoup { grid-template-columns: 1fr; }
+    .paths { grid-template-columns: 1fr; }
+    .dhead { grid-template-columns: 64px 1fr; }
+    .dimg { width: 64px; height: 64px; }
+    .switcher-row { grid-template-columns: 1fr; gap: var(--space-2); }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="doc-head">
+    <span class="eyebrow">Stage 04 · model mock, revised</span>
+    <h1>Variants and families, after the research</h1>
+    <p>The model inverted. We are no longer fitting devices into a clean two-axis grid. The research found about fourteen buying-fact axes, a third of product lines that do not factor at all, and firmware as the second most decisive axis. So enumeration is now the substrate, and the tidy views sit on top of it.</p>
+    <p class="shift"><b>What changed:</b> enumerated variant rows are the truth, axes are derived from them, the verdict carries a firmware range, region splits into several facts, identity keys let data arrive with no contribution, and the decisive axis is read per family rather than assumed to be protocol.</p>
+  </header>
+
+  <!-- 01 PICKER GENERATED FROM ROWS -->
+  <section class="ex">
+    <span class="ex-num">01</span>
+    <h2>The picker is generated from the variants that exist</h2>
+    <p class="ex-note">
+      The switcher is a <strong>view over the enumerated rows</strong>, not a free cross-product. Axes and their values are read off the
+      rows, single-value axes are hidden, and only combinations that shipped are offered, so a buyer cannot reach a variant that never
+      existed. The verdict it resolves to is now <strong>scoped to a firmware range and a last-verified date</strong>, because firmware
+      can flip the verdict with no purchasable change.
+    </p>
+
+    <div class="surf">
+      <div class="surf-inner">
+        <div class="crumb">Devices <span class="sep">›</span> Security and access control <span class="sep">›</span> Assure Lock 2</div>
+        <div class="dhead">
+          <div class="dimg">photo</div>
+          <div class="dtitle">
+            <h3>Assure Lock 2</h3>
+            <div class="dmanu">by <a href="#">Yale</a></div>
+
+            <div class="switcher" role="group" aria-label="Choose your variant">
+              <div class="switcher-row">
+                <span class="axis-label">Radio module<span class="axis-hint flip">decides the verdict on this device</span></span>
+                <span class="seg">
+                  <button type="button" aria-pressed="true"><span class="vd local"></span>Z-Wave</button>
+                  <button type="button" aria-pressed="false"><span class="vd local"></span>Matter</button>
+                  <button type="button" aria-pressed="false"><span class="vd cloud"></span>Wi-Fi</button>
+                </span>
+              </div>
+              <div class="switcher-row">
+                <span class="axis-label">Region<span class="axis-hint">power, RF band, identifiers</span></span>
+                <span class="seg">
+                  <button type="button" aria-pressed="true">US</button>
+                  <button type="button" aria-pressed="false">EU</button>
+                </span>
+              </div>
+              <div class="resolved">
+                You're reading <span class="mono">US · Z-Wave</span>
+                <button type="button" class="reset-link">Copy link to this variant</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <span class="verdict-dot" style="background: var(--success);"></span>
+          <span class="verdict-text">Works without the cloud</span>
+          <span class="verdict-via">via Z-Wave JS</span>
+          <span class="verdict-qual">
+            <span>Holds on firmware <span class="mono">1.83.0 and later</span></span>
+            <span>Last verified <span class="mono">1 Apr 2026</span></span>
+            <span>From <span class="mono">904 reports</span> on this variant</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 THREE DATA PATHS -->
+  <section class="ex">
+    <span class="ex-num">02</span>
+    <h2>Three ways a variant gets its data</h2>
+    <p class="ex-note">
+      Not everything is a contribution. A variant can be <strong>observed</strong> from telemetry, <strong>mapped</strong> from an
+      identity key with nobody writing a word, or <strong>authored</strong> by a contributor. The first two carry a truthful record on
+      their own. In the family list below, the EU Matter row was mapped and is honest but thin, while the US rows have been authored.
+    </p>
+
+    <div class="paths" style="margin-bottom: var(--space-5);">
+      <div class="path"><span class="ix">i.</span><h4>Observed</h4><p>From anonymized Home Assistant reports. Identity, posture, integration, counts. Nobody writes these.</p><span class="tagline">No contribution</span></div>
+      <div class="path"><span class="ix">ii.</span><h4>Mapped</h4><p>Matched by an identity key (FCC ID, Z-Wave triple, Zigbee model string, printed code). Coverage grows with the dataset.</p><span class="tagline">No contribution</span></div>
+      <div class="path"><span class="ix">iii.</span><h4>Authored</h4><p>Description, instructions, specs, references. Proposed, reviewed, attributed before it goes live.</p><span class="tagline">Reviewed edit</span></div>
+    </div>
+
+    <div class="vrows">
+      <div class="vrow">
+        <div><div class="vr-name">US · Z-Wave</div><div class="vr-sub">YRD420-ZW2-619 · 908.4 MHz</div></div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <span class="vr-verdict"><span class="vd local" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);"></span>Local</span>
+          <span class="vr-state authored"><span class="d"></span>Authored</span>
+        </div>
+      </div>
+      <div class="vrow">
+        <div><div class="vr-name">US · Matter</div><div class="vr-sub">YRD420-MAT-619 · Thread</div></div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <span class="vr-verdict"><span class="vd local" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);"></span>Local</span>
+          <span class="vr-state authored"><span class="d"></span>Authored</span>
+        </div>
+      </div>
+      <div class="vrow">
+        <div><div class="vr-name">EU · Matter</div><div class="vr-sub">no description yet · mapped from Zigbee/Thread ID</div></div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <span class="vr-verdict"><span class="vd local" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);"></span>Local</span>
+          <span class="vr-state mapped"><span class="d"></span>Mapped, no contribution</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 IDENTITY-KEY FINDER -->
+  <section class="ex">
+    <span class="ex-num">03</span>
+    <h2>Find your exact variant by its identity key</h2>
+    <p class="ex-note">
+      For roughly a third of devices the box <strong>cannot tell you which one you hold</strong>: a Zigbee model string is only visible
+      after pairing, and white-label hardware is not identifiable from the outside at all. So besides the switcher, a reader can match on
+      a machine key, the <strong>same keys the Mapped path uses</strong>. Recording them is a service the packaging does not provide.
+    </p>
+
+    <div class="finder">
+      <div class="finder-head">
+        <h5>Which one do I have?</h5>
+        <p>Enter a code from the device label, the app, or the FCC sticker.</p>
+      </div>
+      <div class="finder-body">
+        <div class="finder-input">
+          <input type="text" value="M5GYRD420" aria-label="Identity key" />
+          <button type="button">Match</button>
+        </div>
+        <div class="finder-keys">
+          <div class="finder-key"><span class="fk-label">FCC ID</span><span class="fk-val">M5GYRD420</span></div>
+          <div class="finder-key"><span class="fk-label">Z-Wave triple</span><span class="fk-val">0x0129:0x0001:0x0001</span></div>
+          <div class="finder-key"><span class="fk-label">Printed model</span><span class="fk-val">YRD420-ZW2-619</span></div>
+          <div class="finder-key"><span class="fk-label">Zigbee model</span><span class="fk-warn">only readable after pairing</span></div>
+        </div>
+        <div class="finder-hit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success-strong)" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+          Matches <span class="mono">US · Z-Wave</span>, the fully-local variant.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 REGION DECOMPOSED -->
+  <section class="ex">
+    <span class="ex-num">04</span>
+    <h2>Region is not one axis, and power waits for it</h2>
+    <p class="ex-note">
+      A single region enum lies. Australia is 230 V like the EU but 921 MHz, unlike it, so region <strong>decomposes into RF band,
+      mains voltage, plug type, and certification</strong>, each its own bound fact. And the page still <strong>refuses to print any of
+      it until a region is resolved</strong>, because the wrong electrics is the one fact this project will not publish.
+    </p>
+
+    <div class="twoup">
+      <div>
+        <div class="surf"><div class="surf-inner">
+          <div class="dtitle"><h3 style="font-size:var(--fs-24);">Assure Lock 2</h3><div class="dmanu">US · Z-Wave</div></div>
+          <div class="vq-rule"></div>
+          <div class="block">
+            <h4>Bound to region · US</h4>
+            <dl class="specrow">
+              <dt>Mains voltage</dt><dd>120 V / 60 Hz</dd>
+              <dt>RF band</dt><dd><span class="mono">908.4 MHz</span> <span class="bound">Z-Wave US</span></dd>
+              <dt>Certification</dt><dd>FCC / UL</dd>
+              <dt>EAN</dt><dd class="mono">0814434020191</dd>
+            </dl>
+          </div>
+        </div></div>
+        <p class="mini-cap">region resolved</p>
+      </div>
+      <div>
+        <div class="surf"><div class="surf-inner">
+          <div class="dtitle"><h3 style="font-size:var(--fs-24);">Assure Lock 2</h3><div class="dmanu">region not set</div></div>
+          <div class="vq-rule"></div>
+          <div class="block">
+            <h4>Bound to region</h4>
+            <div class="power-locked">
+              <span class="lk"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--fg-muted)" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+              <span class="pl-body"><strong>Pick a region to see power and RF</strong><span>Voltage, band, plug, and codes differ by region.</span></span>
+              <span class="pl-pick"><button type="button" class="btn-pick">Set region</button></span>
+            </div>
+          </div>
+        </div></div>
+        <p class="mini-cap">verdict still shows, power does not</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 DECISIVE AXIS PER FAMILY + MATRIX/DEAD COMBO -->
+  <section class="ex">
+    <span class="ex-num">05</span>
+    <h2>The decisive axis is read per family, not assumed</h2>
+    <p class="ex-note">
+      Yale flips on the radio module. But Kasa flips on <strong>hardware revision</strong>, Eve on firmware, Hue on hub mode, Reolink on
+      power source. So the UI cannot hard-code "protocol is the important axis", it <strong>marks whichever axis carries the verdict</strong>
+      on each family. The matrix appears only when a family factors on two axes <strong>and the verdict actually varies</strong>.
+    </p>
+
+    <div class="twoup" style="margin-bottom: var(--space-6);">
+      <div>
+        <p class="compare-head">Yale Assure Lock 2 <span class="ca">· flips on the module</span></p>
+        <div class="surf"><div class="surf-inner" style="padding: var(--space-4) var(--space-5);">
+          <div class="switcher" style="margin:0;">
+            <div class="switcher-row" style="padding:10px 14px;">
+              <span class="axis-label">Module<span class="axis-hint flip">decides the verdict</span></span>
+              <span class="seg"><button aria-pressed="true"><span class="vd local"></span>Z-Wave</button><button aria-pressed="false"><span class="vd cloud"></span>Wi-Fi</button></span>
+            </div>
+            <div class="switcher-row" style="padding:10px 14px;">
+              <span class="axis-label">Region<span class="axis-hint">specs only</span></span>
+              <span class="seg"><button aria-pressed="true">US</button><button aria-pressed="false">EU</button></span>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div>
+        <p class="compare-head">TP-Link Kasa HS110 <span class="ca">· flips on hardware revision</span></p>
+        <div class="surf"><div class="surf-inner" style="padding: var(--space-4) var(--space-5);">
+          <div class="switcher" style="margin:0;">
+            <div class="switcher-row" style="padding:10px 14px;">
+              <span class="axis-label">HW revision<span class="axis-hint flip">decides the verdict</span></span>
+              <span class="seg"><button aria-pressed="true"><span class="vd local"></span>v1–v3</button><button aria-pressed="false"><span class="vd cloud"></span>v4 (UK)</button></span>
+            </div>
+            <div class="switcher-row" style="padding:10px 14px;">
+              <span class="axis-label">Firmware<span class="axis-hint">qualifies the verdict</span></span>
+              <span class="seg"><button aria-pressed="true">pre-KLAP</button><button aria-pressed="false">KLAP (account)</button></span>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="surf">
+      <div class="surf-inner">
+        <div class="deadnote">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning-strong)" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+          <div>
+            <strong>Yale did not ship a Wi-Fi module in the EU.</strong> You followed a link to <span class="mono">EU · Wi-Fi</span>, which has no row.
+            Showing the closest variant that exists, <span class="mono">EU · Z-Wave</span>. <a class="dn-link" href="#">See all variants of this family →</a>
+          </div>
+        </div>
+
+        <table class="matrix">
+          <caption>Yale Assure Lock 2 · region down, module across. Shown because it factors on two axes and the verdict varies.</caption>
+          <thead>
+            <tr><th>&nbsp;</th><th>Z-Wave</th><th>Matter</th><th>Wi-Fi</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>US <span style="display:block;font-family:var(--font-mono);font-size:var(--fs-12);color:var(--fg-muted);font-weight:400;">120 V · 908 MHz</span></th>
+              <td><span class="vd" style="background:var(--success);"></span>Local<span class="cell-sub">Z-Wave JS</span></td>
+              <td><span class="vd" style="background:var(--success);"></span>Local<span class="cell-sub">Matter</span></td>
+              <td><span class="vd" style="background:var(--neutral-400);"></span>Cloud<span class="cell-sub">Yale Access</span></td>
+            </tr>
+            <tr>
+              <th>EU <span style="display:block;font-family:var(--font-mono);font-size:var(--fs-12);color:var(--fg-muted);font-weight:400;">230 V · 868 MHz</span></th>
+              <td class="active-cell"><span class="vd" style="background:var(--success);"></span>Local<span class="cell-sub">Z-Wave JS</span></td>
+              <td><span class="vd" style="background:var(--success);"></span>Local<span class="cell-sub">Matter</span></td>
+              <td class="empty">Not sold</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div style="height: var(--space-8);"></div>
+</main>
+</body>
+</html>

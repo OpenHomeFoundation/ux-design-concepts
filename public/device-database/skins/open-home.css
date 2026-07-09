@@ -1,0 +1,287 @@
+/* =========================================================================
+   SKIN: Open Home — based on openhomefoundation.org + sotoh site.
+   Gradient blue-to-purple world, deep teal-navy ink, yellow pill actions,
+   Figtree (the Home Assistant brand face), bold uppercase display type,
+   rounded friendly geometry. Applied via <html data-skin="open-home">.
+   Light and dark both defined. Every color token set in the light block
+   is re-set in the dark block (load order makes light win ties otherwise).
+   ========================================================================= */
+
+/* ---------- Mode-independent: type, radius, motion ---------- */
+:root[data-skin="open-home"] {
+  --font-display: "Figtree", "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-sans:    "Figtree", "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+
+  --radius-1: 6px;
+  --radius-2: 8px;
+  --radius-3: 8px;
+  --radius-4: 14px;
+  --radius-5: 20px;
+
+  --transition-fast: 140ms cubic-bezier(.2,.0,.2,1);
+  --transition:      220ms cubic-bezier(.2,.0,.2,1);
+}
+
+/* ---------- Light ---------- */
+:root[data-skin="open-home"] {
+  /* Ink: deep teal-navy from the brand wordmark and footer. */
+  --ink-50:  #e9eef6;
+  --ink-100: #cfdaea;
+  --ink-200: #a3b6cf;
+  --ink-300: #6f89a6;
+  --ink-400: #3f5b73;
+  --ink-500: #10323e;
+  --ink-600: #0c2731;
+  --ink-700: #091e26;
+  --ink-800: #06151b;
+  --ink-900: #030b0e;
+
+  /* Primary action: brand yellow pill with navy text. */
+  --primary:        #f5c542;
+  --primary-hover:  #eeb928;
+  --primary-press:  #e2ac18;
+  --primary-soft:   #fdf3d7;
+  --fg-on-primary:  #10323e;
+
+  /* Accent: the gradient blue. */
+  --accent:        #4f7df9;
+  --accent-hover:  #3a64de;
+  --accent-soft:   #e9effe;
+
+  /* Neutrals: cool lavender-tinted paper. */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f4f6fd;
+  --neutral-100: #e9edfa;
+  --neutral-200: #d8def2;
+  --neutral-300: #b9c4e2;
+  --neutral-400: #8492b8;
+  --neutral-500: #5b6a8d;
+  --neutral-600: #3d4c68;
+  --neutral-700: #24324a;
+  --neutral-800: #14202f;
+  --neutral-900: #0c1620;
+
+  --surface:           #ffffff;
+  --surface-sunken:    #f4f6fd;
+  --surface-raised:    #ffffff;
+  --surface-overlay:   #ffffff;
+  --surface-inverse:   #0c2731;
+
+  --surface-tint-soft:   #f4f6fd;
+  --surface-tint-mid:    #e9edfa;
+  --surface-tint-strong: #d8def2;
+
+  --fg:           #10323e;
+  --fg-strong:    #091e26;
+  --fg-muted:     #466173;
+  --fg-subtle:    #648092;
+  --fg-disabled:  #9db0c0;
+  --fg-inverse:   #ffffff;
+
+  --border:        #dde3f4;
+  --border-strong: #b9c4e2;
+  --border-subtle: #ebeffa;
+  --border-focus:  #4f7df9;
+
+  --link:          #10323e;
+  --link-hover:    #4f7df9;
+  --link-visited:  #10323e;
+  --link-active:   #3a64de;
+
+  --success:       #1d7a55;
+  --success-soft:  #e2f5ec;
+  --success-strong:#115c3e;
+
+  --warning:       #a16a06;
+  --warning-soft:  #fdf3d7;
+  --warning-strong:#7c5104;
+
+  --error:         #c2334c;
+  --error-soft:    #fbe4e8;
+  --error-strong:  #96263a;
+
+  --info:          #4f7df9;
+  --info-soft:     #e9effe;
+  --info-strong:   #3a64de;
+
+  --trait-zigbee:    #24324a;
+  --trait-zwave:     #24324a;
+  --trait-matter:    #24324a;
+  --trait-wifi:      #24324a;
+  --trait-bluetooth: #24324a;
+  --trait-thread:    #24324a;
+  --trait-local:     #24324a;
+  --trait-cloud:     #5b6a8d;
+
+  --shadow-1: 0 1px 2px rgba(16, 50, 62, 0.06), 0 4px 16px rgba(16, 50, 62, 0.07);
+  --shadow-2: var(--shadow-1);
+  --shadow-3: 0 2px 6px rgba(16, 50, 62, 0.08), 0 12px 32px rgba(16, 50, 62, 0.12);
+  --shadow-4: var(--shadow-3);
+  --ring-focus: 0 0 0 2px #4f7df9;
+
+  --nav-bg: #eef1fd;
+  --scrim: rgba(9, 30, 38, 0.55);
+}
+
+/* ---------- Dark: the footer navy world ---------- */
+:root[data-skin="open-home"][data-resolved-theme="dark"] {
+  --primary:        #f5c542;
+  --primary-hover:  #f8d066;
+  --primary-press:  #eeb928;
+  --primary-soft:   #2a3140;
+  --fg-on-primary:  #10323e;
+
+  --accent:        #8aa9fb;
+  --accent-hover:  #a9c0fc;
+  --accent-soft:   #1a2a4d;
+
+  --surface:           #0c2731;
+  --surface-sunken:    #0a212a;
+  --surface-raised:    #123440;
+  --surface-overlay:   #123440;
+  --surface-inverse:   #f4f6fd;
+
+  --surface-tint-soft:   #10303b;
+  --surface-tint-mid:    #163946;
+  --surface-tint-strong: #1d4553;
+
+  --fg:           #dce8ee;
+  --fg-strong:    #ffffff;
+  --fg-muted:     #93b0bd;
+  --fg-subtle:    #6f92a1;
+  --fg-disabled:  #4c6b79;
+  --fg-inverse:   #0c2731;
+
+  --border:        #1e4351;
+  --border-strong: #2c5666;
+  --border-subtle: #163743;
+  --border-focus:  #8aa9fb;
+
+  --link:          #dce8ee;
+  --link-hover:    #8aa9fb;
+  --link-visited:  #c3d6de;
+  --link-active:   #a9c0fc;
+
+  --success:       #4fc48f;
+  --success-soft:  #0f3527;
+  --success-strong:#8adcb7;
+
+  --warning:       #f5c542;
+  --warning-soft:  #33290e;
+  --warning-strong:#f8d066;
+
+  --error:         #f08196;
+  --error-soft:    #3d1620;
+  --error-strong:  #f5a7b6;
+
+  --info:          #8aa9fb;
+  --info-soft:     #1a2a4d;
+  --info-strong:   #a9c0fc;
+
+  --trait-zigbee:    #c3d6de;
+  --trait-zwave:     #c3d6de;
+  --trait-matter:    #c3d6de;
+  --trait-wifi:      #c3d6de;
+  --trait-bluetooth: #c3d6de;
+  --trait-thread:    #c3d6de;
+  --trait-local:     #c3d6de;
+  --trait-cloud:     #93b0bd;
+
+  --shadow-1: 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --shadow-2: var(--shadow-1);
+  --shadow-3: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-4: var(--shadow-3);
+  --ring-focus: 0 0 0 2px #8aa9fb;
+
+  --nav-bg: #0a212a;
+  --scrim: rgba(3, 11, 14, 0.7);
+}
+
+/* ---------- Component recipe ---------- */
+
+/* Bold uppercase display type, the SOTOH headline voice. */
+[data-skin="open-home"] h1,
+[data-skin="open-home"] .h1,
+[data-skin="open-home"] .h-display {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+[data-skin="open-home"] h2,
+[data-skin="open-home"] .h2 { font-weight: 800; }
+[data-skin="open-home"] h3,
+[data-skin="open-home"] .h3,
+[data-skin="open-home"] h4,
+[data-skin="open-home"] .h4 { font-weight: 700; }
+
+[data-skin="open-home"] .brand-name {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: var(--fs-18);
+}
+
+/* Pill actions, brand yellow primary. */
+[data-skin="open-home"] .btn {
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+[data-skin="open-home"] .chip { border-radius: 999px; }
+
+/* Hero: the gradient moment. Scoped custom props flip the text to white
+   for everything inside without touching component rules. */
+[data-skin="open-home"] .hero {
+  background: linear-gradient(118deg, #4f7df9 0%, #6d74f8 55%, #9a67f2 100%);
+  border-bottom: 0;
+  --fg: #ffffff;
+  --fg-strong: #ffffff;
+  --fg-muted: rgba(255, 255, 255, 0.82);
+  --fg-subtle: rgba(255, 255, 255, 0.66);
+  --link: #ffffff;
+  --link-hover: #fdf3d7;
+  --border: rgba(255, 255, 255, 0.28);
+  --border-strong: rgba(255, 255, 255, 0.45);
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface-tint-soft: rgba(255, 255, 255, 0.12);
+  --surface-tint-mid: rgba(255, 255, 255, 0.18);
+}
+[data-skin="open-home"] .hero .hero-search,
+[data-skin="open-home"] .hero .searchbox-input {
+  background: #ffffff;
+  --fg: #10323e;
+  --fg-muted: #466173;
+  --fg-subtle: #648092;
+  border-color: transparent;
+  box-shadow: 0 8px 28px rgba(9, 30, 38, 0.25);
+}
+[data-skin="open-home"] .hero .searchbox-input input { color: #10323e; }
+[data-skin="open-home"] .hero .searchbox-dropdown {
+  --fg: #10323e;
+  --fg-muted: #466173;
+  --fg-subtle: #648092;
+  --surface: #ffffff;
+  --link: #10323e;
+  background: #ffffff;
+  color: #10323e;
+}
+[data-skin="open-home"][data-resolved-theme="dark"] .hero {
+  background: linear-gradient(118deg, #2b4ec4 0%, #4a4bd0 55%, #6f43c4 100%);
+}
+
+/* Nav: lavender band in light, footer navy in dark. */
+[data-skin="open-home"] .appnav { border-bottom-color: transparent; }
+[data-skin="open-home"][data-resolved-theme="dark"] .appnav { border-bottom-color: var(--border-subtle); }
+
+/* Cards lift on hover, rounded and soft. */
+[data-skin="open-home"] .device-card {
+  border-radius: var(--radius-4);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+[data-skin="open-home"] .device-card:hover {
+  box-shadow: var(--shadow-3);
+}
+
+/* Modals and sheets: friendlier radius. */
+[data-skin="open-home"] .modal-dialog { border-radius: var(--radius-5); }
+[data-skin="open-home"] .sheet-panel { border-radius: var(--radius-5) var(--radius-5) 0 0; }

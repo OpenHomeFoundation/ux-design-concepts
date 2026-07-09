@@ -78,7 +78,7 @@ window.DEVICES = [
       connectivity: { initialSetup: "Local", dayToDay: "Local", offline: "Keeps working" },
       ecosystems: { homeAssistant: true, amazonAlexa: true, appleHome: true, googleHome: true, homey: true, others: [], proprietaryApp: true, appRequired: false, subscriptionFeatures: false, appLinks: { android: "https://play.google.com/store/apps/details?id=com.philips.lighting.hue2" } },
       protocols: { matter: false, thread: false, wifi: false, zigbee: true, zwave: false },
-      bridge: { proprietary: "Philips Hue Bridge" },
+      bridge: { proprietary: "Hue Bridge" },
       dimensions: [{ name: "Device", height: 110, width: 60, depth: 60 }],
       identifiers: { modelId: "LCA001", ean: "8719514291218", sku: "046677562779" },
       references: [{ label: "Philips Hue, White A19 product page", url: "https://www.philips-hue.com/" }, { label: "Philips Hue support and manuals", url: "https://www.philips-hue.com/en-us/support" }],
@@ -92,6 +92,7 @@ window.DEVICES = [
     manufacturer: "Philips Hue",
     model: "9290011998",
     category: "lighting",
+    msrp: [{ amount: 15.99, currency: "USD" }],
     local: "always",
     cloud: "optional",
     ha: "official",
@@ -157,7 +158,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "Zigbee Home Automation (ZHA), Zigbee2MQTT",
+    haIntegration: "Zigbee Home Automation (ZHA)",
     reports: 2104, installs: 1488,
     summary: "Inexpensive dimmable warm-white bulb. Works with any Zigbee 3.0 coordinator. Does not require the IKEA Trådfri gateway.",
     entityTypes: ["light"],
@@ -184,10 +185,11 @@ window.DEVICES = [
     manufacturer: "Inovelli",
     model: "VZM31-SN",
     category: "controls",
+    msrp: [{ amount: 49.95, currency: "USD" }],
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 1186, installs: 942,
     summary: "Smart dimmer with notification LED bar. Operates fully local over Zigbee. Supports binding and scene control without a hub manufacturer cloud.",
     entityTypes: ["light", "switch", "sensor", "event"],
@@ -220,7 +222,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 612, installs: 487,
     summary: "Soft-white A19 bulb. Acts as an end device only, does not route Zigbee mesh traffic. Pair directly to your coordinator.",
     entityTypes: ["light"],
@@ -256,7 +258,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 988, installs: 712,
     summary: "Single-gang Zigbee wall switch designed for installations without a neutral wire. Reports power consumption alongside switch state.",
     entityTypes: ["switch", "sensor"],
@@ -329,7 +331,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 1342, installs: 1051,
     summary: "Compact in-wall relay. The L2 revision works without a neutral wire. Reports as a non-routing Zigbee end device.",
     entityTypes: ["switch"],
@@ -355,6 +357,7 @@ window.DEVICES = [
     manufacturer: "Aqara",
     model: "PS-S02D",
     category: "presence",
+    msrp: [{ amount: 82.99, currency: "USD" }],
     local: "sometimes",
     cloud: "required",
     ha: "official",
@@ -422,7 +425,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 3214, installs: 2461,
     summary: "Small battery-powered sensor reporting temperature, humidity and pressure. Sleeps between reports to conserve battery.",
     entityTypes: ["sensor"],
@@ -438,7 +441,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 2618, installs: 1908,
     summary: "Inexpensive temperature and humidity sensor. Reports roughly every five minutes or on a one-degree threshold change.",
     entityTypes: ["sensor"],
@@ -602,6 +605,7 @@ window.DEVICES = [
     manufacturer: "Roborock",
     model: "S8PU",
     category: "cleaning",
+    msrp: [{ amount: 1599.99, currency: "USD" }],
     local: "sometimes",
     cloud: "required",
     ha: "official",
@@ -743,7 +747,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 1218, installs: 902,
     summary: "Zigbee plug with power and energy reporting. Also acts as a router for the Zigbee mesh.",
     entityTypes: ["switch", "sensor"],
@@ -771,6 +775,86 @@ window.DEVICES = [
 
   // ----- Hubs -----
   {
+    id: "philips-hue-bridge",
+    description: "The square hub at the centre of a Philips Hue setup. It speaks Zigbee to the bulbs and accessories and joins your home network over Ethernet, so once it is paired the lights respond on the local network rather than through the cloud.\n\nHome Assistant talks to the bridge directly over the LAN through the official Philips Hue integration, which discovers every light, room, scene and accessory the bridge knows about. A Hue account and the cloud are only needed for remote access and out-of-home control, neither of which Home Assistant requires.",
+    instructions: {
+      text: "Connect the bridge to your router with the supplied Ethernet cable and give it power. Wait for the three status lights to come on, then open the Hue app and let it find the bridge on your network.\n\nIn Home Assistant, add the Philips Hue integration. It will discover the bridge automatically, then prompt you to press the round link button on top of the bridge to authorise the connection. Every paired light, room and scene appears once the link is confirmed.",
+      manualUrl: "https://www.philips-hue.com/en-us/support"
+    },
+    specs: {
+      cat: { radios: ["Zigbee"], connection: "Ethernet", poe: false, externalAntenna: false },
+      connectivity: { initialSetup: "Manufacturer account", dayToDay: "Local", offline: "Keeps working" },
+      ecosystems: { homeAssistant: true, amazonAlexa: true, appleHome: true, googleHome: true, homey: true, smartThings: true, others: [], proprietaryApp: "Required", appRequired: false, subscriptionFeatures: false, appLinks: { ios: "https://apps.apple.com/app/philips-hue/id1055281310", android: "https://play.google.com/store/apps/details?id=com.philips.lighting.hue2" } },
+      protocols: { wifi: false, ethernet: true, thread: false, matterThread: false, matterWifi: false, zigbee: true, zwave: false, bluetooth: false },
+      dimensions: [{ name: "Device", height: 26, width: 90, depth: 90 }],
+      identifiers: { modelId: "BSB002", ean: "8718696511800", sku: "046677458478" },
+      references: [{ label: "Philips Hue Bridge product page", url: "https://www.philips-hue.com/en-us/p/hue-bridge/046677458478" }, { label: "Philips Hue integration for Home Assistant", url: "https://www.home-assistant.io/integrations/hue/" }],
+      connectsWith: {
+        amazonAlexa: {
+          setup: "Enable the Philips Hue skill in the Alexa app and sign in with your Hue account. Alexa then discovers every light and room the bridge exposes.",
+          limitations: "Control runs through the Hue cloud, so Alexa needs the bridge online and signed in to a Hue account. Scenes built in the Hue app are not all mirrored into Alexa and may need recreating on the Alexa side.",
+          docsUrl: "https://www.philips-hue.com/en-us/explore-hue/works-with/amazon-alexa"
+        },
+        appleHome: {
+          setup: "Open the Hue app, go to Settings, then Voice assistants, and follow the Apple Home steps to import the bridge. Scan the HomeKit code shown in the app to add it to the Home app.",
+          limitations: "HomeKit pairing is handled by the bridge itself. A light paired directly to a third-party Zigbee coordinator instead of the bridge will not appear in Apple Home.",
+          docsUrl: "https://www.philips-hue.com/en-us/explore-hue/works-with/apple-homekit"
+        },
+        googleHome: {
+          setup: "In the Google Home app, add a device, choose Works with Google, and link the Philips Hue service with your Hue account. Rooms and lights sync automatically.",
+          limitations: "Linking is cloud-based and requires a Hue account. Group commands fan out through the Hue cloud and can lag a second or two behind the local Hue app.",
+          docsUrl: "https://www.philips-hue.com/en-us/explore-hue/works-with/google-assistant"
+        }
+      }
+    },
+    name: "Hue Bridge",
+    manufacturer: "Philips Hue",
+    model: "9290024122",
+    category: "hubs",
+    msrp: [{ amount: 59.99, currency: "USD" }, { amount: 64.99, currency: "EUR" }],
+    local: "always",
+    cloud: "optional",
+    ha: "official",
+    haIntegration: "Philips Hue",
+    reports: 3886, installs: 3120,
+    summary: "Zigbee hub for Philips Hue lights and accessories. Joins the network over Ethernet and is controlled locally by Home Assistant. The cloud is used only for remote access.",
+    entityTypes: ["light", "sensor", "binary_sensor", "scene", "event"],
+    softwareVersion: "1.65.0",
+    versionHistory: [{ version: "1.64.0", lastSeen: "2026-02-18" }, { version: "1.62.3", lastSeen: "2025-12-23" }],
+    firstSeen: "2025-12-23", lastVerified: "2026-05-18",
+  },
+  {
+    id: "philips-hue-bridge-pro",
+    description: "The larger-capacity successor to the square Hue Bridge. It holds many more lights, accessories and scenes, adds on-device dynamic scene effects, and keeps the same local Zigbee-to-Ethernet design, so Home Assistant still controls it on the local network through the official Philips Hue integration.\n\nThe extra memory and processing are the point: large installations that bumped into the original bridge's device limit can consolidate onto a single Pro. The cloud remains optional, used only for remote access and out-of-home control.",
+    instructions: {
+      text: "Connect the Bridge Pro to your router with the supplied Ethernet cable and power it on. Open the Hue app and let it discover the bridge, or migrate an existing setup with the in-app transfer tool.\n\nIn Home Assistant, add the Philips Hue integration. It discovers the bridge on the LAN and prompts you to press the link button on top to authorise. Lights, rooms and scenes appear once linked.",
+      manualUrl: "https://www.philips-hue.com/en-us/support"
+    },
+    specs: {
+      cat: { radios: ["Zigbee"], connection: "Ethernet", poe: false, externalAntenna: false },
+      connectivity: { initialSetup: "Manufacturer account", dayToDay: "Local", offline: "Keeps working" },
+      ecosystems: { homeAssistant: true, amazonAlexa: true, appleHome: true, googleHome: true, homey: true, smartThings: true, others: [], proprietaryApp: "Required", appRequired: false, subscriptionFeatures: false, appLinks: { ios: "https://apps.apple.com/app/philips-hue/id1055281310", android: "https://play.google.com/store/apps/details?id=com.philips.lighting.hue2" } },
+      protocols: { wifi: false, ethernet: true, thread: false, matterThread: false, matterWifi: false, zigbee: true, zwave: false, bluetooth: false },
+      dimensions: [{ name: "Device", height: 28, width: 95, depth: 95 }],
+      identifiers: { modelId: "BSB003", ean: "8719514434561", sku: "046677580544" },
+      references: [{ label: "Philips Hue Bridge Pro product page", url: "https://www.philips-hue.com/en-us/p/hue-bridge-pro/046677580544" }, { label: "Philips Hue integration for Home Assistant", url: "https://www.home-assistant.io/integrations/hue/" }]
+    },
+    name: "Hue Bridge Pro",
+    manufacturer: "Philips Hue",
+    model: "9290037331",
+    category: "hubs",
+    msrp: [{ amount: 99.99, currency: "USD" }, { amount: 99.99, currency: "EUR" }],
+    local: "always",
+    cloud: "optional",
+    ha: "official",
+    haIntegration: "Philips Hue",
+    reports: 612, installs: 478,
+    summary: "Higher-capacity Zigbee hub for large Philips Hue setups. Joins the network over Ethernet and is controlled locally by Home Assistant. The cloud is used only for remote access.",
+    entityTypes: ["light", "sensor", "binary_sensor", "scene", "event"],
+    softwareVersion: "1.70.0",
+    firstSeen: "2026-02-10", lastVerified: "2026-05-20",
+  },
+  {
     id: "home-assistant-skyconnect",
     description: "A USB stick that adds Zigbee and Thread radios to any Home Assistant host. It is the Open Home Foundation's own coordinator, designed to be the simplest path to a local Zigbee network with no manufacturer cloud anywhere in the picture.\n\nBecause it carries a Thread radio as well, it can act as a Thread border router for Matter-over-Thread devices, letting a single stick cover both the older Zigbee ecosystem and the newer Matter one.",
     instructions: {
@@ -788,6 +872,7 @@ window.DEVICES = [
     manufacturer: "Nabu Casa",
     model: "ZBT-1",
     category: "hubs",
+    msrp: [{ amount: 32.99, currency: "USD" }],
     local: "always",
     cloud: "none",
     ha: "official",
@@ -824,7 +909,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT (via TCP)",
+    haIntegration: "ZHA (via TCP)",
     reports: 818, installs: 712,
     summary: "PoE Zigbee coordinator with optional Wi-Fi. Connects to Home Assistant over the network so the radio doesn't need to live next to the host.",
     entityTypes: [],
@@ -925,7 +1010,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "ZHA, Zigbee2MQTT",
+    haIntegration: "ZHA",
     reports: 612, installs: 488,
     summary: "Battery-powered TRV head. Reports valve position, setpoint and battery. Supports child-lock and window-open detection.",
     entityTypes: ["climate", "sensor", "binary_sensor"],
@@ -1190,7 +1275,7 @@ window.DEVICES = [
     local: "always",
     cloud: "none",
     ha: "official",
-    haIntegration: "Zigbee Home Automation (ZHA), Zigbee2MQTT",
+    haIntegration: "Zigbee Home Automation (ZHA)",
     reports: 1438, installs: 1106,
     summary: "Battery-powered blackout roller blind. Pairs to any Zigbee 3.0 coordinator. Works without the IKEA hub or any cloud service.",
     entityTypes: ["cover", "sensor"],
@@ -1480,7 +1565,7 @@ window.PENDING_SEED = {
       by: "relaynode", at: "2026-05-27T15:55:00", pr: 1205
     },
     "bridge": {
-      value: { proprietary: "Philips Hue Bridge" },
+      value: { proprietary: "Hue Bridge" },
       by: "northlight", at: "2026-06-01T09:50:00", pr: 1266
     },
     "dimensions": {
@@ -1813,6 +1898,26 @@ window.CONNECTS_WITH_TEMPLATES = {
 window.connectsWithEcoLabel = function (key) {
   var o = (window.ECOSYSTEM_OPTIONS || []).find(function (x) { return x.key === key; });
   return o ? o.label : key;
+};
+// Resolve a proprietary-bridge name (e.g. "Philips Hue Bridge") to the hub
+// device that documents it, so the read view can link to it. Proprietary
+// names usually prepend the brand, so we match on the hub's own name being
+// contained in the proprietary string, scoped to the hubs category.
+window.deviceForBridgeName = function (name) {
+  if (!name) return null;
+  var n = String(name).toLowerCase().trim();
+  var hubs = (window.DEVICES || []).filter(function (d) { return d.category === 'hubs'; });
+  for (var i = 0; i < hubs.length; i++) {
+    var d = hubs[i];
+    var full = (d.manufacturer + ' ' + d.name).toLowerCase();
+    if (n === full || n === d.name.toLowerCase()) return d;
+  }
+  for (var j = 0; j < hubs.length; j++) {
+    var h = hubs[j];
+    var hn = h.name.toLowerCase();
+    if (hn.length >= 4 && n.indexOf(hn) !== -1) return h;
+  }
+  return null;
 };
 window.connectsWithActiveProtocols = function (device) {
   var p = (device.specs && device.specs.protocols) || {};

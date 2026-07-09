@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Device Database Wiki · Open Home Foundation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap">
+  <!-- Mirror the app's theme + skin boot so the wiki matches the reader's
+       chosen theme. Read-only: this page never writes the demo state. -->
+  <script>
+    (function () {
+      var s = {};
+      try { s = JSON.parse(localStorage.getItem('devicedb.demoState.v1')) || {}; } catch (e) {}
+      var root = document.documentElement;
+      var dark = s.theme === 'dark' || (s.theme !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      root.setAttribute('data-resolved-theme', dark ? 'dark' : 'light');
+      if (s.skin && s.skin !== 'reference') root.setAttribute('data-skin', s.skin);
+    })();
+  </script>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="skins/open-home.css">
+  <link rel="stylesheet" href="skins/vibrant.css">
+  <link rel="stylesheet" href="skins/terminal.css">
+  <link rel="stylesheet" href="skins/brutalist.css">
+  <link rel="stylesheet" href="skins/slop.css">
+  <link rel="stylesheet" href="wiki.css">
+</head>
+<body>
+
+  <main class="doc" id="top">
+
+  <!-- ===================================================================
+       Masthead — the home page's own intro (shown here only)
+       =================================================================== -->
+  <div class="masthead">
+    <div class="eyebrow-row">
+      <span class="eyebrow">Open Home Foundation</span>
+      <span class="eyebrow accent">A field guide for contributors</span>
+    </div>
+    <h1>The Device Database, explained.</h1>
+    <p class="standfirst">
+      Manufacturer specs say what a device <em>should</em> do. The Device Database records
+      what it <em>actually</em> does, built from anonymized data shared by the community and
+      enriched by people who run the hardware. This is the wiki: how the project is
+      designed, how it is built, and how you can help shape it. Use the left rail to move between
+      this overview and the roadmap plans.
+    </p>
+
+    <div class="masthead-meta">
+      <div class="item"><span class="k">For</span><span class="v">Contributors, OHF staff, designers, developers</span></div>
+      <div class="item"><span class="k">Maintained by</span><span class="v">Open Home Foundation</span></div>
+      <div class="item"><span class="k">Source</span><span class="v">OpenHomeFoundation / device-database</span></div>
+      <div class="item"><span class="k">Status</span><span class="v">Living document</span></div>
+    </div>
+
+    <div class="notice">
+      <svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v4h1"></path></svg>
+      <p><b>This wiki is not part of the Device Database product.</b> It is the internal companion to the live reference, kept alongside it but never shown to people browsing devices. For the live reference, see the Device Database itself.</p>
+    </div>
+  </div>
+
+  <!-- ============================ 01 What it is ======================== -->
+  <section id="what" data-toc="What it is" class="section">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2>What the Device Database is</h2>
+      <p class="section-lede">A free, open reference for how smart-home devices behave in the real world, run by the non-profit stewards of Home Assistant.</p>
+    </div>
+    <div class="prose cols">
+      <div>
+        <p>Home Assistant users opt in to share which devices they run and how those devices behave. Reports are anonymized, with no personal data, no identifiers, and no addresses. The database aggregates and deduplicates those reports, pairs them with manufacturer documentation, and cross-checks them against integration source code before anything goes live.</p>
+        <p class="muted">Anyone can look a device up, no account needed. You do not have to use Home Assistant to benefit. The goal is a reference you can cite when deciding what to buy, not a marketing surface.</p>
+      </div>
+      <div>
+        <h4>What an entry answers</h4>
+        <ul>
+          <li>Does it require an internet connection, and when (setup only, or always)?</li>
+          <li>Which Home Assistant integration controls it, and is that integration official or community?</li>
+          <li>Which protocols and ecosystems does it speak (Matter, Thread, Zigbee, Z-Wave, Wi-Fi)?</li>
+          <li>How many people have run it successfully, and how recently was it verified?</li>
+        </ul>
+        <p class="muted">Where a claim is unverified, the entry says so. Where a device behaves one way on one firmware and differently on another, both are noted.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="num">Local-first</span><span class="cap">Every entry foregrounds whether the device works without the cloud</span></div>
+      <div class="stat"><span class="num">Anonymized</span><span class="cap">Telemetry carries no identifiers, addresses, or personal data</span></div>
+      <div class="stat"><span class="num">Source-backed</span><span class="cap">Claims cite docs or integration code, gaps are marked</span></div>
+      <div class="stat"><span class="num">Non-profit</span><span class="cap">A project of the Open Home Foundation, never a marketing surface</span></div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 Design ============================ -->
+  <section id="design" data-toc="Design rationale" class="section">
+    <div class="section-head">
+      <span class="section-num">02</span>
+      <h2>Design rationale</h2>
+      <p class="section-lede">The visual language is deliberately quiet. "Less, but better." Color is signal, not decoration. The grid and the hairline carry the structure.</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card"><span class="ix">i.</span><h4>Functional, not decorative</h4><p>Graphite ink on warm paper. A single blue accent marks links and the one live or active thing on a screen. Errors and warnings keep their own red and amber. No gradients, no shadows beyond a 1px hairline.</p></div>
+      <div class="card"><span class="ix">ii.</span><h4>Hierarchy by weight and size</h4><p>Two typefaces do the work. Inter Tight for headings, Inter for body and UI. JetBrains Mono for IDs, hex values, and raw protocol identifiers.</p></div>
+      <div class="card"><span class="ix">iii.</span><h4>The hairline carries the weight</h4><p>One elevation level. Surfaces separate with a 1px border, not a drop shadow. A strict 4px grid, with 8px increments preferred. The default radius is 2px.</p></div>
+    </div>
+
+    <h3>Color</h3>
+    <p class="prose muted">Color is meaning. Neutrals are warm-paper biased. The blue accent does two jobs: it marks links, and it marks the one thing on a screen that is live or needs attention. It is never a decorative flourish. Errors and warnings keep their own red and amber, so a live signal is never confused with a problem.</p>
+    <div class="swatches">
+      <div class="swatch"><div class="chip" style="background:#2a2a27"></div><div class="meta"><span class="nm">Ink 500</span><span class="hex">#2a2a27</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#1C6FD6"></div><div class="meta"><span class="nm">Accent</span><span class="hex">#1C6FD6</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#fafaf7;box-shadow:inset 0 0 0 1px #e3e2dc"></div><div class="meta"><span class="nm">Paper</span><span class="hex">#fafaf7</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#e3e2dc"></div><div class="meta"><span class="nm">Border</span><span class="hex">#e3e2dc</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#3d6b3a"></div><div class="meta"><span class="nm">Success</span><span class="hex">#3d6b3a</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#a8261a"></div><div class="meta"><span class="nm">Error</span><span class="hex">#a8261a</span></div></div>
+    </div>
+    <p class="xref">Tokens carry semantic names, never raw hex, so the full dark theme is a single override block. Pages that use tokens correctly adapt with no extra work. See <code class="inl">tokens.css</code>.</p>
+
+    <h3>Links</h3>
+    <p class="prose muted">Links come in two kinds, told apart by one question: is the link sitting inside running text?</p>
+    <p class="prose muted"><b>Inline links</b> sit next to words, inside a sentence or a data row. They carry an underline at rest so they read as links within the text, and they turn blue on hover.</p>
+    <p class="prose muted"><b>Structural links</b> stand on their own, or in a group where the context already reads as clickable: cards, navigation, footers, breadcrumbs, standalone calls to action, the logo, a manufacturer name. They have no underline at rest, and reveal blue plus an underline on hover.</p>
+    <p class="prose muted">Buttons and toggles are not links. They never underline, and they darken to ink on hover rather than turning blue.</p>
+    <p class="xref">The rule is applied per element rather than auto-detected, so a bare new link follows the structural default until it is given the inline treatment. See the link rules in <code class="inl">app.css</code>.</p>
+
+    <h3>Type</h3>
+    <div class="type-specimen">
+      <div class="type-row"><div class="role">Display<span class="spec">Inter Tight · 600 · -2% tracking</span></div><div class="demo"><span class="demo-display">Plus 1 relay</span></div></div>
+      <div class="type-row"><div class="role">Heading 3<span class="spec">Inter Tight · 600</span></div><div class="demo"><span class="demo-h3">Connects with Home Assistant</span></div></div>
+      <div class="type-row"><div class="role">Body<span class="spec">Inter · 400 · 1.55 line height</span></div><div class="demo"><span class="demo-body">Exposes a local HTTP API and MQTT. Bluetooth is used for provisioning.</span></div></div>
+      <div class="type-row"><div class="role">Mono<span class="spec">JetBrains Mono · 400</span></div><div class="demo"><span class="demo-mono">shelly-plus-1 · VZM31-SN</span></div></div>
+    </div>
+    <p class="xref">Verbs over adjectives is a type decision as much as an editorial one. Numbers, model IDs, and protocol tokens are always set in mono so they read as data.</p>
+
+    <h3>Measure</h3>
+    <p class="prose muted">Running prose is held to a fixed measure of about <b>62 characters per line</b>, no matter how wide its container is. Headings, figures, tables, and cards fill the column. Body paragraphs do not. So a paragraph often stops short of the right edge that the elements around it reach, and that is deliberate.</p>
+    <p class="prose muted">This is "less, but better" applied to reading. The line is sized for the eye, not the box. A short, even measure keeps the reader from losing their place on the return sweep to the next line, which is exactly where long lines get tiring. The slightly shorter right edge on paragraphs is intentional rhythm, not a misalignment to be filled in.</p>
+    <p class="xref">The cap lives on the text, not the layout, so wide columns can still carry full-width structure. See <code class="inl">max-width: 62ch</code> on prose in <code class="inl">app.css</code>.</p>
+  </section>
+
+  <!-- ============================ 03 IA ================================ -->
+  <section id="ia" data-toc="Information architecture" class="section">
+    <div class="section-head">
+      <span class="section-num">03</span>
+      <h2>Information architecture</h2>
+      <p class="section-lede">A small set of pages, addressed by hash route. The structure is flat on purpose: find a device, read it, and (if signed in) improve it.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:34%">Route</th><th>Page</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">#/</td><td>Landing</td><td class="desc">Mission, search, a way in</td></tr>
+          <tr><td class="mono">#/browse</td><td>Browse</td><td class="desc">Filterable list. Filters persist in the route</td></tr>
+          <tr><td class="mono">#/device/&lt;id&gt;</td><td>Device detail</td><td class="desc">The core entry. Overview, requirements, specs, connects-with</td></tr>
+          <tr><td class="mono">#/how-it-works</td><td>How it works</td><td class="desc">Public explainer reachable from the footer</td></tr>
+          <tr><td class="mono">#/editorial-stance</td><td>Editorial stance</td><td class="desc">The voice and neutrality policy</td></tr>
+          <tr><td class="mono">#/about</td><td>About</td><td class="desc">The project and the Open Home Foundation behind it</td></tr>
+          <tr><td class="mono">#/privacy · #/privacy/data-use</td><td>Privacy, Data Use Statement</td><td class="desc">What is shared, and how it is protected</td></tr>
+          <tr><td class="mono">#/impressum</td><td>Impressum</td><td class="desc">Legal disclosure required in some jurisdictions</td></tr>
+          <tr><td class="mono">#/signin · #/signup</td><td>Sign in, Create account</td><td class="desc">Account stage. Surfaced when editing is enabled</td></tr>
+          <tr><td class="mono">#/welcome</td><td>Welcome</td><td class="desc">Post sign-up onboarding for a new contributor</td></tr>
+          <tr><td class="mono">#/settings</td><td>Settings</td><td class="desc">Profile, security, connections, notifications</td></tr>
+          <tr><td class="mono">#/you</td><td>Your edits</td><td class="desc">Private dashboard of your drafts and submitted edits</td></tr>
+          <tr><td class="mono">#/contributors</td><td>Contributors</td><td class="desc">Browsable directory of contributor profiles</td></tr>
+          <tr><td class="mono">#/contributors/&lt;handle&gt;</td><td>Contributor profile</td><td class="desc">Attribution and edit history for a person</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose muted">Routing is hash-based and parsed client-side, so the whole reference is a static bundle that can be hosted anywhere. The device detail page is where almost all reading and editing happens, every other page exists to get someone to it or to support contribution.</p>
+  </section>
+
+  <!-- ============================ 04 Data model ======================= -->
+  <section id="data" data-toc="Data model" class="section">
+    <div class="section-head">
+      <span class="section-num">04</span>
+      <h2>Data model</h2>
+      <p class="section-lede">A record has a read-only core and a set of fields contributors maintain. Two shifts are documented here: data reaches a record three ways, not two, and Stage 04 grows the unit from a single device to a family of variants.</p>
+    </div>
+
+    <h3>Three ways data enters a record</h3>
+    <p class="prose muted">A record is not built only by people. Most of what the database publishes arrives without anyone writing prose, which is what lets coverage keep pace with the catalogue.</p>
+    <div class="card-grid">
+      <div class="card"><span class="ix">i.</span><h4>Observed</h4><p>Gathered automatically from anonymized Home Assistant reports: identity, the local and cloud posture, the controlling integration, entity types, and the counts. Nobody writes these, they reflect what the telemetry sees.</p></div>
+      <div class="card"><span class="ix">ii.</span><h4>Mapped</h4><p>Matched to a record by an <b>identity key</b>, an FCC ID, a Z-Wave product triple, a Zigbee model string, or a printed model code, with no contribution required. This is how coverage grows with the dataset rather than only with volunteers.</p></div>
+      <div class="card"><span class="ix">iii.</span><h4>Authored</h4><p>The written half: description, instructions, structured specs, references, and per-ecosystem notes. Proposed, reviewed, and attributed before it goes live.</p></div>
+    </div>
+    <p class="xref">The first two arrive without anyone writing prose. A device can hold a truthful, useful record before a single contributor touches it. Authoring deepens a record, it is not the only way one exists.</p>
+
+    <div class="code">
+      <div class="code-head"><span class="fn">device.record</span><span class="tag">Schema · trimmed</span></div>
+<pre><span class="c">// ── Core: from telemetry, read-only ──────────────────────</span>
+id:            "inovelli-blue-lzw31",
+name:          "Blue Series 2-1 Dimmer",
+manufacturer:  "Inovelli",
+model:         "VZM31-SN",
+category:      "controls",
+local:         "always",        <span class="c">// always | sometimes | none</span>
+cloud:         "none",          <span class="c">// none | optional | required</span>
+ha:            "official",      <span class="c">// official | community | partial | none</span>
+haIntegration: "ZHA, Zigbee2MQTT",
+entityTypes:   ["light", "switch", "sensor", "event"],
+reports:       1186,            <span class="c">// devices seen in telemetry</span>
+installs:      942,
+firstSeen:     "2025-12-23",
+lastVerified:  "2026-05-02",
+
+<span class="c">// ── Contributor-maintained, reviewed before live ─────────</span>
+description:   "An enthusiast favourite: a Zigbee 3.0 smart dimmer...",
+instructions:  { text: "Switch off power at the breaker before wiring..." },
+specs: {
+  cat:        { gangs: 1, neutralRequired: false, dimming: true },
+  connectivity:{ initialSetup: "Local", dayToDay: "Local", offline: "Keeps working" },
+  protocols:  { zigbee: true, matter: false, thread: false },
+  ecosystems: { homeAssistant: true, homey: true, smartThings: true },
+  identifiers:{ modelId: "VZM31-SN", ean: "850005188" },
+  references: [{ label: "Inovelli, Blue Series 2-1", url: "https://inovelli.com/" }]
+},
+versionHistory: [{ version: "2.4.0", lastSeen: "2025-12-31" }]</pre>
+    </div>
+
+    <h3>Families and variants</h3>
+    <div class="split">
+      <div>
+        <div class="tag">Proposed · Stage 04</div>
+        <p>One product on a shelf can hide several genuinely different devices. A Yale lock takes a Z-Wave, a Matter, or a Wi-Fi module, and <b>whether it works without the cloud changes with the module</b>. A plug sold worldwide runs at 120 V here and 230 V there. So the unit grows from a device to a <b>family of variants</b>.</p>
+        <p>A family holds shared truth once. Under it sits an <b>enumerated list of variant rows</b>, and each row is a first-class, addressable record with its own verdict, identity keys, and telemetry. This matches what every runtime database that has to recognise real hardware (zwave-js, Zigbee2MQTT) converged on independently: enumerated rows keyed on identifiers, not a computed grid.</p>
+      </div>
+      <div>
+        <div class="tag">Axes are derived, not authored</div>
+        <p>An <b>axis</b> is a dimension a family varies along: protocol, region, hardware revision, power source, and others. Axes are <b>read off the variant rows</b>, not entered as a fixed schema, because different families vary on different things and roughly a third do not factor into a clean grid at all.</p>
+        <p>The switcher and the verdict matrix on a device page are <b>views</b> generated from the rows. They only ever offer combinations that shipped, so a buyer cannot land on a variant that never existed. When a family does not factor, the same rows render as a plain list.</p>
+      </div>
+    </div>
+
+    <div class="code">
+      <div class="code-head"><span class="fn">family.record</span><span class="tag">Schema · proposed, trimmed</span></div>
+<pre><span class="c">// ── Family: shared truth, written once ───────────────</span>
+id:       "yale-assure-lock-2",
+shared:   { description, photos, dimensions },   <span class="c">// never copied per variant</span>
+axes:     { protocol: ["zwave","matter","wifi"], region: ["us","eu"] },  <span class="c">// derived from the rows</span>
+
+<span class="c">// ── Variants: an enumerated list. Each row is its own ────</span>
+<span class="c">// ── first-class record: its own URL, verdict, telemetry. ─</span>
+variants: [
+  {
+    id:      "yale-assure-lock-2.us-zwave",
+    verdict: { local: "always", cloud: "none", integration: "Z-Wave JS",
+               firmware: ">= 1.83.0",            <span class="c">// the claim is scoped to firmware</span>
+               lastVerified: "2026-04-01" },
+    region:  { mains: "120 V / 60 Hz", rfBand: "908.4 MHz", plug: "-" },  <span class="c">// power binds to region</span>
+    match:   { fccId: "M5GYRD420", zwave: "0x0129:0x0001:0x0001",
+               printedModel: "YRD420-ZW2-619" },  <span class="c">// identity keys, the Mapped path</span>
+    reports: 904, installs: 712                    <span class="c">// scoped to this variant, never pooled</span>
+  },
+  <span class="c">/* …us-matter, eu-zwave, eu-matter: only combinations that shipped */</span>
+]</pre>
+    </div>
+
+    <h3>Identity keys, the match index</h3>
+    <p class="prose muted">Identity keys move from a buried spec field to a <b>first-class index</b>, because they are what makes the Mapped path work and what tells two variants apart. A variant carries as many as it has: FCC ID, the Z-Wave product triple, the Zigbee model string, the printed model code, and the hardware revision. This matters because the box often cannot disambiguate on its own. A Zigbee model string is only visible after pairing, and white-label hardware is not identifiable from the outside at all, so recording the key is a service the database provides that the packaging does not.</p>
+
+    <h3>Correctness rules</h3>
+    <p class="prose muted">These rails hold the model honest. They are the places the database refuses the convenient answer.</p>
+    <div class="prose">
+      <ul>
+        <li><b>A verdict is scoped to a firmware range and a last-verified date.</b> Firmware is the one thing that flips local versus cloud with no purchasable difference: a Kasa update kept local control but added an account requirement, an Eve upgrade moved a device from HomeKit to Matter. Firmware is not a variant you can buy, so it qualifies the verdict rather than splitting the record.</li>
+        <li><b>Region is not one axis.</b> It decomposes into RF band, mains voltage, plug type, certification, and cloud-server region. Australia proves the point: 230 V like the EU, but 921 MHz, unlike it. A single region enum would misstate one fact or the other.</li>
+        <li><b>Power is bound to region, and never shown without one.</b> A family page resolves a region before it prints a voltage or a plug. We would rather show nothing than show the wrong region's electrics.</li>
+        <li><b>Telemetry is scoped to the variant.</b> Reports never pool across a family. A Z-Wave lock's reports do not bleed onto the Wi-Fi variant that behaves nothing like it, even at the cost of headline volume.</li>
+      </ul>
+    </div>
+
+    <h3>Category-aware specs</h3>
+    <p class="prose muted">The structured spec fields are not a fixed list. <code class="inl">CATEGORY_SPECS</code> maps each device category to the fields that make sense for it, and tells the editor which control to render. Edit mode shows the right input, read mode shows only the fields that have a value.</p>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th>Control</th><th>Renders as</th><th>Example field</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">select</td><td class="desc">Single-choice dropdown</td><td class="mono">resolution: 720p … 4K</td></tr>
+          <tr><td class="mono">number</td><td class="desc">Numeric input, optional unit</td><td class="mono">suction (Pa)</td></tr>
+          <tr><td class="mono">bool</td><td class="desc">Checkbox</td><td class="mono">neutralRequired</td></tr>
+          <tr><td class="mono">multi</td><td class="desc">Multiple-choice set</td><td class="mono">radios: [Zigbee, Thread …]</td></tr>
+          <tr><td class="mono">text</td><td class="desc">Free text, with placeholder</td><td class="mono">maxLoad: "300 W LED"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ 05 Frontend ========================= -->
+  <section id="frontend" data-toc="Frontend architecture" class="section">
+    <div class="section-head">
+      <span class="section-num">05</span>
+      <h2>Frontend architecture</h2>
+      <p class="section-lede">A React application with no build step in the prototype: components load as plain global scripts, share state through a small client API, and feature work ships as toggleable increments.</p>
+    </div>
+
+    <div class="prose cols">
+      <div>
+        <h3>The app</h3>
+        <p>React with hash routing. The root parses the route and renders one page component. Shared UI (the nav, footer, badges, the device card) lives in a shared module and is exported onto a single global namespace so other scripts can reuse it without a bundler.</p>
+        <p class="muted">Each script tag owns its own scope. Components that need to cross files are attached to the window namespace at the end of their file, which keeps the prototype buildless and the source directly readable.</p>
+      </div>
+      <div>
+        <h3>Increments and stages</h3>
+        <p>Features are built as <b>increments</b> grouped under <b>stages</b>. Foundation is the baseline (browse and read). Richer device pages comes next, then accounts and editing, each building on the last. Two further stages, variants and families and goal-based discovery, are planned.</p>
+        <p class="muted">Increments sit under a stage and are independent of one another. Richer device pages carries the grid view, photos, and the per-ecosystem Connects with. Accounts and editing carries contributor profiles, notifications, and Your edits. An increment is gated by a data attribute on the root element, and turning a stage on also turns on what it depends upon, so the team can preview the next iteration without branching the whole app.</p>
+      </div>
+    </div>
+
+    <h3>Client-side APIs</h3>
+    <p class="prose muted">The frontend exposes two small contracts. These are the seams a contributor or developer touches first.</p>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:38%">Surface</th><th>Shape</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">window.DemoState</td><td class="desc"><span class="mono">get()</span>, <span class="mono">getIncrements()</span>, <span class="mono">setIncrement(key, on)</span></td><td class="desc">Read and flip feature flags. Persists to local storage and re-applies the root attributes</td></tr>
+          <tr><td class="mono">useIncrement(key)</td><td class="desc">React hook → boolean</td><td class="desc">Gate any component on whether an increment is active</td></tr>
+          <tr><td class="mono">data globals</td><td class="desc"><span class="mono">DEVICES</span>, <span class="mono">CATEGORY_SPECS</span>, <span class="mono">USERS</span></td><td class="desc">The dataset, the spec schema, and contributor accounts</td></tr>
+          <tr><td class="mono">connectsWith*()</td><td class="desc">Resolver functions</td><td class="desc">Derive per-ecosystem setup sections from a device and its protocols</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Theming</h3>
+    <p class="prose muted">A small boot script resolves the effective theme before first paint, from an explicit saved choice or the operating-system preference, and writes the result to the root element. The full light and dark themes are expressed entirely through the design tokens, so no component carries its own color logic.</p>
+  </section>
+
+  <!-- ============================ 06 Backend ========================== -->
+  <section id="backend" data-toc="Backend and APIs" class="section">
+    <div class="section-head">
+      <span class="section-num">06</span>
+      <h2>Backend and APIs</h2>
+      <p class="section-lede">Today the prototype has no server. This section is honest about what exists now, then proposes the service the project will need as contribution scales.</p>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="tag">Today, in the prototype</div>
+        <p><b>No backend.</b> The reference ships as a static bundle. The device dataset is a JavaScript file loaded with the page.</p>
+        <p>Contributor actions (edits, sign-in, notifications, profile changes) are simulated against the browser's local storage, the "demo stores." They survive a refresh and can be reset, but nothing leaves the device.</p>
+        <p class="muted">Edit submissions render as if a pull request were opened, and the Your edits dashboard links out to GitHub, but no live request is made. This keeps the prototype fully explorable offline.</p>
+      </div>
+      <div>
+        <div class="tag">Proposed, for production</div>
+        <p><b>A read API plus a contribution service.</b> A cached, public read layer serves device records to the static frontend. Telemetry ingestion writes the core fields on a schedule.</p>
+        <p>Contributor edits are validated, then committed as pull requests against the data repository. Review and merge happen in GitHub, the source of truth stays in version control.</p>
+        <p class="muted">Authentication is delegated (GitHub, plus email). The frontend stays static and cacheable, the write path is the only stateful service.</p>
+      </div>
+    </div>
+
+    <h3>Proposed endpoints</h3>
+    <p class="prose muted">A sketch, not a commitment. Read endpoints are public and cacheable. Write endpoints require a session and always produce a reviewable pull request, never a direct write to live data.</p>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:14%">Method</th><th style="width:40%">Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td class="mono">/api/v1/devices</td><td class="desc">List and filter. Query by category, protocol, local posture</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="mono">/api/v1/devices/{id}</td><td class="desc">One full device record</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="mono">/api/v1/categories</td><td class="desc">Categories and their spec field schema</td></tr>
+          <tr><td><span class="method post">POST</span></td><td class="mono">/api/v1/devices/{id}/edits</td><td class="desc">Submit a contributor edit. Opens a pull request, returns its number</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="mono">/api/v1/me/notifications</td><td class="desc">Edit-status events for the signed-in contributor</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="code">
+      <div class="code-head"><span class="fn">POST /api/v1/devices/inovelli-blue-lzw31/edits</span><span class="tag">Response · 202</span></div>
+<pre>{
+  <span class="k">"status"</span>: <span class="s">"pending_review"</span>,
+  <span class="k">"pr"</span>: <span class="n">1287</span>,
+  <span class="k">"url"</span>: <span class="s">"https://github.com/OpenHomeFoundation/device-database/pull/1287"</span>,
+  <span class="k">"fields"</span>: [<span class="s">"description"</span>, <span class="s">"specs.references"</span>],
+  <span class="k">"attributedTo"</span>: <span class="s">"robinhass"</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- ============================ 07 Contribute ======================= -->
+  <section id="contribute" data-toc="Contribution workflow" class="section">
+    <div class="section-head">
+      <span class="section-num">07</span>
+      <h2>Contribution workflow</h2>
+      <p class="section-lede">Editing happens in place, on the device page. Every change becomes a reviewable pull request, attributed to you, and only goes live once a maintainer merges it.</p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step"><span class="n">01</span><h4>Edit in place</h4><p>Sign in, open a device, and edit a field directly on the page. No separate form.</p></div>
+      <div class="flow-step"><span class="n">02</span><h4>Submit</h4><p>The change is packaged with your attribution and a summary of what moved.</p></div>
+      <div class="flow-step"><span class="n">03</span><h4>Pull request</h4><p>A pull request opens against the data repository. The field locks with an "awaiting approval" state.</p></div>
+      <div class="flow-step"><span class="n">04</span><h4>Review</h4><p>A maintainer checks the change against sources, discusses on GitHub, and merges or declines.</p></div>
+      <div class="flow-step"><span class="n">05</span><h4>Live</h4><p>On merge, the field updates, your contribution is recorded, and you are notified.</p></div>
+    </div>
+
+    <div class="split">
+      <div>
+        <div class="tag">If you are not a developer</div>
+        <p>You do not need to know Git. Click a field, change it, and submit. The site handles the rest.</p>
+        <p>While your change waits, the field shows who submitted it and that it is awaiting approval, so nobody edits over you.</p>
+        <p class="muted">When a maintainer merges it, the page updates and you are notified, with the change shown as live on Your edits. If something needs discussion, the conversation happens on the linked pull request.</p>
+      </div>
+      <div>
+        <div class="tag">Developer detail</div>
+        <p>Edits map to fields on the device record. A submission opens a PR against <code class="inl">OpenHomeFoundation/device-database</code> and carries a numeric PR id.</p>
+        <p>Notifications are one event model surfaced in two places: the Settings notifications panel (channel and cadence) and the Your edits dashboard, which reads the records directly. Each event is typed (<span class="mono">pr</span> for awaiting approval, <span class="mono">live</span> for merged, <span class="mono">declined</span> for sent back) and links to the PR. The standalone nav inbox popover was retired when Your edits shipped, so the nav icon now opens that dashboard.</p>
+        <p class="muted">Attribution is first-class. Edit history and contributor profiles read from the same records, so credit follows the change through review to merge.</p>
+      </div>
+    </div>
+
+    <h3>Review states</h3>
+    <p class="prose muted">A field is always in exactly one of these. The state is visible on the page, so the database never silently shows an unreviewed claim.</p>
+    <div class="prose" style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-4)">
+      <span class="pill live"><span class="dot"></span>Live</span>
+      <span class="pill review"><span class="dot"></span>Awaiting approval</span>
+      <span class="pill read"><span class="dot"></span>Seen</span>
+    </div>
+
+    <h3>The folder rail</h3>
+    <p class="prose muted">Your edits opens on <b>Drafts</b> when you have any, since that is where you act, and otherwise on <b>Submitted</b>. Drafts are unsubmitted and account-only, a different class from the GitHub-tracked states, so they never roll up into Submitted. Under Submitted sit the three lifecycle states, each shown only when you have something in it.</p>
+    <div class="split">
+      <div>
+        <div class="tag">Drafts · your move</div>
+        <p><b>Draft.</b> An edit you started but have not submitted. The row opens straight back into edit mode, and "Submit all" batches every draft into one pull request per device.</p>
+      </div>
+      <div>
+        <div class="tag">Submitted · tracked on GitHub</div>
+        <p><b>Awaiting review.</b> Submitted, a pull request is open. The row shows the comment count and opens the PR.</p>
+        <p><b>Live.</b> Merged and public. The row links to the device page.</p>
+        <p><b>Declined.</b> Not accepted. You can revise it, which reopens the edit on the device.</p>
+      </div>
+    </div>
+    <p class="prose muted">Every submitted row carries a status badge, and where the review has discussion, a comment count read from the pull request (the <code class="inl">PR_COMMENTS</code> seam in <code class="inl">data.js</code> that the GitHub API would later fill). Opening a submitted row leaves the site for the pull request, since that is where the change and its status live.</p>
+
+    <h3>Planned: a computed "Needs you"</h3>
+    <p class="prose muted">Today the rail sorts by lifecycle state. A planned refinement adds a single <b>"Needs you"</b> signal that separates edits waiting on a reviewer from edits waiting on you. It would never be assigned by hand. It would be read from the pull request, so it stays trustworthy instead of crying wolf. The data seam is already in place: each PR record can mark its latest comment as an unanswered reviewer question (<code class="inl">unanswered</code> in <code class="inl">PR_COMMENTS</code>).</p>
+    <div class="split">
+      <div>
+        <div class="tag">Needs you · your move</div>
+        <p><b>Declined.</b> The PR was closed without merging. Revise and resubmit.</p>
+        <p><b>Changes requested.</b> A reviewer filed a formal request for changes.</p>
+        <p><b>Unanswered comment.</b> The newest activity is a reviewer's question, after your last reply or commit.</p>
+        <p><b>Cannot merge.</b> A conflict, or a failing required check on your branch.</p>
+      </div>
+      <div>
+        <div class="tag">Awaiting approval · reviewer's move</div>
+        <p><b>Not yet reviewed.</b> Submitted, nobody has looked.</p>
+        <p><b>You already responded.</b> You replied or pushed a commit, so it is back with the reviewers.</p>
+        <p><b>Approved and queued.</b> Accepted, waiting to merge.</p>
+        <p class="muted">A pending change sits in exactly one camp at a time.</p>
+      </div>
+    </div>
+    <p class="prose muted">The flag would be evaluated in order of precedence. The first match wins, and each condition is read from the pull request itself, not from anything a person sets.</p>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:6%">#</th><th style="width:32%">Condition</th><th>Read from the pull request</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>Declined</td><td class="desc"><span class="mono">state = closed</span>, not merged</td></tr>
+          <tr><td class="mono">2</td><td>Changes requested</td><td class="desc"><span class="mono">reviewDecision = changes_requested</span>. The clean, unambiguous trigger</td></tr>
+          <tr><td class="mono">3</td><td>Unanswered comment</td><td class="desc"><span class="mono">lastReviewerActivity &gt; lastYourActivity</span></td></tr>
+          <tr><td class="mono">4</td><td>Cannot merge</td><td class="desc"><span class="mono">mergeable = false</span>, or a failing required check</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose muted"><b>Hard versus soft.</b> Declined and changes-requested are authoritative and would earn the full treatment. A bare unanswered comment is softer, a reviewer may just be remarking, so it would show as the amber comment count alone and escalate to the full "Needs you" flag only on a formal changes-requested.</p>
+  </section>
+
+  <!-- ============================ 08 Voice ============================ -->
+  <section id="voice" data-toc="Editorial voice" class="section">
+    <div class="section-head">
+      <span class="section-num">08</span>
+      <h2>Editorial stance and voice</h2>
+      <p class="section-lede">Neutral, citable, never sponsored. We list what a device does, not what we think about it. Trust is built by being honest about gaps.</p>
+    </div>
+    <div class="prose">
+      <p>The Device Database is a reference, not a marketing surface. There are no sponsored placements and no recommendation rankings. If a device requires the cloud, we say so plainly. If a claim is unverified, we mark it.</p>
+    </div>
+    <div class="voice">
+      <div class="voice-col do">
+        <div class="h"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>Write this way</div>
+        <blockquote>"The sensor reports presence using mmWave radar."</blockquote>
+        <blockquote>"Exposes 14 entities."</blockquote>
+        <blockquote>"Reported to work, unverified."</blockquote>
+      </div>
+      <div class="voice-col dont">
+        <div class="h"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>Not this way</div>
+        <blockquote>"This is a great presence sensor."</blockquote>
+        <blockquote>"Powerful entity support."</blockquote>
+        <blockquote>"Works perfectly, trust us."</blockquote>
+      </div>
+    </div>
+    <p class="prose muted">Verbs over adjectives. Acknowledge uncertainty explicitly. Entries are written in the voice of a wiki editor: declarative, source-backed, and explicit about what is not yet known.</p>
+  </section>
+
+  <!-- ============================ 09 Get involved ===================== -->
+  <section id="involved" data-toc="Get involved" class="section">
+    <div class="section-head">
+      <span class="section-num">09</span>
+      <h2>How to get involved</h2>
+      <p class="section-lede">Contribution does not require permission. Pick a device you actually run, and improve its entry. Designers and developers can go deeper through the repository.</p>
+    </div>
+    <div class="involve">
+      <a href="https://github.com/OpenHomeFoundation/device-database">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.4 3.4 0 0 0-1-2.6c3-.3 6-1.5 6-6.6A5.1 5.1 0 0 0 19.9 5 4.8 4.8 0 0 0 19.8 1.4S18.7 1 16 2.9a13.4 13.4 0 0 0-7 0C6.3 1 5.2 1.4 5.2 1.4A4.8 4.8 0 0 0 5.1 5 5.1 5.1 0 0 0 4 8.4c0 5.1 3 6.3 6 6.6a3.4 3.4 0 0 0-1 2.6V21"></path></svg></span>
+        <h4>The repository</h4>
+        <p>Device data, the app, and the review queue. Open an issue or a pull request.</p>
+        <span class="arrow">OpenHomeFoundation / device-database →</span>
+      </a>
+      <a href="#contribute">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></span>
+        <h4>Improve an entry</h4>
+        <p>Sign in, open a device you run, and edit a field. Your change becomes a reviewed pull request.</p>
+        <span class="arrow">See the workflow →</span>
+      </a>
+      <a href="https://www.openhomefoundation.org/">
+        <span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21H3z"></path><path d="M9 21v-7h6v7"></path></svg></span>
+        <h4>Open Home Foundation</h4>
+        <p>The non-profit stewards of Home Assistant, ESPHome, Music Assistant, and friends.</p>
+        <span class="arrow">openhomefoundation.org →</span>
+      </a>
+    </div>
+    <p class="prose muted">OHF staff and designers: the design tokens and shared components are the contract. Build on the tokens, reuse the shared UI, and add new feature work as an increment so it can be previewed before it ships. The roadmap plans in the left rail document each one, and the <a href="canvas.html">live preview Canvas</a> shows them at every breakpoint.</p>
+  </section>
+
+  <!-- ============================ 10 Glossary ========================= -->
+  <section id="glossary" data-toc="Glossary" class="section">
+    <div class="section-head">
+      <span class="section-num">10</span>
+      <h2>Glossary</h2>
+      <p class="section-lede">Terms that recur across the project, the database, and this wiki.</p>
+    </div>
+    <dl class="glossary">
+      <div class="gloss"><dt>Core fields</dt><dd>The read-only half of a device record, derived from anonymized telemetry. Identity, local and cloud posture, integration, entity types, and counts. Contributors do not edit these.</dd></div>
+      <div class="gloss"><dt>Contributor fields</dt><dd>The editable half: description, instructions, structured specs, references, and per-ecosystem setup notes. Every change is reviewed before going live.</dd></div>
+      <div class="gloss"><dt>Local posture</dt><dd>Whether a device works without the cloud: always, sometimes, or never. The single most important fact in most entries.</dd></div>
+      <div class="gloss"><dt>Increment</dt><dd>A unit of feature work, gated behind a flag so it can be previewed in isolation. Increments group under stages and build on one another.</dd></div>
+      <div class="gloss"><dt>Stage</dt><dd>A milestone that bundles related increments. Foundation, then richer device pages, then accounts and editing, with variants and families and goal-based discovery planned.</dd></div>
+      <div class="gloss"><dt>Category specs</dt><dd>The per-category set of structured spec fields, each with a control type. Defines what the editor shows for a camera versus a thermostat.</dd></div>
+      <div class="gloss"><dt>Pull request (PR)</dt><dd>The reviewable change a contributor edit produces, opened against the data repository. The unit of review and the source of attribution.</dd></div>
+      <div class="gloss"><dt>Integration</dt><dd>The Home Assistant component that controls a device. Marked official, community, partial, or none, with a link to its documentation where one exists.</dd></div>
+      <div class="gloss"><dt>Connects with</dt><dd>Per-ecosystem setup guidance (Home Assistant, Apple Home, and others), derived from a device's protocols and editable by contributors.</dd></div>
+      <div class="gloss"><dt>Family</dt><dd>A product line that hides more than one device, holding the shared truth (description, photos, dimensions) once. Under it sit the variants.</dd></div>
+      <div class="gloss"><dt>Variant</dt><dd>One genuinely different device within a family, stored as an enumerated row with its own URL, verdict, identity keys, and telemetry. A difference earns a variant only when it changes a buying fact.</dd></div>
+      <div class="gloss"><dt>Axis</dt><dd>A dimension a family varies along: protocol, region, hardware revision, power source, and others. Axes are derived from the variant rows, not authored as a fixed schema.</dd></div>
+      <div class="gloss"><dt>Identity key</dt><dd>A machine-readable identifier that pins a record to real hardware: FCC ID, Z-Wave product triple, Zigbee model string, printed model code, hardware revision. The basis of the Mapped data path.</dd></div>
+      <div class="gloss"><dt>Verdict</dt><dd>The local-versus-cloud claim for one variant, scoped to a firmware range and a last-verified date so it stays true as firmware changes behaviour.</dd></div>
+      <div class="gloss"><dt>Data paths</dt><dd>The three ways data reaches a record: observed (from telemetry), mapped (matched by identity key, no contribution), and authored (written and reviewed).</dd></div>
+      <div class="gloss"><dt>Token</dt><dd>A named design value (color, type, spacing). Components reference tokens, never raw values, which is what makes theming a single override.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ============================ Footer =============================== -->
+  <footer class="foot">
+    <div>
+      <p class="lede">Manufacturer specs say what a device should do. We record what it actually does.</p>
+      <p class="meta">Device Database, a project of the Open Home Foundation. This wiki is internal and not part of the product.</p>
+    </div>
+    <div class="links">
+      <a href="https://github.com/OpenHomeFoundation/device-database">Repository</a>
+      <a href="https://www.openhomefoundation.org/">Open Home Foundation</a>
+      <a href="#top">Back to top</a>
+    </div>
+  </footer>
+
+  </main>
+
+  <script src="plan-nav.js"></script>
+</body>
+</html>

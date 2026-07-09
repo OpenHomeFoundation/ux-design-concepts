@@ -62,7 +62,7 @@ h2 {
 .sec-kicker {
   font-size: var(--fs-13); font-weight: var(--fw-semibold);
   letter-spacing: var(--ls-wide); text-transform: uppercase;
-  color: var(--fg-subtle); margin: 0 0 var(--space-5);
+  color: var(--accent); margin: 0 0 var(--space-5);
 }
 p { margin: 0 0 var(--space-4); max-width: 64ch; text-wrap: pretty; }
 p:last-child { margin-bottom: 0; }

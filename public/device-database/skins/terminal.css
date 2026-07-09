@@ -1,0 +1,264 @@
+/* =========================================================================
+   SKIN: Terminal — monospace everything. Phosphor green on near-black in
+   dark mode, ink on warm paper teletype in light mode. Hard edges, zero
+   radius, no shadows, uppercase labels. Applied via <html data-skin="terminal">.
+   Light and dark both defined. Every color token set in the light block is
+   re-set in the dark block.
+   ========================================================================= */
+
+/* ---------- Mode-independent: type, radius, motion ---------- */
+:root[data-skin="terminal"] {
+  --font-display: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --radius-0: 0;
+  --radius-1: 0;
+  --radius-2: 0;
+  --radius-3: 0;
+  --radius-4: 0;
+  --radius-5: 0;
+  --radius-pill: 0;
+
+  --transition-fast: 0ms linear;
+  --transition:      0ms linear;
+
+  /* Mono runs wide, pull display sizes down a step. */
+  --fs-48: 2.375rem;
+  --fs-38: 1.875rem;
+  --fs-30: 1.5rem;
+
+  --ls-tight: 0;
+}
+
+/* ---------- Light: teletype paper ---------- */
+:root[data-skin="terminal"] {
+  --ink-50:  #e8ece8;
+  --ink-100: #cdd6cd;
+  --ink-200: #a3b3a3;
+  --ink-300: #718a71;
+  --ink-400: #40603f;
+  --ink-500: #1d3d1c;
+  --ink-600: #142e14;
+  --ink-700: #0e220e;
+  --ink-800: #081708;
+  --ink-900: #040c04;
+
+  --primary:        #1d3d1c;
+  --primary-hover:  #142e14;
+  --primary-press:  #0e220e;
+  --primary-soft:   #e8ece8;
+  --fg-on-primary:  #f4f2e7;
+
+  --accent:        #106b34;
+  --accent-hover:  #0b5228;
+  --accent-soft:   #e0eee4;
+
+  --neutral-0:   #faf8ef;
+  --neutral-50:  #f4f2e7;
+  --neutral-100: #eae7d8;
+  --neutral-200: #dcd8c4;
+  --neutral-300: #c2bda4;
+  --neutral-400: #948f76;
+  --neutral-500: #6a664f;
+  --neutral-600: #474433;
+  --neutral-700: #2d2b20;
+  --neutral-800: #1c1b14;
+  --neutral-900: #11100b;
+
+  --surface:           #f4f2e7;
+  --surface-sunken:    #eae7d8;
+  --surface-raised:    #faf8ef;
+  --surface-overlay:   #faf8ef;
+  --surface-inverse:   #11100b;
+
+  --surface-tint-soft:   #ede9da;
+  --surface-tint-mid:    #e3dfcc;
+  --surface-tint-strong: #d8d3ba;
+
+  --fg:           #1c2b1c;
+  --fg-strong:    #0e220e;
+  --fg-muted:     #4d5c4d;
+  --fg-subtle:    #6c7a6c;
+  --fg-disabled:  #9aa89a;
+  --fg-inverse:   #f4f2e7;
+
+  --border:        #1c2b1c;
+  --border-strong: #0e220e;
+  --border-subtle: #b9c2b0;
+  --border-focus:  #106b34;
+
+  --link:          #106b34;
+  --link-hover:    #0b5228;
+  --link-visited:  #40603f;
+  --link-active:   #0b5228;
+
+  --success:       #106b34;
+  --success-soft:  #e0eee4;
+  --success-strong:#0b5228;
+
+  --warning:       #8f6400;
+  --warning-soft:  #f2ead2;
+  --warning-strong:#6b4b00;
+
+  --error:         #a52815;
+  --error-soft:    #f4ded9;
+  --error-strong:  #7d1d0f;
+
+  --info:          #1d3d1c;
+  --info-soft:     #e8ece8;
+  --info-strong:   #0e220e;
+
+  --trait-zigbee:    #2d2b20;
+  --trait-zwave:     #2d2b20;
+  --trait-matter:    #2d2b20;
+  --trait-wifi:      #2d2b20;
+  --trait-bluetooth: #2d2b20;
+  --trait-thread:    #2d2b20;
+  --trait-local:     #2d2b20;
+  --trait-cloud:     #6a664f;
+
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+  --shadow-4: none;
+  --ring-focus: 0 0 0 2px #106b34;
+
+  --nav-bg: #f4f2e7;
+  --scrim: rgba(17, 16, 11, 0.6);
+}
+
+/* ---------- Dark: phosphor ---------- */
+:root[data-skin="terminal"][data-resolved-theme="dark"] {
+  --primary:        #7ce38b;
+  --primary-hover:  #9ceca8;
+  --primary-press:  #5fd370;
+  --primary-soft:   #10240f;
+  --fg-on-primary:  #071307;
+
+  --accent:        #7ce38b;
+  --accent-hover:  #9ceca8;
+  --accent-soft:   #10240f;
+
+  --surface:           #0a0f0a;
+  --surface-sunken:    #070c07;
+  --surface-raised:    #0e150e;
+  --surface-overlay:   #0e150e;
+  --surface-inverse:   #d9e8d9;
+
+  --surface-tint-soft:   #0d130d;
+  --surface-tint-mid:    #121b12;
+  --surface-tint-strong: #1a261a;
+
+  --fg:           #a9d3ae;
+  --fg-strong:    #d3f2d7;
+  --fg-muted:     #6d9472;
+  --fg-subtle:    #547a59;
+  --fg-disabled:  #3a5a3f;
+  --fg-inverse:   #0a0f0a;
+
+  --border:        #2c4630;
+  --border-strong: #406345;
+  --border-subtle: #1c2f1f;
+  --border-focus:  #7ce38b;
+
+  --link:          #7ce38b;
+  --link-hover:    #9ceca8;
+  --link-visited:  #5fb56c;
+  --link-active:   #9ceca8;
+
+  --success:       #7ce38b;
+  --success-soft:  #10240f;
+  --success-strong:#9ceca8;
+
+  --warning:       #e3c37c;
+  --warning-soft:  #241d0f;
+  --warning-strong:#eed49f;
+
+  --error:         #e3877c;
+  --error-soft:    #24110f;
+  --error-strong:  #eda79f;
+
+  --info:          #7ce38b;
+  --info-soft:     #10240f;
+  --info-strong:   #9ceca8;
+
+  --trait-zigbee:    #a9d3ae;
+  --trait-zwave:     #a9d3ae;
+  --trait-matter:    #a9d3ae;
+  --trait-wifi:      #a9d3ae;
+  --trait-bluetooth: #a9d3ae;
+  --trait-thread:    #a9d3ae;
+  --trait-local:     #a9d3ae;
+  --trait-cloud:     #6d9472;
+
+  --shadow-1: none;
+  --shadow-2: none;
+  --shadow-3: none;
+  --shadow-4: none;
+  --ring-focus: 0 0 0 2px #7ce38b;
+
+  --nav-bg: #0a0f0a;
+  --scrim: rgba(0, 0, 0, 0.75);
+}
+
+/* ---------- Component recipe ---------- */
+
+/* Headings: mono, uppercase, boxed in by their own weight. */
+[data-skin="terminal"] h1, [data-skin="terminal"] .h1,
+[data-skin="terminal"] h2, [data-skin="terminal"] .h2,
+[data-skin="terminal"] .h-display {
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin="terminal"] .brand-name {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--fs-16);
+}
+[data-skin="terminal"] .brand-name::before { content: "> "; color: var(--accent); }
+
+/* Buttons: bordered boxes, uppercase. */
+[data-skin="terminal"] .btn {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  border: 1px solid var(--border);
+}
+[data-skin="terminal"] .btn-secondary,
+[data-skin="terminal"] .btn-ghost { border-color: var(--border); }
+
+/* Hard hairline surfaces everywhere. */
+[data-skin="terminal"] .device-card,
+[data-skin="terminal"] .modal-dialog,
+[data-skin="terminal"] .sheet-panel,
+[data-skin="terminal"] .searchbox-dropdown {
+  border-radius: 0;
+  border-color: var(--border);
+}
+[data-skin="terminal"] .chip,
+[data-skin="terminal"] .badge {
+  border-radius: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+[data-skin="terminal"] .searchbox-input,
+[data-skin="terminal"] .appnav-search,
+[data-skin="terminal"] .hero-search { border-radius: 0; border-color: var(--border); }
+
+/* Faint scanlines in dark mode only. */
+[data-skin="terminal"][data-resolved-theme="dark"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(124, 227, 139, 0.025) 0px,
+    rgba(124, 227, 139, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}

@@ -271,7 +271,7 @@
       Reference price builds on
       <span class="mono">Stage 04 · Variants and families</span>
       <span class="muted">·</span>
-      retail and affiliate are blocked on the
+      retail and affiliate are governed by the
       <a href="index.html#/editorial-stance" target="_blank" rel="noopener">editorial stance</a>
     </p>
   </header>
@@ -283,9 +283,9 @@
         A reference price (MSRP) is a region-bound fact that rides the same axis as voltage and the EAN,
         so it is an <em>increment on Stage 04</em>, sitting right beside the variant data it depends on.
         Live retail pricing across shops in a reader's country is a different animal: it needs an outside
-        data pipeline, it is per-country not per-region, and it carries a funding mechanism that the
-        published editorial stance currently forbids outright. That is not an increment you quietly
-        toggle. It is a separate, later stage gated on a policy change.
+        data pipeline, it is per-country not per-region, and it carries a funding mechanism the
+        editorial stance now permits only on strict terms. That is not an increment you quietly
+        toggle. It is a separate, later stage, governed by those terms.
       </p>
     </div>
   </section>
@@ -324,7 +324,7 @@
         <tr>
           <td>Touches the editorial stance?</td>
           <td class="muted"><span class="yes">No.</span> A neutral, citable fact</td>
-          <td class="muted"><span class="src-tag care" style="padding:1px 7px;">Yes, head-on</span></td>
+          <td class="muted"><span class="src-tag care" style="padding:1px 7px;">Yes, on its terms</span></td>
         </tr>
         <tr>
           <td>Treatment</td>
@@ -339,7 +339,7 @@
       the kind of wrong-region fact the variants plan refuses, the price equivalent of "230 V, Type F"
       shown in North America. So it cannot come before the region switcher. It comes right after it, as a
       sibling of the variant children. Live retail depends on that <em>and</em> on a funding decision, so
-      it sits further out, behind Goal-based discovery, and does not move until the stance does.
+      it sits further out, behind Goal-based discovery, and moves only on the disclosure terms the stance now sets.
     </p>
   </section>
 
@@ -369,7 +369,7 @@
         <ul>
           <li><span class="gly hot">!</span><span>Per-country and per-currency, finer than region</span></li>
           <li><span class="gly hot">!</span><span>Dynamic: stale the day after it is fetched</span></li>
-          <li><span class="gly hot">!</span><span>Affiliate income contradicts the published stance</span></li>
+          <li><span class="gly hot">!</span><span>Affiliate income must never bend a listed fact</span></li>
           <li><span class="gly hot">!</span><span>Invites "best deal" ranking, which we must refuse</span></li>
         </ul>
       </div>
@@ -381,25 +381,27 @@
   </section>
 
   <section>
-    <p class="sec-kicker">The honest read · the policy conflict</p>
-    <h2>Affiliate links contradict what the About page says today</h2>
+    <p class="sec-kicker">The honest read · what the updated stance allows</p>
+    <h2>The stance no longer bans affiliate links, but the discipline still binds</h2>
     <p class="muted">
-      This is the part to confront before any code. The editorial stance is not vague on this point. It
-      states the position in a single sentence, and that sentence is part of why the project is trusted.
+      This is the part to get right before any code. The editorial stance used to settle the question in a
+      single sentence, and that sentence was part of why the project is trusted. It has been revised in the
+      open, so the safeguard now lives in how the money behaves, not in a blanket ban.
     </p>
 
     <div class="flag">
-      <p class="flag-label">Direct conflict</p>
+      <p class="flag-label">What changed</p>
       <p>
-        The published editorial stance currently reads, word for word:
+        The editorial stance used to forbid this outright. That clause has been removed, deliberately, and
+        the page now reads, word for word:
       </p>
-      <blockquote>"There are no affiliate links, no sponsored placements, and no recommendation rankings."</blockquote>
+      <blockquote>"There are no sponsored placements and no recommendation rankings."</blockquote>
       <p style="margin-top: var(--space-4);">
-        <strong>You cannot add affiliate links and keep that sentence.</strong> The honesty of the About
-        page <em>is</em> the asset. So affiliate income is not a feature you build and announce later. It
-        is a decision the Foundation makes first, in the open, and the stance is rewritten to match before
-        a single link ships. If the answer is "we keep the sentence", then the hot layer is shop links
-        with no commission, or it does not exist. Both are fine. A quiet contradiction is not.
+        <strong>Dropping "no affiliate links" does not make affiliate income free of consequences.</strong>
+        It moves the safeguard from a promise never to earn a referral fee to a promise that the fee can
+        never bend a fact. The honesty of the About page is still the asset. Affiliate income stays a
+        decision the Foundation owns in the open, disclosed on every surface it touches, never ranked by
+        payout. A quiet contradiction is still the one outcome ruled out.
       </p>
     </div>
 
@@ -423,9 +425,13 @@
       about how fresh, or how stale, the number is.
     </p>
 
-    <div class="codeblock"><span class="c">// Reference price rides the region axis, like power and identifiers.</span>
-<span class="k">variant</span> <span class="k">{</span> region: <span class="v">"EU"</span>, <span class="k">…</span>
-  <span class="k">msrp:</span> <span class="k">{</span> amount: <span class="v">99.95</span>, currency: <span class="v">"EUR"</span>, source: <span class="v">"philips-hue.com"</span>, asOf: <span class="v">"2026-03"</span> <span class="k">}</span>
+    <div class="codeblock"><span class="c">// Shipped: reference price is a per-currency list on the device, one</span>
+<span class="c">// manufacturer list price per currency. Region binding waits on Stage 04.</span>
+<span class="k">device</span> <span class="k">{</span> id: <span class="v">"philips-hue-bridge"</span>, <span class="k">…</span>
+  <span class="k">msrp:</span> <span class="k">[</span>
+    <span class="k">{</span> amount: <span class="v">59.99</span>, currency: <span class="v">"USD"</span> <span class="k">}</span>,
+    <span class="k">{</span> amount: <span class="v">64.99</span>, currency: <span class="v">"EUR"</span> <span class="k">}</span>
+  <span class="k">]</span>
 <span class="k">}</span>
 
 <span class="c">// A retail observation binds to a country AND a moment. No date, no trust.</span>
@@ -446,12 +452,16 @@
     </p>
 
     <div class="mock">
-      <p class="mock-cap">// how it could read on the device page, EU variant resolved</p>
+      <p class="mock-cap">// how it reads on the device page today, under Pricing</p>
       <div class="price-line">
-        <span class="price-amt">€99.95</span>
-        <span class="price-kind">Reference price · EU</span>
+        <span class="price-amt">$59.99</span>
+        <span class="price-kind">Reference price</span>
       </div>
-      <p class="price-meta">Set by Signify, <span class="mono">philips-hue.com</span>, as of March 2026. Manufacturer list price, not a live shop price.</p>
+      <div class="price-line">
+        <span class="price-amt">€64.99</span>
+        <span class="price-kind">Reference price</span>
+      </div>
+      <p class="price-meta">Manufacturer list price, one figure per currency, shown as a plain spec row. Not a live shop price. The shop list below stays the later Stage 06 layer.</p>
       <ul class="shop-list">
         <li><span class="shop">Independent shop A<span class="cc">NL</span></span><span class="val">€84.00<span class="when">seen 2 days ago</span></span></li>
         <li><span class="shop">Independent shop B<span class="cc">DE</span></span><span class="val">€86.50<span class="when">seen 5 days ago</span></span></li>
@@ -528,29 +538,30 @@
     </p>
 
     <div class="stage-head">
-      <span class="num">Proposed · now</span>
-      <h3>Stage 04 increment · Reference price</h3>
+      <span class="num">Shipped · now</span>
+      <h3>Reference price · MSRP</h3>
     </div>
-    <p class="stage-sub">Key <span class="ic">reference-price</span>. A child of Variants, beside the variant switcher. Depends on the region axis, nothing else.</p>
+    <p class="stage-sub">Key <span class="ic">reference-price</span>. Live today as a device field. Region binding is the one piece still waiting on Stage 04.</p>
 
     <div class="ladder">
       <div class="step now">
         <div class="rail">
           <span class="id">04.4</span>
-          <span class="pill next">Increment</span>
+          <span class="pill live">Live</span>
         </div>
         <div class="body">
-          <h4>MSRP, bound to region</h4>
+          <h4>MSRP, one figure per currency</h4>
           <p>
-            One manufacturer list price per region variant, with currency, source link, and an as-of date,
-            rendered as a plain fact below the variant switcher. Edited through the existing suggestion and
-            review path, with the source named in the attribution. No shops, no links, no ranking. Toggling
-            it on shows a price, toggling it off shows nothing. That is the whole increment.
+            Shipped as a per-currency list on the device: one manufacturer list price per currency,
+            rendered as a plain Reference price row in the device page's Pricing group. Edited through the
+            existing suggestion and review path, one removable row per currency, empty rows are dropped
+            rather than saved. No shops, no links, no ranking. The remaining step is to bind it to the
+            region axis once Stage 04 lands, so a reader never sees the wrong region's price.
           </p>
           <dl class="meta-grid">
-            <dt>Cost</dt><dd>Small <span class="mono">· one field, one render, reuses review</span></dd>
-            <dt>Depends on</dt><dd><span class="mono">04.1</span> region axis only</dd>
-            <dt>Unlocks</dt><dd>A citable price that is never the wrong region's</dd>
+            <dt>Lives in</dt><dd><span class="mono">data.js · edit-fields.jsx · detail.jsx</span></dd>
+            <dt>Next</dt><dd>Bind to <span class="mono">04.1</span> region axis</dd>
+            <dt>Unlocks</dt><dd>A citable price, today per currency, soon per region</dd>
           </dl>
         </div>
       </div>
@@ -560,7 +571,7 @@
       <span class="num">Proposed · later, gated</span>
       <h3>Stage 06 · Where to buy</h3>
     </div>
-    <p class="stage-sub">Key <span class="ic">where-to-buy</span>. Sits behind Goal-based discovery. Does not start until the editorial stance is revised.</p>
+    <p class="stage-sub">Key <span class="ic">where-to-buy</span>. Sits behind Goal-based discovery. The editorial stance has been revised to allow it, so it begins on the terms that stance now sets.</p>
 
     <div class="ladder">
       <div class="step">
@@ -569,17 +580,17 @@
           <span class="pill gate">Decision</span>
         </div>
         <div class="body">
-          <h4>Rewrite the stance, or drop affiliate</h4>
+          <h4>Hold the disclosure line, on every surface</h4>
           <p>
-            Before any retail code, the Foundation decides in the open whether it earns referral income,
-            and the editorial stance is rewritten to say exactly what is true. No commission means shop
-            links with no money attached. Commission means a plain disclosure on every surface. Either is
-            honest. Shipping links while the About page still says "no affiliate links" is the one outcome
-            ruled out.
+            The Foundation has already revised the editorial stance in the open: the blanket "no affiliate
+            links" line is gone, and a disclosure rule stands in its place. What this gate holds now is the
+            discipline, not the decision. No commission means shop links with no money attached. Commission
+            means a plain disclosure on every surface. Shipping a link that hides the arrangement, or bends
+            a fact, is the one outcome ruled out.
           </p>
           <dl class="meta-grid">
             <dt>Owner</dt><dd>Foundation, not engineering</dd>
-            <dt>Output</dt><dd>A revised <span class="mono">editorial-stance</span> page</dd>
+            <dt>Output</dt><dd>A standing disclosure rule on every price surface</dd>
           </dl>
         </div>
       </div>
@@ -613,14 +624,14 @@
         <div class="body">
           <h4>Affiliate links and partner shops</h4>
           <p>
-            Only if the gate said yes. Add disclosed affiliate links for mission-aligned partner shops,
+            Only once the disclosure rule is live. Add disclosed affiliate links for mission-aligned partner shops,
             chosen for fit rather than payout, listed in the same neutral order as everyone else. The
             disclosure rides every price surface. Removable without touching the price data, which is what
             keeps it a child of the core rather than baked into it.
           </p>
           <dl class="meta-grid">
             <dt>Cost</dt><dd>Medium <span class="mono">· partner integrations, disclosure</span></dd>
-            <dt>Depends on</dt><dd><span class="mono">06.1</span> and a "yes" at the gate</dd>
+            <dt>Depends on</dt><dd><span class="mono">06.1</span> and the disclosure rule</dd>
             <dt>Unlocks</dt><dd>Upkeep funding, without bending a fact</dd>
           </dl>
         </div>
@@ -638,7 +649,7 @@
     <div class="rails">
       <div class="railrow"><span class="dot"></span><p><strong>A price is a dated, sourced fact, not a deal.</strong> Every number carries a currency, a source, and the date it was seen. No date, no display. A price shown without its freshness is the pricing version of an unverified claim.</p></div>
       <div class="railrow"><span class="dot"></span><p><strong>Shops are never ranked by what they pay us.</strong> List them in a fixed neutral order, by country or by name, the same for every reader. The day the order follows commission is the day the page stops being a reference.</p></div>
-      <div class="railrow"><span class="dot"></span><p><strong>Disclosure is on the surface, not in a footer nobody reads.</strong> If a link is affiliate, it says so right where it sits, and the editorial stance is rewritten to match before the first link ships.</p></div>
+      <div class="railrow"><span class="dot"></span><p><strong>Disclosure is on the surface, not in a footer nobody reads.</strong> If a link is affiliate, it says so right where it sits, in the same plain terms the editorial stance now uses.</p></div>
       <div class="railrow"><span class="dot"></span><p><strong>Price binds to the variant, like every other fact.</strong> Reference price to region, retail price to country, and never pooled across a family. A US plug's price never shows on the EU variant, the same scoping the variants plan applies to telemetry.</p></div>
     </div>
   </section>
@@ -648,13 +659,14 @@
     <h2>What to do, in order</h2>
     <ol>
       <li><p><strong>Treat pricing as an increment, never a stage.</strong> A priced device is still a device. By the project's own test it cannot be a stage. Reference price is increment <span class="ic">04.4</span> on Variants, retail is the gated <span class="ic">Stage 06</span> behind Goal-based discovery.</p></li>
-      <li><p><strong>Ship the reference price now, after the region switcher.</strong> It binds to region exactly like power, reuses the review path, and carries almost no policy weight. Build it on a device where the regional price genuinely differs, so the binding is visible.</p></li>
-      <li><p><strong>Make the affiliate question a decision before a feature.</strong> The About page says "no affiliate links" today. Resolve that in the open and rewrite the stance first. A quiet contradiction would cost more trust than the income could ever be worth.</p></li>
+      <li><p><strong>Reference price shipped, region binding is the open edge.</strong> It is live as a per-currency list on the device, reuses the review path, and carries almost no policy weight. The remaining work is to bind each price to a region once Stage 04 lands, ideally proven on a device where the regional price genuinely differs.</p></li>
+      <li><p><strong>Keep the affiliate discipline ahead of the feature.</strong> The stance has been revised in the open: the blanket ban is gone, a disclosure rule stands in its place. Ship affiliate links only with that disclosure on every surface, never ranked by payout. A quiet contradiction would cost more trust than the income could ever be worth.</p></li>
       <li><p><strong>Key everything on the GTIN, and source from the calm end first.</strong> Manufacturer price, schema.org offers, and community reports get you real prices in many countries with zero dependence on the marketplaces. Reach for partner shops and feeds only when those run out.</p></li>
       <li><p><strong>Put the date on every number.</strong> Freshness labels and a staleness cutoff are not polish, they are the line between a useful price and a rumour. Build them in from the first render, not after.</p></li>
     </ol>
   </section>
 
 </main>
+<script src="plan-nav.js"></script>
 </body>
 </html>

@@ -187,7 +187,7 @@ function ChangesTray() {
           {reviewItems.length > 0 &&
             <div className="ce-tray-group">
               <div className="ce-tray-group-head">
-                <span className="ce-tray-group-title">Awaiting approval</span>
+                <span className="ce-tray-group-title">Awaiting review</span>
               </div>
               <ul className="ce-tray-list">
                 {reviewItems.map((it) =>
@@ -196,7 +196,7 @@ function ChangesTray() {
                       <TrayThumb device={it.device} />
                       <span className="ce-tray-row-body">
                         <span className="ce-tray-row-name">{it.device.name}</span>
-                        <span className="ce-tray-row-meta">{it.count} edit{it.count === 1 ? '' : 's'} awaiting approval</span>
+                        <span className="ce-tray-row-meta">{it.count} edit{it.count === 1 ? '' : 's'} awaiting review</span>
                       </span>
                     </button>
                   </li>)}

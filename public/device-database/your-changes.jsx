@@ -7,7 +7,7 @@
 
    Layout is an inbox: a left folder rail with Drafts at the top (it is where
    you act), then a hairline, then the submitted lifecycle states
-   All / Awaiting approval / Live / Declined, each with a count (the All folder
+   All / Awaiting review / Live / Declined, each with a count (the All folder
    is labelled "Submitted"). Drafts are unsubmitted and account-only, a
    different class from the GitHub-tracked states, so Submitted does not include
    them. The page opens on Drafts when you have any, otherwise on Submitted. On
@@ -30,7 +30,7 @@ const YC_PR_BASE = 'https://github.com/OpenHomeFoundation/device-database/pull/'
 // Lifecycle presentation. `order` drives the Status sort.
 const YC_STATES = {
   draft:    { label: 'Draft',            badgeClass: 'yc-badge-draft',    order: 0 },
-  pending:  { label: 'Awaiting approval', badgeClass: 'yc-badge-pending',  order: 1 },
+  pending:  { label: 'Awaiting review', badgeClass: 'yc-badge-pending',  order: 1 },
   declined: { label: 'Declined',         badgeClass: 'yc-badge-declined', order: 2 },
   live:     { label: 'Live',             badgeClass: 'yc-badge-live',     order: 3 },
 };
@@ -494,7 +494,7 @@ function YourChanges() {
   const RAIL = [
     { id: 'draft', label: 'Drafts' },
     { id: 'all', label: 'Submitted', groupStart: true },
-    { id: 'pending', label: 'Awaiting approval', sub: true },
+    { id: 'pending', label: 'Awaiting review', sub: true },
     { id: 'live', label: 'Live', sub: true },
     { id: 'declined', label: 'Declined', sub: true },
   ];
@@ -502,6 +502,9 @@ function YourChanges() {
   // "Submitted" can read as the current group even without the accent rail.
   const submittedSub = tab === 'pending' || tab === 'live' || tab === 'declined';
   const showFilter = all.length > 1;
+  // The big title reflects the selected folder; "Your edits" moves to the
+  // small eyebrow above it (mirrors the Privacy / Settings pages).
+  const activeTabLabel = (RAIL.find((t) => t.id === tab) || {}).label || 'Your edits';
 
   const doSubmitAll = () => {
     const draftsMap = (window.allDrafts && window.allDrafts()) || {};
@@ -531,48 +534,20 @@ function YourChanges() {
   const emptyCopy = {
     all: "You haven't submitted any edits yet. Anything you start is saved under Drafts.",
     draft: 'No drafts. Edits you start but have not submitted collect here.',
-    pending: 'Nothing awaiting approval right now.',
+    pending: 'Nothing awaiting review right now.',
     live: 'None of your edits are live yet.',
     declined: 'Nothing was sent back.',
   };
 
   return (
     <div className="container yct" data-screen-label="Your edits" ref={rootRef}>
-      <header className="yct-head">
-        <div className="yct-head-text">
-          <h1 className="yct-title">Your edits</h1>
-        </div>
-        <div className="yct-head-actions">
-          {showFilter &&
-            <div className={'yct-search' + (searchOpen || query ? ' is-open' : '')}>
-              <Icon name="search" size={14} />
-              <input ref={searchRef} className="yct-search-input" type="text" value={query}
-                placeholder="Filter"
-                aria-label="Filter your edits by device or manufacturer"
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setSearchOpen(true)}
-                onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); e.target.blur(); } }}
-                onBlur={() => { if (!query.trim()) setSearchOpen(false); }} />
-              {query &&
-                <button type="button" className="yct-search-clear" aria-label="Clear filter"
-                  onClick={() => { setQuery(''); if (searchRef.current) searchRef.current.focus(); }}>
-                  <Icon name="x" size={13} />
-                </button>}
-            </div>}
-          {counts.draft > 0 &&
-            <button type="button" className="btn btn-primary yct-submit-all" onClick={() => { setFlash(null); setSubmitOpen(true); }}>
-              {`Submit ${counts.draft} draft${counts.draft === 1 ? '' : 's'}`}
-            </button>}
-        </div>
-      </header>
-
       <div className="yct-shell">
         <aside className="yct-rail">
           <nav className="yct-rail-list" ref={railListRef} role="tablist" aria-label="Filter your edits" onMouseLeave={() => setNavHover(null)}>
             <span className="yct-rail-railline" aria-hidden="true"
               style={{ transform: `translateY(${rail.y}px)`, height: rail.h + 'px', opacity: rail.ready ? 1 : 0, transition: railAnimate ? undefined : 'none' }} />
             {RAIL.map((t, i) => {
-              // Hide a nested lifecycle filter (Awaiting approval / Live /
+              // Hide a nested lifecycle filter (Awaiting review / Live /
               // Declined) when it has nothing in it, so the rail only lists
               // states you actually have. Returning null keeps the map index
               // stable, so the accent-rail measurement stays aligned.
@@ -597,6 +572,34 @@ function YourChanges() {
         </aside>
 
         <div className="yct-main">
+          <header className="yct-head">
+            <div className="yct-head-text">
+              <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>Your edits</div>
+              <h1 className="yct-title">{activeTabLabel}</h1>
+            </div>
+            <div className="yct-head-actions">
+              {showFilter &&
+                <div className={'yct-search' + (searchOpen || query ? ' is-open' : '')}>
+                  <Icon name="search" size={14} />
+                  <input ref={searchRef} className="yct-search-input" type="text" value={query}
+                    placeholder="Filter"
+                    aria-label="Filter your edits by device or manufacturer"
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setSearchOpen(true)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); e.target.blur(); } }}
+                    onBlur={() => { if (!query.trim()) setSearchOpen(false); }} />
+                  {query &&
+                    <button type="button" className="yct-search-clear" aria-label="Clear filter"
+                      onClick={() => { setQuery(''); if (searchRef.current) searchRef.current.focus(); }}>
+                      <Icon name="x" size={13} />
+                    </button>}
+                </div>}
+              {counts.draft > 0 &&
+                <button type="button" className="btn btn-primary yct-submit-all" onClick={() => { setFlash(null); setSubmitOpen(true); }}>
+                  {`Submit ${counts.draft} draft${counts.draft === 1 ? '' : 's'}`}
+                </button>}
+            </div>
+          </header>
           {flash &&
             <div className="yc-flash" role="status">
               <span className="yc-flash-ico" aria-hidden="true"><Icon name="checkcircle" size={18} /></span>

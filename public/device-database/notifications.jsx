@@ -421,6 +421,7 @@ function NotificationsSettings() {
 
   return (
     <React.Fragment>
+      <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>Settings</div>
       <h1 className="ce-account-h1">Notifications</h1>
       <p className="ce-account-sub">We let you know when a submitted edit is sent for review, goes live, or is declined. Either way, every update also shows on the Your edits page.</p>
 
@@ -497,7 +498,7 @@ function NotificationsSettings() {
           <h2 className="ce-account-section-head">GitHub</h2>
           {ghConnected ?
             <p style={{ margin: 0, fontSize: 'var(--fs-14)', color: 'var(--fg-muted)', lineHeight: 1.5 }}>
-              We will not email you. Choose what GitHub sends you from your watching and notification settings on GitHub.
+              We will not email you. Choose what GitHub sends you from your watching and notification <a href="https://github.com/settings/notifications" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>settings</a> on GitHub.
             </p> :
             <React.Fragment>
               <p style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--fs-14)', color: 'var(--fg-muted)', lineHeight: 1.5 }}>

@@ -922,7 +922,7 @@ function EditEntry({ entry }) {
             <span className="ce-history-sep">·</span>
             <time dateTime={entry.at} title={formatDateTime(entry.at)}>{formatDateTime(entry.at)}</time>
             {entry.pending ?
-              <span className="ce-history-pending"><span className="ce-pending-dot" aria-hidden="true" /> Awaiting approval</span> :
+              <span className="ce-history-pending"><span className="ce-pending-dot" aria-hidden="true" /> Awaiting review</span> :
               null}
           </div>
           {entry.summary ? <div className="ce-history-summary">{entry.summary}</div> : null}
@@ -998,7 +998,7 @@ function SidebarEditHistory({ device }) {
       {pCount > 0 ?
         <div className="aside-edits-pending">
           <span className="ce-pending-dot" aria-hidden="true" />
-          <span>{pCount} edit{pCount === 1 ? '' : 's'} awaiting approval</span>
+          <span>{pCount} edit{pCount === 1 ? '' : 's'} awaiting review</span>
         </div> : null}
       {total === 0 ?
       <p className="aside-edits-empty">No edits yet.</p> :
@@ -1014,7 +1014,7 @@ function SidebarEditHistory({ device }) {
                   <span className="aside-edit-dot">·</span>
                   <time dateTime={digest.at} title={formatDateTime(digest.at)}>{formatDateShort(digest.at)}</time>
                   {digest.pending ?
-                    <span className="aside-edit-pending-tag"><span className="ce-pending-dot" aria-hidden="true" /> Awaiting approval</span> :
+                    <span className="aside-edit-pending-tag"><span className="ce-pending-dot" aria-hidden="true" /> Awaiting review</span> :
                     null}
                 </div>
                 {digest.summary ? <div className="aside-edit-summary">{digest.summary}</div> : null}

@@ -3,10 +3,15 @@
 const EditorialStance = () => (
   <div data-screen-label="05 Editorial stance">
     <section className="section" style={{borderTop: "none"}}>
-      <div className="container-narrow" style={{padding: "var(--space-9) var(--space-7) 0"}}>
+      <div className="container-narrow page-intro">
         <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>About</div>
         <h1 style={{marginBottom: 16}}>Editorial stance</h1>
-        <p className="lede">Neutral, citable, never sponsored.</p>
+        <p className="lede" style={{marginBottom: 20}}>There are no good or bad devices. Only different capabilities, compatibilities, and trade-offs.</p>
+        <p style={{color: "var(--fg-muted)", lineHeight: "var(--lh-loose)", marginBottom: 0}}>
+          This is a living resource. As community contributions grow and real-world
+          usage evolves, so does what the database knows. We build in the open, share
+          our methodology, and invite scrutiny. Trustworthiness is earned, not claimed.
+        </p>
       </div>
     </section>
 
@@ -16,12 +21,11 @@ const EditorialStance = () => (
           The Device Database is a reference, not a marketing surface. We list what a
           device <em>does</em>, not what we think about it. Entries are written in the
           voice of a wiki editor, declarative, source-backed, and explicit about
-          uncertainty.
+          uncertainty. We give you the facts to make your own informed decisions.
         </p>
         <p style={{color: "var(--fg)", lineHeight: "var(--lh-loose)", marginBottom: 20}}>
-          There are no affiliate links, no sponsored placements, and no recommendation
-          rankings. If a device requires the cloud, we say so plainly. If a claim is
-          unverified, we mark it.
+          There are no sponsored placements and no recommendation rankings. If a device
+          requires the cloud, we say so plainly. If a claim is unverified, help us mark it.
         </p>
         <p style={{color: "var(--fg)", lineHeight: "var(--lh-loose)", marginBottom: 0}}>
           The Device Database is a project of the Open Home Foundation, the non-profit

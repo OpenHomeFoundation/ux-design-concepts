@@ -163,7 +163,7 @@ function ContributionRow({ item }) {
           <time className="ce-contrib-when" dateTime={item.at} title={full}>{when}</time>
           {item.kind === 'pending' ? (
             <span className="ce-contrib-badge ce-contrib-badge-pending">
-              <span className="ce-pending-dot" aria-hidden="true" /> Awaiting approval
+              <span className="ce-pending-dot" aria-hidden="true" /> Awaiting review
             </span>
           ) : item.kind === 'draft' ? (
             <span className="ce-contrib-badge ce-contrib-badge-draft">
@@ -378,13 +378,12 @@ function ContributorsIndex() {
             <h2 className="ce-contributor-letter">{g.letter}</h2>
             <ul className="ce-contributor-rows">
               {g.rows.map((r) => {
-                const hp = window.contributorHoverProps ? window.contributorHoverProps(r.id) : {};
                 return (
                 <li key={r.id}>
-                  <a className="ce-contributor-row" href={`#/contributors/${r.id}`} onFocus={hp.onFocus} onBlur={hp.onBlur}>
-                    <window.Avatar user={r.user} size={40} {...hp} />
+                  <a className="ce-contributor-row" href={`#/contributors/${r.id}`}>
+                    <window.Avatar user={r.user} size={40} />
                     <div className="ce-contributor-main">
-                      <div className="ce-contributor-name" {...hp}>
+                      <div className="ce-contributor-name">
                         {r.user.name}
                         {r.isSelf ? <span className="ce-contributor-you">You</span> : null}
                       </div>

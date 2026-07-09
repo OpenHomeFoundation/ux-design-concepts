@@ -1,0 +1,266 @@
+/* =========================================================================
+   SKIN: Brutalist — raw system type, hard edges, hard offset shadows, one
+   loud accent. Black on white, no decoration, everything is a box.
+   Applied via <html data-skin="brutalist">. Light and dark both defined.
+   Every color token set in the light block is re-set in the dark block.
+   ========================================================================= */
+
+/* ---------- Mode-independent: type, radius, motion ---------- */
+:root[data-skin="brutalist"] {
+  --font-display: "Arial Black", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans:    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono:    "Courier New", Courier, monospace;
+
+  --radius-0: 0;
+  --radius-1: 0;
+  --radius-2: 0;
+  --radius-3: 0;
+  --radius-4: 0;
+  --radius-5: 0;
+  --radius-pill: 0;
+
+  --transition-fast: 0ms linear;
+  --transition:      0ms linear;
+
+  --ls-tight: -0.02em;
+}
+
+/* ---------- Light ---------- */
+:root[data-skin="brutalist"] {
+  --ink-50:  #f0f0f0;
+  --ink-100: #d9d9d9;
+  --ink-200: #b3b3b3;
+  --ink-300: #8c8c8c;
+  --ink-400: #595959;
+  --ink-500: #000000;
+  --ink-600: #000000;
+  --ink-700: #000000;
+  --ink-800: #000000;
+  --ink-900: #000000;
+
+  --primary:        #000000;
+  --primary-hover:  #ff3b00;
+  --primary-press:  #d63200;
+  --primary-soft:   #f0f0f0;
+  --fg-on-primary:  #ffffff;
+
+  --accent:        #ff3b00;
+  --accent-hover:  #d63200;
+  --accent-soft:   #ffe6de;
+
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f7f7f7;
+  --neutral-100: #efefef;
+  --neutral-200: #e0e0e0;
+  --neutral-300: #c4c4c4;
+  --neutral-400: #949494;
+  --neutral-500: #666666;
+  --neutral-600: #444444;
+  --neutral-700: #2b2b2b;
+  --neutral-800: #191919;
+  --neutral-900: #000000;
+
+  --surface:           #ffffff;
+  --surface-sunken:    #f2f2f2;
+  --surface-raised:    #ffffff;
+  --surface-overlay:   #ffffff;
+  --surface-inverse:   #000000;
+
+  --surface-tint-soft:   #f2f2f2;
+  --surface-tint-mid:    #e8e8e8;
+  --surface-tint-strong: #dcdcdc;
+
+  --fg:           #000000;
+  --fg-strong:    #000000;
+  --fg-muted:     #333333;
+  --fg-subtle:    #555555;
+  --fg-disabled:  #999999;
+  --fg-inverse:   #ffffff;
+
+  --border:        #000000;
+  --border-strong: #000000;
+  --border-subtle: #000000;
+  --border-focus:  #ff3b00;
+
+  --link:          #0000ee;
+  --link-hover:    #ff3b00;
+  --link-visited:  #551a8b;
+  --link-active:   #ff3b00;
+
+  --success:       #007a1f;
+  --success-soft:  #e0f2e4;
+  --success-strong:#005a17;
+
+  --warning:       #b36b00;
+  --warning-soft:  #fff0d6;
+  --warning-strong:#8a5300;
+
+  --error:         #d40000;
+  --error-soft:    #ffe0e0;
+  --error-strong:  #a30000;
+
+  --info:          #000000;
+  --info-soft:     #f0f0f0;
+  --info-strong:   #000000;
+
+  --trait-zigbee:    #000000;
+  --trait-zwave:     #000000;
+  --trait-matter:    #000000;
+  --trait-wifi:      #000000;
+  --trait-bluetooth: #000000;
+  --trait-thread:    #000000;
+  --trait-local:     #000000;
+  --trait-cloud:     #555555;
+
+  /* Hard offset shadow, no blur. */
+  --shadow-1: 4px 4px 0 #000000;
+  --shadow-2: var(--shadow-1);
+  --shadow-3: 6px 6px 0 #000000;
+  --shadow-4: var(--shadow-3);
+  --ring-focus: 0 0 0 3px #ff3b00;
+
+  --nav-bg: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Dark ---------- */
+:root[data-skin="brutalist"][data-resolved-theme="dark"] {
+  --primary:        #ffffff;
+  --primary-hover:  #ffef00;
+  --primary-press:  #e6d800;
+  --primary-soft:   #1a1a1a;
+  --fg-on-primary:  #000000;
+
+  --accent:        #ffef00;
+  --accent-hover:  #fff566;
+  --accent-soft:   #2b2900;
+
+  --surface:           #000000;
+  --surface-sunken:    #0d0d0d;
+  --surface-raised:    #000000;
+  --surface-overlay:   #000000;
+  --surface-inverse:   #ffffff;
+
+  --surface-tint-soft:   #111111;
+  --surface-tint-mid:    #1d1d1d;
+  --surface-tint-strong: #2b2b2b;
+
+  --fg:           #ffffff;
+  --fg-strong:    #ffffff;
+  --fg-muted:     #cccccc;
+  --fg-subtle:    #aaaaaa;
+  --fg-disabled:  #666666;
+  --fg-inverse:   #000000;
+
+  --border:        #ffffff;
+  --border-strong: #ffffff;
+  --border-subtle: #ffffff;
+  --border-focus:  #ffef00;
+
+  --link:          #6699ff;
+  --link-hover:    #ffef00;
+  --link-visited:  #bb88ff;
+  --link-active:   #ffef00;
+
+  --success:       #33ff66;
+  --success-soft:  #002b10;
+  --success-strong:#7fffa6;
+
+  --warning:       #ffcc00;
+  --warning-soft:  #2b2200;
+  --warning-strong:#ffe066;
+
+  --error:         #ff4444;
+  --error-soft:    #2b0000;
+  --error-strong:  #ff8888;
+
+  --info:          #ffffff;
+  --info-soft:     #1a1a1a;
+  --info-strong:   #ffffff;
+
+  --trait-zigbee:    #ffffff;
+  --trait-zwave:     #ffffff;
+  --trait-matter:    #ffffff;
+  --trait-wifi:      #ffffff;
+  --trait-bluetooth: #ffffff;
+  --trait-thread:    #ffffff;
+  --trait-local:     #ffffff;
+  --trait-cloud:     #aaaaaa;
+
+  --shadow-1: 4px 4px 0 #ffffff;
+  --shadow-2: var(--shadow-1);
+  --shadow-3: 6px 6px 0 #ffffff;
+  --shadow-4: var(--shadow-3);
+  --ring-focus: 0 0 0 3px #ffef00;
+
+  --nav-bg: #000000;
+  --scrim: rgba(0, 0, 0, 0.75);
+}
+
+/* ---------- Component recipe ---------- */
+
+/* Display type: heavy, uppercase, tight. */
+[data-skin="brutalist"] h1, [data-skin="brutalist"] .h1,
+[data-skin="brutalist"] h2, [data-skin="brutalist"] .h2,
+[data-skin="brutalist"] .h-display {
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+[data-skin="brutalist"] .brand-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* Buttons: 2px boxes, uppercase, invert on hover. */
+[data-skin="brutalist"] .btn {
+  border-radius: 0;
+  border: 2px solid var(--fg);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+[data-skin="brutalist"] .btn-primary { background: var(--fg); color: var(--fg-inverse); }
+[data-skin="brutalist"] .btn-primary:hover { background: var(--surface); color: var(--fg); }
+[data-skin="brutalist"] .btn-secondary:hover { background: var(--fg); color: var(--fg-inverse); border-color: var(--fg); }
+[data-skin="brutalist"] .btn-tonal:hover { background: var(--fg); color: var(--fg-inverse); }
+
+/* Cards: 2px border, hard offset shadow that stamps down on hover. */
+[data-skin="brutalist"] .device-card {
+  border: 2px solid var(--fg);
+  border-radius: 0;
+  box-shadow: var(--shadow-1);
+}
+[data-skin="brutalist"] .device-card:hover {
+  box-shadow: 2px 2px 0 var(--fg);
+  transform: translate(2px, 2px);
+  background: var(--surface);
+}
+
+/* Inputs and dropdowns: 2px boxes. */
+[data-skin="brutalist"] .searchbox-input,
+[data-skin="brutalist"] .appnav-search,
+[data-skin="brutalist"] .hero-search {
+  border: 2px solid var(--fg);
+  border-radius: 0;
+}
+[data-skin="brutalist"] .searchbox-dropdown {
+  border: 2px solid var(--fg);
+  border-radius: 0;
+  box-shadow: var(--shadow-3);
+}
+[data-skin="brutalist"] .modal-dialog,
+[data-skin="brutalist"] .sheet-panel {
+  border: 2px solid var(--fg);
+  border-radius: 0;
+  box-shadow: var(--shadow-3);
+}
+[data-skin="brutalist"] .chip,
+[data-skin="brutalist"] .badge {
+  border-radius: 0;
+  text-transform: uppercase;
+}
+
+/* Links: always underlined, raw browser blue. */
+[data-skin="brutalist"] a { text-decoration-thickness: 2px; }

@@ -21,7 +21,7 @@ const Landing = () => {
           </div>
 
           <div className="hero-actions">
-            <a href="#/browse">Browse all {totalDevices} devices →</a>
+            <a href="#/browse">Browse all devices →</a>
           </div>
         </div>
       </section>

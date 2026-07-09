@@ -3,13 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
   <title>Device Database · Open Home Foundation</title>
 
   <!-- Google Fonts: Inter, Source Serif 4, JetBrains Mono — design system stack -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap">
 
   <!-- Theme + increments boot.
        Runs before stylesheets to avoid FOUC. Resolves the effective
@@ -35,6 +34,13 @@
       function apply(s) {
         var root = document.documentElement;
         root.setAttribute('data-resolved-theme', resolveTheme(s.theme));
+        // Skin: a full visual theme layered over the same patterns. The
+        // default ('reference') carries no attribute so the base tokens
+        // apply untouched. Skin CSS lives in skins/*.css, scoped to
+        // [data-skin="..."].
+        var skin = s.skin || 'reference';
+        if (skin !== 'reference') root.setAttribute('data-skin', skin);
+        else root.removeAttribute('data-skin');
         // Increments: each key becomes data-inc-<key>="on" when true.
         var increments = s.increments || {};
         // Strip stale data-inc-* attrs first so toggles-off propagate.
@@ -45,6 +51,16 @@
         Object.keys(increments).forEach(function (k) {
           if (increments[k]) root.setAttribute('data-inc-' + k, 'on');
         });
+        // Appearance prefs. Contrast is applied per resolved mode; reduce
+        // motion, dim photos and hovercards are simple flags. Dim photos and
+        // hovercards default ON, so only their "off" state is written.
+        var ap = s.appearance || {};
+        var contrastOn = ap.contrast === true || (ap.contrast && typeof ap.contrast === 'object' && !!ap.contrast.on);
+        function setFlag(name, on) { if (on) root.setAttribute(name, 'on'); else root.removeAttribute(name); }
+        if (contrastOn) root.setAttribute('data-contrast', 'high'); else root.removeAttribute('data-contrast');
+        setFlag('data-reduce-motion', !!ap.reduceMotion);
+        if (ap.dimPhotos === false) root.setAttribute('data-dim-photos', 'off'); else root.removeAttribute('data-dim-photos');
+        if (ap.hovercards === false) root.setAttribute('data-hovercards', 'off'); else root.removeAttribute('data-hovercards');
       }
       apply(state);
 
@@ -79,6 +95,35 @@
         setTheme: function (theme) {
           var s = read();
           s.theme = theme;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+          catch (e) { /* private mode — in-memory apply still runs */ }
+          apply(s);
+          window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: s }));
+        },
+        getSkin: function () { return read().skin || 'reference'; },
+        setSkin: function (skin) {
+          var s = read();
+          s.skin = skin;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+          catch (e) { /* private mode — in-memory apply still runs */ }
+          apply(s);
+          window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: s }));
+        },
+        // Appearance prefs, stored alongside theme. Defaults applied on read so
+        // the UI and the boot apply() agree: dim photos + hovercards on.
+        getAppearance: function () {
+          var ap = read().appearance || {};
+          var c = ap.contrast;
+          return {
+            contrast: c === true || (c && typeof c === 'object' && !!c.on),
+            reduceMotion: !!ap.reduceMotion,
+            dimPhotos: ap.dimPhotos !== false,
+            hovercards: ap.hovercards !== false
+          };
+        },
+        setAppearance: function (patch) {
+          var s = read();
+          s.appearance = Object.assign({}, s.appearance, patch);
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
           catch (e) { /* private mode — in-memory apply still runs */ }
           apply(s);
@@ -132,39 +177,392 @@
 
   <link rel="stylesheet" href="tokens.css?v=darkmode">
   <link rel="stylesheet" href="app.css?v=onboarding1">
+  <!-- Skins: full visual themes over the same patterns. Each file is scoped
+       to [data-skin="..."] so loading them all is inert until a skin is
+       picked (long-press the logo, Theme section). -->
+  <link rel="stylesheet" href="skins/open-home.css">
+  <link rel="stylesheet" href="skins/vibrant.css">
+  <link rel="stylesheet" href="skins/terminal.css">
+  <link rel="stylesheet" href="skins/brutalist.css">
+  <link rel="stylesheet" href="skins/slop.css">
+
+  <style>
+    /* "Design preview" banner, pinned bottom-center. Sized to match the
+       mobile Filters FAB (.filters-fab). */
+    .design-preview-badge {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2, 8px);
+      padding: 10px 12px 10px 16px;
+      background: var(--fg, #1a1a1a);
+      color: var(--fg-on-primary, #fff);
+      border-radius: var(--radius-2, 8px);
+      font: var(--fw-medium, 500) 14px/1 var(--font-sans, "Inter", system-ui, sans-serif);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .design-preview-badge-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--accent, #1C6FD6);
+      transform-origin: left center;
+      transform: scaleX(1);
+      z-index: 0;
+    }
+    .design-preview-badge-label,
+    .design-preview-badge-close {
+      position: relative;
+      z-index: 1;
+    }
+    .design-preview-badge-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+    }
+    .design-preview-badge-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    @media print {
+      .design-preview-badge { display: none; }
+    }
+  </style>
+
+  <!-- ───────────────────────────────────────────────────────────────────
+       Viewport tweak. Lets you preview the app at each of the design
+       system's responsive breakpoints (the same widths the canvas uses).
+       A constrained container won't do: both the CSS media queries and the
+       JS matchMedia sheet checks key off the *real* viewport, so the only
+       faithful way to make a breakpoint actually trigger is to host the app
+       in an iframe whose CSS width IS that viewport width (same trick as
+       canvas.html). When a width is picked we hide the top-level #root and
+       show a centered self-iframe (index.html?vpinner=1) at that width.
+
+       Only runs in the standalone preview: skipped inside the canvas
+       artboards (which already do breakpoints) and inside our own inner
+       iframe, so there's no double-shell or recursion. ───────────────────
+  -->
+  <style id="vp-tweak-style">
+    [data-vp-shell] #root { display: none !important; }
+    html[data-vp-shell], html[data-vp-shell] body { overflow: hidden; height: 100%; }
+    .vp-stage {
+      position: fixed; inset: 0; z-index: 9000;
+      display: none; overflow: auto;
+      background:
+        repeating-conic-gradient(rgba(0,0,0,.04) 0% 25%, transparent 0% 50%) 0 0 / 22px 22px,
+        var(--surface-sunken, #e9e8e4);
+    }
+    [data-vp-shell] .vp-stage { display: block; }
+    .vp-stage-pad {
+      box-sizing: border-box; min-height: 100%;
+      display: flex; align-items: stretch; justify-content: center;
+      padding: 44px 24px 24px;
+    }
+    .vp-stage-inner {
+      flex: 0 0 var(--vp-w, 1200px); width: var(--vp-w, 1200px);
+      background: var(--surface, #fff);
+      box-shadow: 0 10px 50px rgba(0,0,0,.18);
+      border-radius: 6px; overflow: hidden;
+      align-self: stretch;
+    }
+    .vp-frame { display: block; border: 0; width: 100%; height: 100%; min-height: 600px; background: var(--surface, #fff); }
+    .vp-tag {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      z-index: 9001; display: none; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 999px;
+      background: var(--fg, #1a1a1a); color: var(--fg-on-primary, #fff);
+      font: 500 12px/1 var(--font-sans, "Inter", system-ui, sans-serif);
+      letter-spacing: .01em; box-shadow: 0 4px 18px rgba(0,0,0,.22);
+    }
+    [data-vp-shell] .vp-tag { display: inline-flex; }
+    .vp-tag b { font-weight: 600; }
+    .vp-tag span { opacity: .6; font-variant-numeric: tabular-nums; }
+
+    /* Tweaks panel — frosted, bottom-right, matches the shared tweak look. */
+    .vp-panel {
+      position: fixed; right: 16px; bottom: 16px; z-index: 2147483646; width: 248px;
+      display: none; flex-direction: column;
+      background: rgba(250,249,247,.82); color: #29261b;
+      -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%);
+      border: .5px solid rgba(255,255,255,.6); border-radius: 14px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 12px 40px rgba(0,0,0,.18);
+      font: 12px/1.4 ui-sans-serif, system-ui, -apple-system, sans-serif; overflow: hidden;
+    }
+    .vp-panel.open { display: flex; }
+    html[data-resolved-theme="dark"] .vp-panel {
+      background: rgba(34,32,28,.82); color: #f1efe9;
+      border-color: rgba(255,255,255,.08);
+    }
+    .vp-hd { display: flex; align-items: center; justify-content: space-between; padding: 11px 9px 11px 14px; user-select: none; }
+    .vp-hd b { font-size: 12.5px; font-weight: 600; letter-spacing: .01em; }
+    .vp-x { appearance: none; border: 0; background: transparent; color: rgba(41,38,27,.55); width: 22px; height: 22px; border-radius: 6px; cursor: pointer; font-size: 13px; line-height: 1; }
+    .vp-x:hover { background: rgba(0,0,0,.06); color: #29261b; }
+    html[data-resolved-theme="dark"] .vp-x { color: rgba(241,239,233,.55); }
+    html[data-resolved-theme="dark"] .vp-x:hover { background: rgba(255,255,255,.1); color: #f1efe9; }
+    .vp-body { padding: 2px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .vp-sect { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: rgba(41,38,27,.45); }
+    html[data-resolved-theme="dark"] .vp-sect { color: rgba(241,239,233,.5); }
+    .vp-list { display: flex; flex-direction: column; gap: 4px; }
+    .vp-opt {
+      appearance: none; display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+      width: 100%; padding: 8px 10px; border: .5px solid rgba(0,0,0,.08); border-radius: 8px;
+      background: rgba(255,255,255,.55); color: inherit; font: inherit; cursor: pointer; text-align: left;
+    }
+    .vp-opt:hover { background: rgba(255,255,255,.85); }
+    .vp-opt[data-on="1"] { background: var(--fg, #1a1a1a); color: var(--fg-on-primary, #fff); border-color: transparent; }
+    html[data-resolved-theme="dark"] .vp-opt { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+    html[data-resolved-theme="dark"] .vp-opt:hover { background: rgba(255,255,255,.12); }
+    .vp-opt-name { font-weight: 500; }
+    .vp-opt-w { font-variant-numeric: tabular-nums; opacity: .55; font-size: 11px; }
+    .vp-opt[data-on="1"] .vp-opt-w { opacity: .65; }
+    .vp-note { font-size: 10.5px; line-height: 1.45; color: rgba(41,38,27,.5); padding-top: 2px; }
+    html[data-resolved-theme="dark"] .vp-note { color: rgba(241,239,233,.5); }
+  </style>
+
+  <script>
+    // Viewport-tweak controller. See the comment on #vp-tweak-style above.
+    (function () {
+      // The named breakpoints, with the representative width canvas.html uses
+      // for each artboard. "fit" = no shell (full preview width).
+      var VIEWPORTS = [
+        { key: 'fit',     name: 'Fit',     w: null, hint: 'Full preview width' },
+        { key: 'mobile',  name: 'Mobile',  w: 390,  hint: '< 768px' },
+        { key: 'tablet',  name: 'Tablet',  w: 820,  hint: '768–1023px' },
+        { key: 'desktop', name: 'Desktop', w: 1200, hint: '1024–1279px' },
+        { key: 'wide',    name: 'Wide',    w: 1440, hint: '≥ 1280px' }
+      ];
+      var STORE = 'devicedb.viewport.v1';
+      function readSel() {
+        try { var v = localStorage.getItem(STORE); return VIEWPORTS.some(function (o) { return o.key === v; }) ? v : 'fit'; }
+        catch (e) { return 'fit'; }
+      }
+      function find(key) { for (var i = 0; i < VIEWPORTS.length; i++) if (VIEWPORTS[i].key === key) return VIEWPORTS[i]; return VIEWPORTS[0]; }
+
+      // Context gates. Don't run the shell inside the canvas artboards (they
+      // already render each breakpoint) or inside our own inner iframe.
+      var params = new URLSearchParams(location.search);
+      var isInner = params.get('vpinner') === '1';
+      var inCanvas = (document.referrer || '').indexOf('canvas.html') !== -1;
+      var eligible = !isInner && !inCanvas;
+
+      // Inner frame: it's a plain full-size app instance — drop the duplicate
+      // "Design preview" badge so only the shell's badge shows.
+      if (isInner) {
+        document.addEventListener('DOMContentLoaded', function () {
+          var b = document.getElementById('designPreviewBadge');
+          if (b) b.remove();
+        });
+        return;
+      }
+      if (!eligible) return;
+
+      // No-flash: if a width is already selected, hide #root before paint so
+      // the (hidden) top-level app instance never flashes behind the shell.
+      var startSel = readSel();
+      if (find(startSel).w) document.documentElement.setAttribute('data-vp-shell', '');
+
+      var stage, frame, tag, panel, optEls = {};
+
+      function buildStage() {
+        stage = document.createElement('div');
+        stage.className = 'vp-stage';
+        var pad = document.createElement('div');
+        pad.className = 'vp-stage-pad';
+        var inner = document.createElement('div');
+        inner.className = 'vp-stage-inner';
+        frame = document.createElement('iframe');
+        frame.className = 'vp-frame';
+        frame.title = 'Viewport preview';
+        inner.appendChild(frame);
+        pad.appendChild(inner);
+        stage.appendChild(pad);
+        document.body.appendChild(stage);
+
+        tag = document.createElement('div');
+        tag.className = 'vp-tag';
+        document.body.appendChild(tag);
+      }
+
+      function ensureFrameLoaded() {
+        // Point the inner iframe at this same page, flagged so it renders the
+        // app directly. Preserve the current route (hash) so you land on the
+        // same screen you were viewing.
+        var want = location.pathname + '?vpinner=1' + (location.hash || '');
+        if (frame.getAttribute('src') !== want) frame.setAttribute('src', want);
+      }
+
+      function apply(key) {
+        var vp = find(key);
+        if (vp.w) {
+          document.documentElement.setAttribute('data-vp-shell', '');
+          stage.style.setProperty('--vp-w', vp.w + 'px');
+          tag.innerHTML = '<b>' + vp.name + '</b><span>' + vp.w + 'px</span>';
+          ensureFrameLoaded();
+        } else {
+          document.documentElement.removeAttribute('data-vp-shell');
+        }
+        Object.keys(optEls).forEach(function (k) { optEls[k].setAttribute('data-on', k === key ? '1' : '0'); });
+      }
+
+      function select(key) {
+        try { localStorage.setItem(STORE, key); } catch (e) {}
+        apply(key);
+      }
+
+      function buildPanel() {
+        panel = document.createElement('div');
+        panel.className = 'vp-panel';
+        panel.setAttribute('data-omelette-chrome', '');
+
+        var hd = document.createElement('div');
+        hd.className = 'vp-hd';
+        var title = document.createElement('b');
+        title.textContent = 'Tweaks';
+        var x = document.createElement('button');
+        x.className = 'vp-x'; x.type = 'button'; x.setAttribute('aria-label', 'Close tweaks'); x.textContent = '✕';
+        x.addEventListener('click', function () {
+          panel.classList.remove('open');
+          window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+        });
+        hd.appendChild(title); hd.appendChild(x);
+
+        var body = document.createElement('div');
+        body.className = 'vp-body';
+        var sect = document.createElement('div');
+        sect.className = 'vp-sect'; sect.textContent = 'Viewport';
+        var list = document.createElement('div');
+        list.className = 'vp-list';
+        VIEWPORTS.forEach(function (vp) {
+          var b = document.createElement('button');
+          b.className = 'vp-opt'; b.type = 'button';
+          var nm = document.createElement('span');
+          nm.className = 'vp-opt-name'; nm.textContent = vp.name;
+          var w = document.createElement('span');
+          w.className = 'vp-opt-w'; w.textContent = vp.w ? vp.w + 'px' : vp.hint;
+          b.appendChild(nm); b.appendChild(w);
+          b.addEventListener('click', function () { select(vp.key); });
+          list.appendChild(b);
+          optEls[vp.key] = b;
+        });
+        var note = document.createElement('div');
+        note.className = 'vp-note';
+        note.textContent = 'Renders the app in a real iframe at the chosen width, so its media queries and layout match that breakpoint.';
+
+        body.appendChild(sect); body.appendChild(list); body.appendChild(note);
+        panel.appendChild(hd); panel.appendChild(body);
+        document.body.appendChild(panel);
+      }
+
+      function init() {
+        buildStage();
+        buildPanel();
+        apply(startSel);
+
+        // Host Tweaks protocol: announce availability, then react to the
+        // toolbar toggle. (Same contract as the shared tweaks panel.)
+        window.addEventListener('message', function (e) {
+          var t = e && e.data && e.data.type;
+          if (t === '__activate_edit_mode') panel.classList.add('open');
+          else if (t === '__deactivate_edit_mode') panel.classList.remove('open');
+        });
+        window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+    })();
+  </script>
 </head>
 <body>
+  <!-- Preview banner: marks this as a non-production design preview.
+       Sticky bottom-center, dismissible. -->
+  <div class="design-preview-badge" id="designPreviewBadge" role="status"
+    onclick="document.getElementById('designPreviewBadge').remove()" title="Dismiss preview banner">
+    <span class="design-preview-badge-label">Design preview</span>
+    <button type="button" class="design-preview-badge-close" aria-label="Dismiss preview banner">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+    <span class="design-preview-badge-progress" id="designPreviewProgress"></span>
+  </div>
+  <script>
+    (function () {
+      var DURATION_MS = 3000; // auto-hide after 3s
+      var badge = document.getElementById('designPreviewBadge');
+      var bar = document.getElementById('designPreviewProgress');
+      if (!badge || !bar) return;
+      // Drain the whole-pill fill from full width to zero over DURATION_MS.
+      // Paint the full state first, force a reflow, then animate so the
+      // transition reliably runs.
+      bar.style.transform = 'scaleX(1)';
+      void bar.offsetWidth;
+      bar.style.transition = 'transform ' + DURATION_MS + 'ms linear';
+      bar.style.transform = 'scaleX(0)';
+      setTimeout(function () {
+        badge.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        badge.style.opacity = '0';
+        badge.style.transform = 'translateX(-50%) translateY(-8px)';
+        setTimeout(function () { badge.remove(); }, 420);
+      }, DURATION_MS);
+    })();
+  </script>
+
   <div id="root"></div>
 
-  <!-- React + Babel (pinned) -->
+  <!-- React (pinned dev builds). JSX is precompiled to plain JS in the matching
+       *.js files below, so the in-browser Babel transformer is no longer loaded:
+       no ~3MB Babel download and no on-device transpile before first paint. -->
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-  <!-- Data first, then components, then app -->
+  <!-- Precompiled app (generated from the .jsx sources by the build step).
+       Same load order as before: data first, then components, then app.
+       To change a component, edit its .jsx and regenerate the matching .js. -->
   <script src="data.js"></script>
-  <script type="text/babel" src="icons.jsx"></script>
-  <script type="text/babel" src="shared.jsx"></script>
-  <script type="text/babel" src="community-edit.jsx"></script>
-  <script type="text/babel" src="community-edit-pages.jsx"></script>
-  <script type="text/babel" src="onboarding.jsx"></script>
-  <script type="text/babel" src="notifications.jsx"></script>
-  <script type="text/babel" src="contributor-profile.jsx"></script>
-  <script type="text/babel" src="contributor-hovercard.jsx"></script>
-  <script type="text/babel" src="pending-edits.jsx"></script>
-  <script type="text/babel" src="drafts.jsx"></script>
-  <script type="text/babel" src="changes-tray.jsx"></script>
-  <script type="text/babel" src="your-changes.jsx"></script>
-  <script type="text/babel" src="edit-fields.jsx"></script>
-  <script type="text/babel" src="connects-with.jsx"></script>
-  <script type="text/babel" src="edit-mode.jsx"></script>
-  <script type="text/babel" src="searchbox.jsx"></script>
-  <script type="text/babel" src="landing.jsx"></script>
-  <script type="text/babel" src="browse.jsx"></script>
-  <script type="text/babel" src="detail-figures.jsx"></script>
-  <script type="text/babel" src="detail.jsx"></script>
-  <script type="text/babel" src="how-it-works.jsx"></script>
-  <script type="text/babel" src="editorial-stance.jsx"></script>
-  <script type="text/babel" src="app.jsx"></script>
+  <script src="icons.js"></script>
+  <script src="brand-logos.js"></script>
+  <script src="shared.js"></script>
+  <script src="community-edit.js"></script>
+  <script src="community-edit-pages.js"></script>
+  <script src="appearance.js"></script>
+  <script src="onboarding.js"></script>
+  <script src="notifications.js"></script>
+  <script src="contributor-profile.js"></script>
+  <script src="contributor-hovercard.js"></script>
+  <script src="pending-edits.js"></script>
+  <script src="drafts.js"></script>
+  <script src="changes-tray.js"></script>
+  <script src="your-changes.js"></script>
+  <script src="edit-fields.js"></script>
+  <script src="connects-with.js"></script>
+  <script src="edit-mode.js"></script>
+  <script src="searchbox.js"></script>
+  <script src="landing.js"></script>
+  <script src="browse.js"></script>
+  <script src="detail-figures.js"></script>
+  <script src="detail.js"></script>
+  <script src="how-it-works.js"></script>
+  <script src="editorial-stance.js"></script>
+  <script src="about.js"></script>
+  <script src="legal.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

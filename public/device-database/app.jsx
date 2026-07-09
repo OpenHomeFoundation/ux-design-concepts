@@ -21,6 +21,12 @@ const App = () => {
     page = <HowItWorks />;
   } else if (route.path === "editorial-stance") {
     page = <EditorialStance />;
+  } else if (route.path === "about") {
+    page = <About />;
+  } else if (route.path === "privacy" || route.path.startsWith("privacy/") || route.path === "data-use") {
+    page = window.PrivacyHub ? <window.PrivacyHub route={route} /> : <NotFound />;
+  } else if (route.path === "impressum") {
+    page = window.Impressum ? <window.Impressum /> : <NotFound />;
   } else if (route.path === "signin") {
     // Community-edit increment: sign in page. We don't gate the route
     // itself, it's harmless without the increment, but the increment

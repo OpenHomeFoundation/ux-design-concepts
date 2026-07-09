@@ -71,15 +71,7 @@ body {
    ---------------------------------------------------------------------- */
 .masthead {
   border-bottom: 1px solid var(--border);
-  padding: var(--space-10) 0 var(--space-9);
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box;
-  position: relative;
-}
-.masthead::before {
-  /* single accent hairline at the very top — the only decorative accent use */
-  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: var(--accent);
+  padding: var(--space-7) 0 var(--space-9);
 }
 .eyebrow-row {
   display: flex; align-items: center; gap: var(--space-3);
@@ -178,8 +170,9 @@ body {
 /* ----------------------------------------------------------------------
    Sections
    ---------------------------------------------------------------------- */
-.section { padding: var(--space-10) 0; border-bottom: 1px solid var(--border); }
-.section.sunken { background: var(--surface-sunken); }
+.section { padding: var(--space-9) 0; border-bottom: 1px solid var(--border); }
+.section:last-of-type { border-bottom: 0; }
+.section.sunken { background: transparent; }
 .section-head { margin-bottom: var(--space-8); }
 .section-num {
   font-family: var(--font-mono); font-size: var(--fs-13);

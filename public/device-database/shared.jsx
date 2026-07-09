@@ -114,7 +114,7 @@ const EXPERIMENTS = [
       {
         key: "your-changes",
         label: "Your edits",
-        hint: "One private dashboard, reached from a single nav icon, that merges the old inbox and changes tray: a timeline of your drafts, edits in review, what went live, and declined edits you can revise, with submit-all batching. Replaces the Changes tray.",
+        hint: "One private dashboard, reached from a single nav icon, with a timeline of your drafts, edits in review, what went live, and declined edits you can revise, with submit-all batching. Replaces the Changes tray.",
         href: "Your%20edits%20-%20plan.html",
       },
       {
@@ -149,6 +149,17 @@ const THEME_OPTIONS = [
   { id: "auto", label: "System" },
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },
+];
+
+/* Skins: full visual themes over the same patterns. Each maps to a
+   skins/*.css file scoped to [data-skin]. 'reference' is the bare token set. */
+const SKIN_OPTIONS = [
+  { id: "reference", label: "Reference", hint: "Graphite on paper. The neutral baseline." },
+  { id: "open-home", label: "Open Home", hint: "Foundation brand: gradient blues, navy ink, yellow actions." },
+  { id: "vibrant", label: "Vibrant", hint: "Saturated color used structurally, playful display type." },
+  { id: "terminal", label: "Terminal", hint: "Monospace everything. Phosphor green after dark." },
+  { id: "brutalist", label: "Brutalist", hint: "Raw system type, hard edges, hard shadows." },
+  { id: "slop", label: "Slop", hint: "Every 2026 AI tell at once, on purpose." },
 ];
 
 const LONG_PRESS_MS = 600;
@@ -225,8 +236,10 @@ const Brand = () => {
 const ExperimentsDialog = ({ onClose }) => {
   const getInc = () => (window.DemoState ? window.DemoState.getIncrements() : {});
   const getTheme = () => (window.DemoState && window.DemoState.getTheme ? window.DemoState.getTheme() : "auto");
+  const getSkin = () => (window.DemoState && window.DemoState.getSkin ? window.DemoState.getSkin() : "reference");
   const [inc, setInc] = React.useState(getInc);
   const [theme, setThemeState] = React.useState(getTheme);
+  const [skin, setSkinState] = React.useState(getSkin);
 
   // Track the OS color-scheme so the meta line can show what "System" resolves
   // to (and what an explicit choice overrides). Matches the canvas sidebar.
@@ -270,7 +283,7 @@ const ExperimentsDialog = ({ onClose }) => {
   React.useEffect(() => {
     document.body.classList.add("modal-open");
     const onKey = (e) => { if (e.key === "Escape") closeAnimated(); };
-    const onState = () => { setInc(getInc()); setThemeState(getTheme()); };
+    const onState = () => { setInc(getInc()); setThemeState(getTheme()); setSkinState(getSkin()); };
     document.addEventListener("keydown", onKey);
     window.addEventListener("devicedb:demostate", onState);
     return () => {
@@ -316,10 +329,15 @@ const ExperimentsDialog = ({ onClose }) => {
     setThemeState(id);
     if (window.DemoState && window.DemoState.setTheme) window.DemoState.setTheme(id);
   };
+  const pickSkin = (id) => {
+    setSkinState(id);
+    if (window.DemoState && window.DemoState.setSkin) window.DemoState.setSkin(id);
+  };
   const reset = () => {
     if (window.DemoState && window.DemoState.reset) window.DemoState.reset();
     setInc(getInc());
     setThemeState(getTheme());
+    setSkinState(getSkin());
   };
 
   const foot = (
@@ -335,6 +353,23 @@ const ExperimentsDialog = ({ onClose }) => {
       <p className="exp-intro">
         In-progress features. Settings are saved to this browser only.
       </p>
+
+      <section className="exp-section">
+        <h3 className="exp-section-title">Theme</h3>
+        <div className="exp-skins" role="radiogroup" aria-label="Theme">
+          {SKIN_OPTIONS.map((opt) =>
+            <button key={opt.id} type="button" role="radio"
+              aria-checked={skin === opt.id}
+              className={"exp-skin" + (skin === opt.id ? " is-active" : "")}
+              onClick={() => pickSkin(opt.id)}>
+              <span className={"exp-skin-swatch exp-skin-swatch-" + opt.id} aria-hidden="true"></span>
+              <span className="exp-skin-text">
+                <span className="exp-skin-name">{opt.label}</span>
+                <span className="exp-skin-hint">{opt.hint}</span>
+              </span>
+            </button>)}
+        </div>
+      </section>
 
       <section className="exp-section">
         <h3 className="exp-section-title">Appearance</h3>
@@ -370,7 +405,7 @@ const ExperimentsDialog = ({ onClose }) => {
               <div className="exp-row-text">
                 <span className="exp-row-num">{it.number}</span>
                 <span className="exp-row-name">{it.label}{planned ? <span className="exp-plan-pill">Planned</span> : null}</span>
-                <span className="exp-row-hint">{it.hint}{it.href ? <React.Fragment> <a className="exp-plan-link" href={it.href} target="_blank" rel="noopener">Read the plan</a></React.Fragment> : null}</span>
+                <span className="exp-row-hint">{it.hint}</span>
               </div>);
             return (
               <li key={it.key} className="exp-item">
@@ -409,7 +444,7 @@ const ExperimentsDialog = ({ onClose }) => {
                         <div key={child.key} className="exp-row exp-row-child is-planned">
                           <div className="exp-row-text">
                             <span className="exp-row-name">{child.label} <span className="exp-plan-pill">Planned</span></span>
-                            <span className="exp-row-hint">{child.hint}{child.href ? <React.Fragment> <a className="exp-plan-link" href={child.href} target="_blank" rel="noopener">Read the plan</a></React.Fragment> : null}</span>
+                            <span className="exp-row-hint">{child.hint}</span>
                           </div>
                           <span className="exp-row-switch">
                             <span className="switch is-disabled">
@@ -426,7 +461,7 @@ const ExperimentsDialog = ({ onClose }) => {
                       <label key={child.key} className="exp-row exp-row-child">
                           <div className="exp-row-text">
                             <span className="exp-row-name">{child.label}</span>
-                            <span className="exp-row-hint">{child.hint}{child.href ? <React.Fragment> <a className="exp-plan-link" href={child.href} target="_blank" rel="noopener">Read the plan</a></React.Fragment> : null}</span>
+                            <span className="exp-row-hint">{child.hint}</span>
                           </div>
                           <span className="exp-row-switch">
                             <span className={"switch" + (childOn ? " is-on" : "")}>
@@ -443,21 +478,6 @@ const ExperimentsDialog = ({ onClose }) => {
                   </div>}
               </li>);
           })}
-        </ul>
-      </section>
-
-      <section className="exp-section">
-        <h3 className="exp-section-title">Reference</h3>
-        <ul className="exp-doclist">
-          <li>
-            <a className="exp-doclink" href="wiki/Device%20Database%20Contributor%20Wiki.html" target="_blank" rel="noopener">
-              <span className="exp-doclink-main">
-                <span className="exp-doclink-title">Contributor wiki</span>
-                <span className="exp-doclink-sub">The project explained, end to end</span>
-              </span>
-              <Icon name="open" size={14} />
-            </a>
-          </li>
         </ul>
       </section>
     </React.Fragment>);
@@ -560,14 +580,13 @@ const Footer = ({ flush = false }) =>
 <footer className={"appfoot appfoot-flat" + (flush ? " appfoot-flush" : "")}>
     <div className="container appfoot-row">
       <ul className="appfoot-links">
-        <li><a href="#/browse">Browse</a></li>
         <li><a href="#/how-it-works">How it works</a></li>
         <li><a href="#/editorial-stance">Editorial stance</a></li>
         <li data-inc-target="contributor-profiles"><a href="#/contributors">Contributors</a></li>
+        <li><a href="#/privacy">Privacy</a></li>
+        <li><a href="#/about">About</a></li>
       </ul>
-      <span className="appfoot-legal-inline">© 2026 <a className="appfoot-legal-link" href="#/">Open Home Foundation</a> · Preview edition
-
-    </span>
+      <span className="appfoot-legal-inline"><svg className="appfoot-mark" viewBox="0 0 240 356" fill="currentColor" aria-hidden="true"><path d="M130.992 4.56406C124.939 -1.52135 115.034 -1.52135 109.008 4.56406L11.0056 103.09C4.95251 109.175 0 121.188 0 129.776V219.134C0 227.722 6.9964 234.783 15.565 234.783H224.435C232.977 234.783 240 227.749 240 219.134V129.776C240 121.188 235.048 109.175 228.994 103.09L130.992 4.56406Z" /><path d="M228 274.783C234.627 274.783 240 280.155 240 286.783V343.783C240 350.41 234.627 355.783 228 355.783H213C206.373 355.783 201 350.41 201 343.783V313.783H39V343.783C39 350.41 33.6274 355.783 27 355.783H12C5.37258 355.783 0 350.41 0 343.783V286.783C0 280.155 5.37258 274.783 12 274.783H228Z" /></svg>© 2026 <a className="appfoot-legal-link" href="#/">Open Home Foundation</a> · <a className="appfoot-legal-link" href="#/impressum">Impressum</a></span>
     </div>
   </footer>;
 

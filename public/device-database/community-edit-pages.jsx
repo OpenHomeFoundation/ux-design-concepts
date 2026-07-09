@@ -293,6 +293,7 @@ function Settings({ route }) {
   const _rawSub = _hash === 'settings/security' ? 'security' :
   _hash === 'settings/connections' ? 'connections' :
   _hash === 'settings/notifications' ? 'notifications' :
+  _hash === 'settings/appearance' ? 'appearance' :
   'profile';
   // With profiles off there is no Profile tab, and with notifications off no
   // Notifications tab; either falls back to security.
@@ -357,7 +358,8 @@ function Settings({ route }) {
   ...(profilesOn ? ['profile'] : []),
   'security',
   ...(notifOn ? ['notifications'] : []),
-  'connections'];
+  'connections',
+  'appearance'];
 
   const activeIdx = Math.max(0, NAV_ORDER.indexOf(sub));
   const navListRef = React.useRef(null);
@@ -522,7 +524,8 @@ function Settings({ route }) {
   ...(profilesOn ? [{ id: 'profile', label: 'Profile', href: '#/settings' }] : []),
   { id: 'security', label: 'Sign-in and security', href: '#/settings/security' },
   ...(notifOn ? [{ id: 'notifications', label: 'Notifications', href: '#/settings/notifications' }] : []),
-  { id: 'connections', label: 'Connections', href: '#/settings/connections' }];
+  { id: 'connections', label: 'Connections', href: '#/settings/connections' },
+  { id: 'appearance', label: 'Appearance', href: '#/settings/appearance' }];
 
   return (
     <div className="container ce-account-shell" data-screen-label="05 Settings">
@@ -566,6 +569,7 @@ function Settings({ route }) {
         <React.Fragment>
           <div className="ce-account-head">
             <div className="ce-account-head-text">
+              <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>Settings</div>
               <h1 className="ce-account-h1">Profile</h1>
               <p className="ce-account-sub">Your contributor details, and how much of your profile is public.</p>
             </div>
@@ -601,7 +605,7 @@ function Settings({ route }) {
                 </span>
               </button>
             </div>
-            <a className="ce-acct-quiet ce-account-viewpublic" href={`#/contributors/${handle}`}>
+            <a className="btn btn-secondary ce-account-viewpublic" href={`#/contributors/${handle}`}>
               <Icon name="eye" size={14} /> View profile
             </a>
           </div>
@@ -765,8 +769,9 @@ function Settings({ route }) {
 
         {sub === 'connections' &&
         <React.Fragment>
+          <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>Settings</div>
           <h1 className="ce-account-h1">Connections</h1>
-          <p className="ce-account-sub">Connect external accounts. Changes here apply immediately.</p>
+          <p className="ce-account-sub">Connect external accounts.</p>
           <div className="ce-account-form">
         <section className="ce-account-section">
           <h2 className="ce-account-section-head">GitHub</h2>
@@ -814,6 +819,7 @@ function Settings({ route }) {
 
         {sub === 'security' &&
         <React.Fragment>
+          <div className="eyebrow section-eyebrow" style={{marginBottom: 8, color: "var(--primary)"}}>Settings</div>
           <h1 className="ce-account-h1">Sign-in and security</h1>
           <p className="ce-account-sub">Manage how you sign in to your account: your email, a password, and passkeys. Add, change, or remove any of them.
 </p>
@@ -977,6 +983,10 @@ function Settings({ route }) {
 
         {sub === 'notifications' && notifOn && window.NotificationsSettings &&
         <window.NotificationsSettings />
+        }
+
+        {sub === 'appearance' && window.AppearanceSettings &&
+        <window.AppearanceSettings />
         }
 
         <ConfirmDialog

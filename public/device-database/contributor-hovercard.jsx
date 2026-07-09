@@ -45,6 +45,8 @@ function _hcEmit() { _hcSubs.forEach((f) => f()); }
 // contributor to show (mirrors the byline's own link gating).
 function hoverCardEnabled(handle) {
   if (!handle) return false;
+  // Respect the Appearance "Show hovercards" preference.
+  if (typeof document !== 'undefined' && document.documentElement.getAttribute('data-hovercards') === 'off') return false;
   const cd = window.contributorDisplay ? window.contributorDisplay(handle) : null;
   return !!(cd && cd.href);
 }

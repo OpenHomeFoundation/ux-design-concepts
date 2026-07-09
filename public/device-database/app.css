@@ -34,9 +34,14 @@ body {
 .app-shell > main, .app-shell > .app-main { flex: 1; display: flex; flex-direction: column; }
 .app-main > * { flex: 1; }
 
+/* Default anchor = structural link: no underline at rest (cards, nav, CTAs,
+   manufacturer links, the logo read clean), blue + underline on hover.
+   Inline links that sit inside running prose or data rows opt INTO the
+   underline in their own rules below (.ce-link-ink, .ce-hub-link,
+   .trait-version-link, .ce-meta-line a, etc.). */
 a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 2px; color: var(--link-hover); }
 a:visited { color: var(--link); } /* Don't carry visited state in a prototype */
+a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: currentColor; }
 
 button { font-family: inherit; }
 
@@ -185,8 +190,8 @@ button { font-family: inherit; }
   margin: 0 0 var(--space-4);
 }
 .appfoot ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.appfoot a { color: var(--fg-muted); font-size: var(--fs-14); }
-.appfoot a:hover { color: var(--fg); }
+.appfoot a { color: var(--fg-muted); font-size: var(--fs-14); text-decoration: none; }
+.appfoot a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .appfoot-legal {
   border-top: 1px solid var(--border);
   font-size: var(--fs-13);
@@ -513,7 +518,7 @@ input[type="radio"]:focus-visible {
   cursor: pointer;
 }
 .browse-toolbar-filters .clear:hover,
-.browse-toolbar-main .clear:hover { text-decoration: underline; text-underline-offset: 2px; }
+.browse-toolbar-main .clear:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .browse-toolbar-main {
   display: flex; align-items: center; gap: var(--space-4);
   flex-wrap: wrap; row-gap: var(--space-3);
@@ -623,7 +628,8 @@ input[type="radio"]:focus-visible {
   font-weight: var(--fw-semibold);
 }
 .filter-mode-btn + .filter-mode-btn { border-left: 1px solid var(--border); }
-.filter-mode-btn:hover:not(.is-active) { color: var(--fg); }
+.filter-mode-btn:hover:not(.is-active) { color: var(--link-hover); }
+.filter-mode-btn:hover:not(.is-active) > span { text-decoration: underline; }
 .filter-group-label {
   font-size: var(--fs-12);
   font-weight: var(--fw-semibold);
@@ -1015,6 +1021,59 @@ body.modal-open {
 }
 .exp-seg-meta b { font-weight: var(--fw-semibold); color: var(--fg-muted); }
 
+/* Theme (skin) picker: one row per skin, swatch left, name + hint right. */
+.exp-skins {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.exp-skin {
+  appearance: none;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
+  cursor: pointer;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.exp-skin:hover { border-color: var(--border-strong); background: var(--surface-tint-soft); }
+.exp-skin.is-active {
+  border-color: var(--fg);
+  box-shadow: inset 0 0 0 1px var(--fg);
+}
+.exp-skin:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
+.exp-skin-swatch {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-top: 1px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.exp-skin-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.exp-skin-name { font-size: var(--fs-13); font-weight: var(--fw-semibold); line-height: 1.3; }
+.exp-skin-hint { font-size: var(--fs-12); line-height: var(--lh-snug); color: var(--fg-muted); }
+@media (max-width: 1023px) {
+  .exp-skins { grid-template-columns: 1fr; }
+}
+
+/* Swatches: fixed brand chips per skin, independent of the active theme. */
+.exp-skin-swatch-reference { background: linear-gradient(135deg, #fafaf7 0 50%, #2a2a27 50% 100%); }
+.exp-skin-swatch-open-home { background: linear-gradient(118deg, #4f7df9 0%, #9a67f2 70%), #4f7df9; position: relative; }
+.exp-skin-swatch-open-home::after { content: ""; position: absolute; right: 4px; bottom: 4px; width: 9px; height: 9px; border-radius: 50%; background: #f5c542; }
+.exp-skin-swatch-vibrant { background: conic-gradient(#4438ff 0 25%, #ff5c87 25% 50%, #ffb02e 50% 75%, #17c37b 75% 100%); }
+.exp-skin-swatch-terminal { background: #0a0f0a; position: relative; }
+.exp-skin-swatch-terminal::after { content: ">_"; position: absolute; inset: 0; display: grid; place-items: center; font: 700 11px/1 var(--font-mono); color: #7ce38b; }
+.exp-skin-swatch-brutalist { background: #ffffff; border: 2px solid #000000; box-shadow: 2px 2px 0 #000000; }
+.exp-skin-swatch-slop { background: linear-gradient(135deg, #faf6ee 0 45%, #7c5cfc 45% 75%, #4f8efc 75% 100%); }
+
+
 /* Increment rows, number, title, description, switch on the right.
    Each non-locked row is a <label>, so clicking anywhere toggles the
    switch (matches the canvas sidebar). */
@@ -1229,7 +1288,7 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   color: var(--fg-muted); cursor: pointer;
   border-radius: var(--radius-2);
 }
-.modal-search-clear:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+.modal-search-clear:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 .modal-body {
   flex: 1; overflow-y: auto;
@@ -1279,7 +1338,7 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   font-size: var(--fs-13);
   cursor: pointer;
 }
-.modal-foot-clear:hover { text-decoration: underline; text-underline-offset: 2px; }
+.modal-foot-clear:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .filter-row {
   display: flex; align-items: center; gap: var(--space-3);
   font-size: var(--fs-14);
@@ -1310,6 +1369,7 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   background: var(--surface);
   padding: var(--space-5);
   color: inherit;
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
 .device-card:hover {
@@ -1468,8 +1528,11 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   font: inherit;
   font-size: var(--fs-13);
   cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--border-strong);
 }
-.trait-version-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.trait-version-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: currentColor; }
 /* Docs links beneath a device's Home Assistant integration. One link per
    matched integration token, opens in a new tab. */
 .ha-docs-links {
@@ -1485,7 +1548,9 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  text-decoration: none;
 }
+.ha-docs-links a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 /* App-store links on the device page, shown under "App and subscription"
    when a first-party app exists. One store per row, each led by the site's
    favicon, mirroring the icon-led connectivity rows. */
@@ -1507,7 +1572,7 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   color: var(--link);
   text-decoration: none;
 }
-.app-store-links a:hover { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.app-store-links a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .app-store-favicon {
   width: 18px;
   height: 18px;
@@ -1613,7 +1678,8 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
   color: var(--fg-muted);
   margin-bottom: var(--space-6);
 }
-.breadcrumb a { color: var(--link); }
+.breadcrumb a { color: var(--link); text-decoration: none; }
+.breadcrumb a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .breadcrumb .sep { color: var(--neutral-400); }
 
 .detail-head {
@@ -2089,7 +2155,10 @@ label.exp-row:hover { background: var(--surface-tint-soft); }
 .sheet-panel {
   background: var(--surface);
   width: 100%;
-  height: 95vh;
+  /* Size to content, cap at 90vh; the .sheet-body scrolls internally when
+     content exceeds the cap. Avoids short sheets stretching full-screen. */
+  height: auto;
+  max-height: 90vh;
   border-top-left-radius: var(--radius-4);
   border-top-right-radius: var(--radius-4);
   display: flex; flex-direction: column;
@@ -2587,6 +2656,9 @@ body.search-fullscreen-fab-hide .filters-fab-wrap {
   margin-bottom: var(--space-3);
   font-size: var(--fs-13);
 }
+/* Standalone CTA: no underline at rest, blue + underline on hover. */
+.hero-actions a { text-decoration: none; }
+.hero-actions a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .hero-center .hero-meta { justify-content: center; }
 
 
@@ -2851,11 +2923,170 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
   display: inline-flex; flex-direction: row; gap: var(--space-5);
   flex-wrap: wrap;
 }
-.appfoot-flat .appfoot-links a { color: var(--fg-muted); }
-.appfoot-flat .appfoot-links a:hover { color: var(--fg); }
+.appfoot-flat .appfoot-links a { color: var(--fg-muted); text-decoration: none; }
+.appfoot-flat .appfoot-links a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .appfoot-flat .appfoot-legal-inline { font-size: var(--fs-12); }
 .appfoot .appfoot-legal-link { color: inherit; font-size: inherit; text-decoration: none; }
-.appfoot .appfoot-legal-link:hover { color: var(--fg); text-decoration: underline; }
+.appfoot-mark { height: 1.6em; width: auto; display: inline-block; vertical-align: -0.34em; margin-right: 0.85em; }
+
+/* =========================================================================
+   ABOUT page — Open Home Foundation lockup badge.
+   ========================================================================= */
+.about-ohf-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-5);
+  text-decoration: none;
+  color: var(--fg);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.about-ohf-badge:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-tint-soft);
+}
+.about-ohf-badge,
+.about-ohf-badge:hover,
+.about-ohf-badge:focus,
+.about-ohf-badge:visited {
+  text-decoration: none;
+  text-decoration-color: transparent;
+  color: var(--fg);
+}
+.about-ohf-badge-eyebrow {
+  font-size: var(--fs-10, 10px);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-caps);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+.about-ohf-lockup { display: block; color: var(--fg); }
+.about-ohf-lockup svg { display: block; height: 48px; width: auto; }
+.appfoot .appfoot-legal-link:hover { color: var(--link-hover); text-decoration: underline; }
+
+/* ---------- Legal / prose pages (Data Use Statement, Impressum) ---------- */
+.legal-wrap { padding-top: var(--space-9); padding-bottom: var(--space-10); }
+/* Inline links inside legal/privacy prose carry a baked-in inline color;
+   override it so they read as proper inline links: underline + blue hover. */
+.legal-p a, .legal-note a, .legal-lead a, .legal-placeholder-text a {
+  color: var(--link) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--border-strong);
+}
+.legal-p a:hover, .legal-note a:hover, .legal-lead a:hover, .legal-placeholder-text a:hover {
+  color: var(--link-hover) !important;
+  text-decoration-color: currentColor;
+}
+.legal-title { margin-bottom: 8px; }
+.legal-lead { margin-bottom: var(--space-6); }
+.legal-version { font-size: var(--fs-13); color: var(--fg-muted); margin: 0 0 var(--space-8); }
+.legal-h2 { font-size: var(--fs-24); margin: var(--space-9) 0 var(--space-4); }
+.legal-h3 { font-size: var(--fs-18); margin: var(--space-6) 0 var(--space-3); }
+.legal-p { color: var(--fg); line-height: var(--lh-loose); margin: 0 0 var(--space-4); }
+.legal-p code, .legal-ul code { font-family: var(--font-mono); font-size: 0.9em; background: var(--surface-tint-soft); padding: 1px 4px; border-radius: var(--radius-2); }
+.legal-ul { margin: 0 0 var(--space-5); padding-left: 1.3em; display: flex; flex-direction: column; gap: var(--space-2); }
+.legal-ul li { color: var(--fg); line-height: var(--lh-loose); }
+.legal-addr {
+  font-style: normal;
+  line-height: var(--lh-loose);
+  color: var(--fg);
+  margin: 0 0 var(--space-4);
+  font-variant-numeric: tabular-nums;
+}
+.legal-code {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-5);
+  padding: var(--space-5);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  line-height: 1.6;
+  color: var(--fg-muted);
+  margin: 0 0 var(--space-6);
+  white-space: pre;
+}
+.legal-note {
+  font-size: var(--fs-14);
+  color: var(--fg-muted);
+  line-height: var(--lh-loose);
+  margin: var(--space-8) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- Privacy hub (rail content) ---------- */
+/* Prose inside the hub's content column sits at a comfortable measure,
+   independent of the wide content track. */
+.privacy-doc { max-width: 720px; }
+.privacy-doc .legal-title { margin-bottom: 8px; }
+.privacy-doc .legal-lead { margin-bottom: var(--space-6); }
+.privacy-doc .legal-h2:first-of-type { margin-top: var(--space-7); }
+
+/* Principles — a tight, scannable list with a small square accent. */
+.privacy-principles { list-style: none; margin: 0 0 var(--space-6); padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.privacy-principles li { position: relative; padding-left: var(--space-5); color: var(--fg-muted); line-height: var(--lh-loose); }
+.privacy-principles li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 8px; height: 8px; border-radius: var(--radius-2); background: var(--primary); }
+.privacy-principles strong { color: var(--fg); font-weight: var(--fw-semibold); }
+
+/* Document index — cards linking to each legal doc. */
+.privacy-cards { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; }
+.privacy-card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-5);
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.privacy-card:hover { border-color: var(--border-strong); background: var(--surface-tint-soft); text-decoration: none; }
+.privacy-card-title { display: flex; align-items: center; gap: var(--space-3); font-weight: var(--fw-semibold); font-size: var(--fs-18); color: var(--fg); }
+.privacy-card-desc { color: var(--fg-muted); font-size: var(--fs-14); line-height: var(--lh-normal); }
+.privacy-card-cta { font-size: var(--fs-14); color: var(--primary); font-weight: var(--fw-medium); }
+.privacy-card-status {
+  font-size: var(--fs-12); color: var(--fg-muted); font-weight: var(--fw-medium);
+  border: 1px solid var(--border); border-radius: var(--radius-pill);
+  padding: 1px 8px; white-space: nowrap;
+}
+
+/* Placeholder docs (Privacy Policy, Terms of Use) — intentional empty state. */
+.legal-placeholder {
+  margin-top: var(--space-5);
+  padding: var(--space-7);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-5);
+  background: var(--surface-sunken);
+}
+.legal-placeholder-tag {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: var(--fs-12); font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-caps); text-transform: uppercase;
+  color: var(--fg-muted); margin-bottom: var(--space-3);
+}
+.legal-placeholder-text { margin: 0; color: var(--fg-muted); line-height: var(--lh-loose); }
+
+/* Standalone intro pages (How it works, Editorial stance, About, Impressum):
+   the hero uses a generous top inset (section padding + container padding). On
+   tablet and mobile that pushes content too far down, so trim both. */
+.page-intro { padding: var(--space-9) var(--space-7) 0; }
+@media (max-width: 1023px) {
+  .section:has(> .page-intro),
+  .section:has(> .legal-wrap) { padding-top: var(--space-7); }
+  .page-intro { padding-top: var(--space-6); }
+  .legal-wrap { padding-top: var(--space-6); }
+}
+@media (max-width: 767px) {
+  .section:has(> .page-intro),
+  .section:has(> .legal-wrap) { padding-top: var(--space-6); }
+  .page-intro { padding-top: var(--space-5); }
+  .legal-wrap { padding-top: var(--space-5); }
+}
 
 /* Mobile only: stack the footer links vertically, left-aligned (the inline
    row orphaned "Open Home Foundation" onto its own line). And keep the first
@@ -2944,8 +3175,11 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
 }
 .ce-meta-line a {
   color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
   text-decoration-color: var(--border-strong);
 }
+.ce-meta-line a:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 .ce-meta-sep {
   color: var(--fg-subtle);
   user-select: none;
@@ -3274,8 +3508,11 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
 .ce-attribution-text { line-height: 1.4; }
 .ce-attribution-text a {
   color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
   text-decoration-color: var(--border-strong);
 }
+.ce-attribution-text a:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 .ce-attribution-when {
   color: var(--fg);
   font-weight: var(--fw-medium);
@@ -3513,7 +3750,7 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
   color: var(--link);
   cursor: pointer;
 }
-.aside-edit-viewall:hover { text-decoration: underline; text-underline-offset: 2px; }
+.aside-edit-viewall:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 
 /* =========================================================================
@@ -3710,8 +3947,8 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
 }
 .ce-bridge-prop-control { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .ce-bridge-hint { font-size: var(--fs-13); color: var(--fg-muted); }
-.ce-hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-13); color: var(--link); text-decoration: none; }
-.ce-hub-link:hover { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ce-hub-link { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-13); color: var(--link); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--border-strong); }
+.ce-hub-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .ce-hub-link .icon, .ce-hub-link svg { flex: none; }
 /* Dimensions: multiple named sets, hairline-divided like the other spec rows. */
 .ce-dim-list { display: flex; flex-direction: column; gap: 0; }
@@ -3954,6 +4191,17 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
   font-size: var(--fs-14);
   color: var(--fg);
 }
+/* Discard sits at the far right; the change count stays on the left. */
+.ce-save-bar-discard { color: var(--fg-muted); margin-left: auto; }
+.ce-save-bar-discard:hover { color: var(--danger, var(--fg)); }
+.ce-save-bar-discard-ico { display: none; }
+/* On mobile, drop the change count to save space, and show Discard as a
+   trash icon only. */
+@media (max-width: 767px) {
+  .ce-save-bar-status { display: none; }
+  .ce-save-bar-discard-label { display: none; }
+  .ce-save-bar-discard-ico { display: inline-flex; align-items: center; }
+}
 .ce-save-bar-status b { color: var(--fg); }
 /* The change count is a quiet button that opens the changes dialog. */
 .ce-save-bar-changes {
@@ -4128,7 +4376,7 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
   cursor: pointer;
   text-decoration: none;
 }
-.ce-nav-signin:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ce-nav-signin:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 /* Sign-out button in the nav (account page, in place of the avatar). A
    compact outlined chip so it reads as an action without shouting. */
@@ -4292,11 +4540,11 @@ em { font-style: normal; font-weight: var(--fw-semibold); color: var(--fg); }
   appearance: none; background: none; border: 0; padding: 0;
   font: var(--fs-13)/1 var(--font-sans); color: var(--link); cursor: pointer;
 }
-.ce-inbox-markall:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+.ce-inbox-markall:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 /* Inline text link with an ink (not accent) hover. */
 .ce-link-ink { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
-.ce-link-ink:hover { color: var(--fg); }
+.ce-link-ink:hover { color: var(--link-hover); }
 
 /* ─── List + items ─── */
 .ce-inbox-list { list-style: none; margin: 0; padding: 0; max-height: min(60vh, 440px); overflow-y: auto; }
@@ -4556,7 +4804,7 @@ body.ce-inbox-sheet-open { overflow: hidden; }
   color: var(--fg-muted);
   line-height: 1.5;
 }
-.ce-banner-desc a { font-weight: var(--fw-medium); }
+.ce-banner-desc a { font-weight: var(--fw-medium); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--border-strong); }
 .ce-banner-actions {
   flex: none;
   display: flex;
@@ -4748,7 +4996,7 @@ body.ce-inbox-sheet-open { overflow: hidden; }
   color: var(--link);
   text-decoration: none;
 }
-.ce-auth-link:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ce-auth-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 .ce-auth-submit { width: 100%; padding: 12px 16px; justify-content: center; text-align: center; }
 
@@ -4862,7 +5110,7 @@ body.ce-inbox-sheet-open { overflow: hidden; }
   text-decoration: none;
   text-align: left;
 }
-.ce-account-nav-foot-link:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; }
+.ce-account-nav-foot-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .ce-account-nav-foot .ce-account-signout { margin-left: 0; align-self: flex-start; }
 .ce-account-nav-foot .ce-account-signout:hover { color: var(--error); }
 .ce-account-content { min-width: 0; }
@@ -5158,18 +5406,17 @@ body.ce-inbox-sheet-open { overflow: hidden; }
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
   max-width: 480px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2);
 }
 .ce-passkey {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2);
 }
-.ce-passkey:last-child { border-bottom: 0; }
 .ce-passkey-icon { display: inline-flex; color: var(--fg-muted); flex-shrink: 0; }
 .ce-passkey-main { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .ce-passkey-label { font-weight: var(--fw-medium); font-size: var(--fs-14); }
@@ -5186,7 +5433,7 @@ body.ce-inbox-sheet-open { overflow: hidden; }
   flex: 0 0 auto;
   white-space: nowrap;
 }
-.ce-acct-quiet:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ce-acct-quiet:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 560px) {
   .ce-acct-row { grid-template-columns: 1fr; gap: var(--space-2); align-items: start; }
   .ce-acct-row-firstline > .ce-acct-label { min-height: 0; }
@@ -5421,10 +5668,15 @@ body.ce-inbox-sheet-open { overflow: hidden; }
 .req-dot.dep-none { background: transparent; box-shadow: inset 0 0 0 1.5px var(--border); }
 /* Dark mode: device photos are shot on white and glare against the graphite
    UI, so dim them slightly. */
-:root[data-resolved-theme="dark"] .device-thumb img,
-:root[data-resolved-theme="dark"] .ce-inbox-thumb img,
-:root[data-resolved-theme="dark"] .ce-gallery-main img,
-:root[data-resolved-theme="dark"] .ce-photos-thumb img {
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .device-thumb.has-photo,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-inbox-thumb.has-photo,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-gallery-main img,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-gallery-thumbs .ce-thumb,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-lb-img img,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-photos-thumb img,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-photo-diff-thumb img,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .ce-contrib-tile.has-photo,
+:root[data-resolved-theme="dark"]:not([data-dim-photos="off"]) .yct-thumb.has-photo {
   filter: brightness(0.8);
 }
 .req-value { flex: 1; }
@@ -5503,13 +5755,13 @@ body.ce-inbox-sheet-open { overflow: hidden; }
 }
 .article-prose p:last-child { margin-bottom: 0; }
 .instructions-manual { margin-top: var(--space-4) !important; }
-.instructions-manual a { display: inline-flex; align-items: center; gap: 6px; }
+.instructions-manual a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
 .reference-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.reference-list a { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-14); }
-/* Quiet hover: keep the link colour (underline still appears), never the
-   orange accent — matches the "Learn about the methodology" sidebar link. */
+.reference-list a { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-14); text-decoration: none; }
+/* Standalone CTA links: no underline at rest, blue + underline on hover. */
+.instructions-manual a:hover,
 .reference-list a:hover,
-.aside-source-linkrow a:hover { color: var(--link); }
+.aside-source-linkrow a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 
 /* ── Connects with (read view) ──────────────────────────────────────────
    Tabs across the top, one per compatible ecosystem; the active panel
@@ -5611,6 +5863,8 @@ body.ce-inbox-sheet-open { overflow: hidden; }
 .cw-edit-eco-head { margin: 0; }
 .cw-edit-doclinks { margin-top: var(--space-3); }
 .cw-edit-doclinks a { font-size: var(--fs-13); }
+.cw-meta dd a, .cw-doclinks a, .cw-doclink-cta a, .cw-edit-doclinks a { text-decoration: none; }
+.cw-meta dd a:hover, .cw-doclinks a:hover, .cw-doclink-cta a:hover, .cw-edit-doclinks a:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .cw-edit-ha { display: flex; flex-direction: column; gap: var(--space-2); }
 .cw-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); display: inline-block; margin-left: 6px; vertical-align: middle; }
 .cw-edit-pendingnote { display: flex; gap: 8px; align-items: flex-start; padding: var(--space-3) var(--space-4); border: 1px dashed var(--border-strong); border-radius: var(--radius-2); background: var(--surface-tint-soft); margin-bottom: var(--space-4); }
@@ -5875,14 +6129,6 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--warning); display: inline-block; flex: none;
 }
-.ce-pending-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  font: var(--fw-semibold) var(--fs-12)/1 var(--font-sans);
-  letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--warning-strong);
-  background: var(--warning-soft);
-  padding: 5px 10px; border-radius: var(--radius-pill);
-}
 .ce-field-pending { opacity: 0.96; }
 /* A top-level locked field (e.g. a pending Connectivity edit) sits among
    spec-groups, which carry margin-bottom: --space-6; match it so the gap to
@@ -5971,7 +6217,22 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 .ce-check-col-lock .ce-check-off .proto-glyph { opacity: 0.55; }
 .ce-dim-set-lock { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .ce-dim-set-lock > .ce-lock-input:first-child { flex: 0 0 180px; margin-right: calc(var(--space-5) - var(--space-2)); }
-.ce-dim-set-lock > .ce-lock-input { flex: 0 0 96px; }
+.ce-dim-set-lock > .ce-lock-input { flex: 0 0 calc((360px - var(--space-2) * 2) / 3); }
+@media (min-width: 1024px) {
+  .ce-dim-set-lock > .ce-lock-input:first-child { flex: 0 0 236px; }
+}
+/* Reference price (MSRP) editor: one removable amount + currency row per
+   currency, following the app-link "add another" pattern. */
+.ce-msrp-set { display: flex; flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+.ce-msrp-row { display: flex; align-items: center; gap: var(--space-2); }
+.ce-msrp-row .ce-num-wrap { flex: 0 0 150px; max-width: 150px; }
+.ce-msrp-row .ce-select { flex: 0 0 110px; width: auto; max-width: 110px; }
+.ce-msrp-row > .ce-labelcombo { flex: 1 1 auto; min-width: 0; max-width: 360px; }
+.ce-msrp-add { align-self: flex-start; margin-top: var(--space-2); }
+/* Locked (pending) bridge list sits in an itemlock control column; let it fill
+   so each locked value matches the width of the other locked spec rows. */
+.ce-itemlock-control .ce-msrp-set { width: 100%; }
+.ce-itemlock-control .ce-msrp-row { width: 100%; }
 /* Dimensions list, references-style: hairline between items; a locked set shows
    its submitted-by meta inside the item, above the divider to the next one. */
 .ce-dim-list-hair { gap: 0; }
@@ -6004,7 +6265,7 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 .ce-ref-item-lock { display: flex; flex-direction: column; gap: var(--space-2); }
 .ce-ref-item-lock .ce-pending-meta { margin-top: 0; }
 .ce-pending-pr { display: inline-flex; align-items: center; gap: 4px; color: var(--link); text-decoration: none; }
-.ce-pending-pr:hover { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ce-pending-pr:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .ce-pending-pr:focus-visible { outline: 0; box-shadow: var(--ring-focus); border-radius: var(--radius-2); }
 
 /* ── Locked Home-Assistant core block ── */
@@ -6136,9 +6397,9 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
    Hover keeps the link colour (underline appears) rather than the orange
    accent, matching the "Learn about the methodology" sidebar treatment. */
 .ce-byline-link { color: var(--link); text-decoration: none; }
-.ce-byline-link:hover { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ce-byline-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .ce-byline-strong { font-weight: var(--fw-semibold); color: var(--fg); }
-.ce-byline-strong:hover { color: var(--link); }
+.ce-byline-strong:hover { color: var(--link-hover); }
 .ce-byline-strong.ce-byline-private:hover { color: var(--fg-muted); }
 /* Non-linked contributor name shown when a private contributor's edits are
    anonymised. Reads as quiet, unclickable text rather than a profile link. */
@@ -6215,7 +6476,7 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
   font-size: var(--fs-14); color: var(--link); text-decoration: none;
 }
 .ce-profile-link .icon, .ce-profile-link svg { color: var(--fg-muted); flex: none; }
-.ce-profile-link:hover { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.ce-profile-link:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; }
 .ce-profile-meta { color: var(--link); }
 .ce-profile-meta:hover { color: var(--link); text-decoration: none; cursor: default; }
 .ce-profile-favicon { flex: none; width: 16px; height: 16px; border-radius: 3px; object-fit: cover; filter: grayscale(1); opacity: 0.85; }
@@ -6376,14 +6637,13 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 }
 .ce-account-head .ce-account-h1 { margin: 0 0 var(--space-2); }
 .ce-account-head .ce-account-sub { margin: 0; }
-/* "View profile" sits below the public/private options as a borderless,
-   quiet action (inherits .ce-acct-quiet) with a leading eye icon. */
+/* "View profile" sits below the public/private options as an outlined
+   secondary button (.btn .btn-secondary) with a leading eye icon. */
 .ce-account-viewpublic {
-  display: inline-flex; align-items: center; gap: 6px;
+  align-self: flex-start;
   margin-top: var(--space-4);
-  color: var(--link);
+  padding: 8px 14px;
 }
-.ce-account-viewpublic:hover { color: var(--link); }
 @media (max-width: 560px) {
   .ce-account-head { flex-direction: column; gap: var(--space-3); }
 }
@@ -6696,8 +6956,8 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
    Collapses to a horizontal tab strip, then cards, on narrow viewports.
    Reuses .yc-badge, .yc-flash, and the submit-modal classes above.
    ═══════════════════════════════════════════════════════════════════ */
-.yct { width: 100%; padding-top: var(--space-7); padding-bottom: var(--space-10); }
-.yct-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-6); padding-left: 260px; }
+.yct { width: 100%; padding-top: var(--space-7); padding-bottom: var(--space-9); display: grid; grid-template-columns: 260px 1fr; column-gap: 0; align-items: start; align-content: start; }
+.yct-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-6); }
 .yct-head-text { flex: 1; min-width: 0; }
 .yct-title { margin: 0 0 var(--space-2); }
 .yct-sub { margin: 0; color: var(--fg-muted); max-width: 56ch; text-wrap: pretty; }
@@ -6735,21 +6995,21 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 
 /* Inbox shell: left folder rail + main column. The rail matches the Settings
    rail: quiet typographic links with a sliding 2px accent line, no fills. */
-.yct-shell { display: grid; grid-template-columns: 260px 1fr; column-gap: 0; align-items: start; }
-.yct-rail { position: sticky; top: calc(var(--yct-nav-h, 72px) + var(--space-4)); padding-right: var(--space-6); }
+.yct-shell { display: contents; }
+.yct-rail { position: sticky; top: var(--yct-nav-h, 72px); padding: var(--space-1) var(--space-6) 0 0; }
 .yct-rail-list { display: flex; flex-direction: column; gap: var(--space-4); position: relative; }
 .yct-rail-railline {
   position: absolute; left: 0; top: 0; width: 2px; background: var(--fg); border-radius: 1px; pointer-events: none;
   transition: transform 220ms cubic-bezier(.4, 0, .2, 1), height 220ms cubic-bezier(.4, 0, .2, 1), opacity 150ms ease;
 }
-/* Desktop: nudge the shell down so the rail's first item ("Needs you") begins
-   at the same y as the Settings rail's first item ("Profile"). The page titles
-   already align; this matches the 6px the Settings nav sits lower. */
+/* Desktop: a 260px left rail with the title in the content column beside it,
+   the rail nudged down to line up with the title (mirrors the Settings nav);
+   it collapses to a top tab strip below 1024px. */
 @media (min-width: 1024px) {
-  .yct-shell { padding-top: 6px; }
-  /* Pull the table up so the column-header text lines up with the rail's
-     first item ("Needs you"), countering the header cells' top padding. */
-  .yct-tablewrap { margin-top: -16px; }
+  .yct-rail { margin-top: var(--space-9); top: calc(var(--yct-nav-h, 72px) + var(--space-9)); }
+  /* Pull the table up so its header hairline lines up with the rail's
+     Drafts/Submitted divider. */
+  .yct-tablewrap { margin-top: -39px; }
 }
 .yct-folder {
   appearance: none; border: 0; background: transparent; cursor: pointer; text-align: left; width: 100%;
@@ -6767,14 +7027,13 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 .yct-folder-sub { padding-left: var(--space-6); color: var(--fg-subtle); }
 .yct-folder-sub:hover { color: var(--fg); }
 .yct-folder-sub.is-active { color: var(--fg); font-weight: var(--fw-semibold); }
-/* Extra breathing room above the Drafts group so it separates from the
-   Submitted block without needing a hairline. */
+/* Breathing room above the Submitted group, with a thin .yct-rail-sep divider
+   marking the split from Drafts. */
 .yct-folder-group { margin-top: var(--space-2); }
 .yct-folder:focus-visible { outline: 0; box-shadow: var(--ring-focus); border-radius: var(--radius-2); }
 .yct-folder-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .yct-folder-count { flex: none; font-size: var(--fs-13); color: var(--fg-subtle); font-variant-numeric: tabular-nums; }
 .yct-folder.is-active .yct-folder-count { color: var(--fg-muted); }
-.yct-folder-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warning-strong); flex: none; }
 .yct-rail-sep { height: 1px; background: var(--border-subtle); margin: 0 0 0 var(--space-3); }
 
 /* Main column */
@@ -6838,13 +7097,13 @@ select.ce-select:focus { border-color: var(--fg); box-shadow: var(--ring-focus);
 .yct-cell-device { }
 .yct-cell-device, .yct-card-top { display: flex; align-items: center; gap: var(--space-3); }
 .yct-thumb {
-  flex: none; width: 40px; height: 40px; border-radius: var(--radius-4); background: var(--surface-sunken);
+  flex: none; width: 40px; height: 40px; border-radius: var(--radius-2); background: var(--surface-sunken);
   display: inline-flex; align-items: center; justify-content: center; color: var(--fg-muted); overflow: hidden;
 }
 .yct-thumb.has-photo { background: #fff; padding: 3px; }
 .yct-device-id { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .yct-device-name { font-weight: var(--fw-semibold); color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; text-decoration: none; display: block; }
-a.yct-device-name:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--border-strong); }
+a.yct-device-name:hover { color: var(--link-hover); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: currentColor; }
 .yct-device-mfr { font-size: var(--fs-13); color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
 
 /* Change cell — the widest column. With the table on fixed layout this col
@@ -6943,8 +7202,8 @@ a.yct-device-name:hover { color: var(--fg); text-decoration: underline; text-und
 }
 
 @media (max-width: 1023px) {
-  .yct-shell { grid-template-columns: 1fr; row-gap: var(--space-4); }
-  .yct-shell > .yct-rail, .yct-shell > .yct-main { min-width: 0; }
+  .yct { grid-template-columns: 1fr; row-gap: var(--space-4); padding-top: var(--space-5); }
+  .yct-rail, .yct-main { min-width: 0; }
   .yct-head { padding-left: 0; }
   .yct-rail { position: sticky; top: var(--yct-nav-h, 72px); z-index: 12; background: var(--surface); min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
     /* Full-bleed scroll track: the tabs can scroll all the way to the screen
@@ -6971,12 +7230,11 @@ a.yct-device-name:hover { color: var(--fg); text-decoration: underline; text-und
      sit inline as ordinary tabs. A leading separator before Drafts keeps the
      submitted-vs-drafts grouping legible without the indent. */
   .yct-folder-sub { padding-left: 12px; font-size: var(--fs-14); }
-  .yct-folder-group { margin-top: 0; margin-left: 6px; padding-left: 18px; border-left: 1px solid var(--border); }
+  .yct-folder-group { margin-top: 0; margin-left: 0; padding-left: 0; }
   .yct-folder.is-active { border-bottom-color: var(--fg); }
   .yct-folder.is-group-active { border-bottom-color: transparent; }
-  .yct-folder-needs.is-active { border-bottom-color: var(--warning-strong); }
   .yct-folder-label { flex: none; overflow: visible; text-overflow: clip; }
-  .yct-rail-sep { display: block; align-self: center; flex: none; width: 1px; height: 20px; margin: 0 6px; background: var(--border); }
+  .yct-rail-sep { display: none; }
 }
 
 @media (min-width: 701px) and (max-width: 1023px) {
@@ -7065,7 +7323,7 @@ a.yct-device-name:hover { color: var(--fg); text-decoration: underline; text-und
   line-height: 1.25;
   color: var(--fg);
 }
-.ce-hc-name:hover { text-decoration: underline; text-underline-offset: 2px; color: var(--fg); }
+.ce-hc-name:hover { text-decoration: underline; text-underline-offset: 2px; color: var(--link-hover); }
 .ce-hc-pronouns { font-size: var(--fs-12); color: var(--fg-subtle); }
 .ce-hc-loc {
   display: inline-flex; align-items: center; gap: 5px;
@@ -7110,7 +7368,71 @@ a.yct-device-name:hover { color: var(--fg); text-decoration: underline; text-und
   font-size: var(--fs-13); font-weight: var(--fw-medium);
   color: var(--link);
 }
-.ce-hc-foot:hover { color: var(--fg); }
+.ce-hc-foot:hover { color: var(--link-hover); }
 .ce-hc-foot svg { transition: transform 120ms ease; }
 .ce-hc-foot:hover svg { transform: translateX(2px); }
+
+/* ─────────────────────────────────────────────────────────────────
+   APPEARANCE settings tab. Theme preview cards (a mini window per
+   palette, built from plain blocks), then the Display + Behavior toggle
+   groups. Toggle rows reuse .ce-toggle-row / .ce-toggle-title.
+   ───────────────────────────────────────────────────────────────── */
+.appx-group-h {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: var(--fs-16); color: var(--fg); margin: 0 0 var(--space-4);
+}
+.appx-themes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); max-width: 540px; }
+.appx-card { appearance: none; border: 0; background: transparent; padding: 0; cursor: pointer; text-align: center; }
+.appx-prev {
+  display: block; position: relative; width: 100%; aspect-ratio: 4 / 3;
+  border-radius: var(--radius-4); overflow: hidden; border: 1px solid var(--border);
+  transition: box-shadow var(--transition-fast) ease, border-color var(--transition-fast) ease;
+}
+.appx-card:hover .appx-prev { border-color: var(--border-strong); }
+.appx-card.is-active .appx-prev { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.appx-card:focus-visible { outline: 0; }
+.appx-card:focus-visible .appx-prev { box-shadow: var(--ring-focus); }
+.appx-card-label { display: block; margin-top: var(--space-3); font-size: var(--fs-13); font-weight: var(--fw-medium); color: var(--fg-muted); }
+.appx-card.is-active .appx-card-label { color: var(--fg); font-weight: var(--fw-semibold); }
+.appx-meta { font-size: var(--fs-13); color: var(--fg-subtle); margin: var(--space-4) 0 0; }
+.appx-meta b { color: var(--fg-muted); font-weight: var(--fw-semibold); }
+
+.appx-win { position: absolute; inset: 0; padding: 9px; display: flex; flex-direction: column; gap: 6px; }
+.appx-win-top { display: flex; gap: 5px; }
+.appx-win-top i { height: 5px; border-radius: 999px; }
+.appx-win-top i:nth-child(1) { width: 26%; }
+.appx-win-top i:nth-child(2) { width: 20%; }
+.appx-win-top i:nth-child(3) { width: 30%; }
+.appx-win-body { flex: 1; border-radius: 4px; padding: 9px; display: flex; flex-direction: column; gap: 7px; position: relative; }
+.appx-win-h { width: 52%; height: 5px; border-radius: 999px; }
+.appx-win-row { width: 100%; height: 14px; border-radius: 3px; display: flex; align-items: center; padding-left: 5px; }
+.appx-win-row i { width: 46%; height: 5px; border-radius: 999px; }
+.appx-win-dots { position: absolute; top: 9px; right: 9px; display: flex; gap: 3px; }
+.appx-win-dots b { width: 5px; height: 5px; border-radius: 50%; }
+.appx-light { background: #ffffff; }
+.appx-light .appx-win-top i { background: #e3e2dc; }
+.appx-light .appx-win-body { background: #f1f0eb; }
+.appx-light .appx-win-h { background: #cac8c0; }
+.appx-light .appx-win-row { background: #e3e2dc; }
+.appx-light .appx-win-row i { background: #9b988f; }
+.appx-light .appx-win-dots b.g { background: #3d6b3a; }
+.appx-light .appx-win-dots b.r { background: #cac8c0; }
+.appx-dark { background: #11100f; }
+.appx-dark .appx-win-top i { background: #2e2d2a; }
+.appx-dark .appx-win-body { background: #1c1b1a; }
+.appx-dark .appx-win-h { background: #4a4844; }
+.appx-dark .appx-win-row { background: #2e2d2a; }
+.appx-dark .appx-win-row i { background: #6e6c64; }
+.appx-dark .appx-win-dots b.g { background: #7fb56e; }
+.appx-dark .appx-win-dots b.r { background: #4a4844; }
+.appx-sys .appx-light { clip-path: polygon(0 0, 56% 0, 44% 100%, 0 100%); z-index: 1; }
+
+/* Per-mode contrast switches sit indented under the master switch. */
+.appx-nested { padding-left: var(--space-6); }
+.appx-sep { border-top: 1px solid var(--border); margin: var(--space-5) 0; }
+/* Appearance toggle rows read as clean groups, no dividers between them. */
+.appx-form .ce-toggle-row + .ce-toggle-row { border-top: 0; }
+/* Each row is a <label> wrapping the switch, so clicking anywhere on the row
+   toggles it. Signal that affordance. */
+.appx-form .ce-toggle-row { cursor: pointer; }
 

@@ -33,11 +33,11 @@
   --primary-press:  var(--ink-700);
   --primary-soft:   var(--ink-50);
 
-  /* Single accent — Braun-orange. Reserved for active/recording/error signal.
-     Do not use for general buttons or backgrounds. */
-  --accent:        #e85a1a;
-  --accent-hover:  #c84813;
-  --accent-soft:   #fce6db;
+  /* Single accent — blue. Used for links (hover/active) and active/signal
+     state. Do not use for general buttons or backgrounds. */
+  --accent:        #1C6FD6;
+  --accent-hover:  #1556AB;
+  --accent-soft:   #e7f0fc;
 
   /* Neutrals — warm paper bias. Slight warmth in highlights, near-black ink. */
   --neutral-0:   #ffffff;
@@ -260,11 +260,10 @@
   --primary-press:  var(--neutral-50);
   --primary-soft:   #1f1e1c;
 
-  /* Accent — Braun-orange lifted ~12% in lightness so it reads cleanly
-     on graphite without losing its character. */
-  --accent:        #ff7a3a;
-  --accent-hover:  #ff9560;
-  --accent-soft:   #3a1d10;
+  /* Accent — blue, lifted in lightness so it reads cleanly on graphite. */
+  --accent:        #5b9bf0;
+  --accent-hover:  #7db0f5;
+  --accent-soft:   #15273f;
 
   /* Links — quiet warm paper, accent on hover (same rule as light). */
   --link:          var(--neutral-100);
@@ -313,6 +312,32 @@
   --scrim: rgba(0, 0, 0, 0.68);
 }
 
+/* =========================================================================
+   HIGH CONTRAST — one switch, applied in both light and dark mode. Same
+   token-override approach as dark mode: deepen the hairlines, pull muted text
+   up to full ink, and thicken the focus ring. No new colors.
+   ========================================================================= */
+:root[data-contrast="high"] {
+  --border:        var(--border-strong);
+  --border-subtle: var(--border-strong);
+  --fg-muted:      var(--fg);
+  --fg-subtle:     var(--fg);
+  --ring-focus:    0 0 0 3px var(--fg-strong);
+}
+
+/* =========================================================================
+   REDUCE MOTION — user override of animation, independent of the OS media
+   query. When on, collapse every animation and transition to near zero.
+   ========================================================================= */
+:root[data-reduce-motion="on"] *,
+:root[data-reduce-motion="on"] *::before,
+:root[data-reduce-motion="on"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
 /* ----------------------------------------------------------------------
    Semantic type styles — hierarchy via weight + size, single family.
    ---------------------------------------------------------------------- */
@@ -338,7 +363,7 @@ code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
 kbd { font-family: var(--font-mono); font-size: 0.85em; padding: 2px 6px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: var(--radius-1); background: var(--surface-sunken); }
 
 a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; text-decoration-color: var(--border-strong); }
-a:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 a:visited { color: var(--link-visited); }
+a:hover { color: var(--link-hover); text-decoration-color: currentColor; }
 
 hr { border: 0; border-top: 1px solid var(--border); margin: var(--space-6) 0; }

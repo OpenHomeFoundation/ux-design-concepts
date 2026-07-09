@@ -30,7 +30,8 @@ const FIELD_LABELS = {
   connectsWith: 'Connects with',
   dimensions: 'Dimensions', identifiers: 'Product identifiers',
   customFields: 'Additional details',
-  references: 'External references'
+  references: 'External references',
+  msrp: 'Reference price'
 };
 function fieldLabel(device, key) {
   if (key.indexOf('spec:') === 0) {
@@ -324,6 +325,7 @@ function EditMode({ device, onCancel, makeSuggest, onSubmitted }) {
     changedKeys.forEach((k) => {
       let v = window.getField(draft, k);
       if (k === 'customFields' && window.cleanCustomFields) v = window.cleanCustomFields(v);
+      if (k === 'bridge' && window.cleanBridge) v = window.cleanBridge(v);
       fields[k] = v;
     });
     const sources = draft.__appliedSources && Object.keys(draft.__appliedSources).length ? draft.__appliedSources : null;
@@ -358,6 +360,7 @@ function EditMode({ device, onCancel, makeSuggest, onSubmitted }) {
     changedKeys.forEach((key) => {
       let v = window.getField(draft, key);
       if (key === 'customFields' && window.cleanCustomFields) v = window.cleanCustomFields(v);
+      if (key === 'bridge' && window.cleanBridge) v = window.cleanBridge(v);
       const e = { value: v };
       // Record any trusted reference source backing this value (increment 03).
       if (suggest && draft.__appliedSources && draft.__appliedSources[key]) {
@@ -487,6 +490,7 @@ function EditMode({ device, onCancel, makeSuggest, onSubmitted }) {
             <section className="detail-section">
               <h2>Specifications</h2>
               <window.CategorySpecsEditor ctx={ctx} />
+              <window.PricingEditor ctx={ctx} />
               <window.ProtocolsEditor ctx={ctx} />
               <window.EcosystemsEditor ctx={ctx} />
               <window.AppSubscriptionEditor ctx={ctx} />
@@ -531,8 +535,8 @@ function EditMode({ device, onCancel, makeSuggest, onSubmitted }) {
             <button type="button" className="btn btn-primary" disabled={!hasChanges} onClick={() => setSubmitting(true)}>
               Submit for review
             </button>
-            <button type="button" className="btn btn-ghost" onClick={handleDiscard}>
-              {hasChanges ? 'Discard' : 'Cancel'}
+            <button type="button" className="btn btn-ghost" onClick={onCancel}>
+              Cancel
             </button>
           </div>
           <div className="ce-save-bar-status">
@@ -541,6 +545,11 @@ function EditMode({ device, onCancel, makeSuggest, onSubmitted }) {
                 {changeCount + ' change' + (changeCount === 1 ? '' : 's')}
               </button>}
           </div>
+          {hasChanges &&
+            <button type="button" className="btn btn-ghost ce-save-bar-discard" onClick={handleDiscard} aria-label="Discard">
+              <span className="ce-save-bar-discard-ico" aria-hidden="true"><Icon name="trash" size={16} /></span>
+              <span className="ce-save-bar-discard-label">Discard</span>
+            </button>}
         </div>
       </div>
       <div ref={saveBarSentinelRef} aria-hidden="true" style={{ height: 1 }} />

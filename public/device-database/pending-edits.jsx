@@ -107,7 +107,7 @@ function contributorFieldKeys(device) {
   return [
     'name', 'summary', 'photos', 'description', 'instructions',
     ...cat.map((f) => 'spec:' + f.key),
-    'ecosystems', 'connectivity', 'protocols', 'bridge', 'connectsWith', 'dimensions', 'customFields', 'identifiers', 'references'
+    'ecosystems', 'connectivity', 'protocols', 'bridge', 'connectsWith', 'dimensions', 'customFields', 'identifiers', 'references', 'msrp'
   ];
 }
 
@@ -194,12 +194,23 @@ function cleanCustomFields(arr) {
 }
 
 // Which contributor fields differ between the approved record and the draft.
+function cleanBridge(v) {
+  if (!v || typeof v !== 'object') return v;
+  const p = v.proprietary;
+  const arr = (Array.isArray(p) ? p : (p ? [p] : []))
+    .map((x) => (x == null ? '' : String(x)).trim())
+    .filter(Boolean);
+  const next = { ...v };
+  if (arr.length) next.proprietary = arr; else delete next.proprietary;
+  return next;
+}
 function diffContributorFields(device, draft) {
   const changed = [];
   contributorFieldKeys(device).forEach((key) => {
     let a = getField(device, key);
     let b = getField(draft, key);
     if (key === 'customFields') { a = cleanCustomFields(a); b = cleanCustomFields(b); }
+    if (key === 'bridge') { a = cleanBridge(a); b = cleanBridge(b); }
     if (_normVal(a) !== _normVal(b)) changed.push(key);
   });
   return changed;
@@ -214,6 +225,6 @@ function hasNotificationMethod(user) {
 Object.assign(window, {
   getPending, pendingCount, isFieldPending, getPendingField,
   addPendingEdit, clearPending, usePending,
-  contributorFieldKeys, getField, setField, diffContributorFields, cleanCustomFields,
+  contributorFieldKeys, getField, setField, diffContributorFields, cleanCustomFields, cleanBridge,
   hasNotificationMethod
 });

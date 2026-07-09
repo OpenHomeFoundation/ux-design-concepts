@@ -148,34 +148,6 @@ const THEME_OPTIONS = [{
   id: "dark",
   label: "Dark"
 }];
-
-/* Skins: full visual themes over the same patterns. Each maps to a
-   skins/*.css file scoped to [data-skin]. 'reference' is the bare token set. */
-const SKIN_OPTIONS = [{
-  id: "reference",
-  label: "Reference",
-  hint: "Graphite on paper. The neutral baseline."
-}, {
-  id: "open-home",
-  label: "Open Home",
-  hint: "Foundation brand: gradient blues, navy ink, yellow actions."
-}, {
-  id: "vibrant",
-  label: "Vibrant",
-  hint: "Saturated color used structurally, playful display type."
-}, {
-  id: "terminal",
-  label: "Terminal",
-  hint: "Monospace everything. Phosphor green after dark."
-}, {
-  id: "brutalist",
-  label: "Brutalist",
-  hint: "Raw system type, hard edges, hard shadows."
-}, {
-  id: "slop",
-  label: "Slop",
-  hint: "Every 2026 AI tell at once, on purpose."
-}];
 const LONG_PRESS_MS = 600;
 
 /* Brand wordmark. A normal tap navigates home; pressing and holding for
@@ -261,10 +233,8 @@ const ExperimentsDialog = ({
 }) => {
   const getInc = () => window.DemoState ? window.DemoState.getIncrements() : {};
   const getTheme = () => window.DemoState && window.DemoState.getTheme ? window.DemoState.getTheme() : "auto";
-  const getSkin = () => window.DemoState && window.DemoState.getSkin ? window.DemoState.getSkin() : "reference";
   const [inc, setInc] = React.useState(getInc);
   const [theme, setThemeState] = React.useState(getTheme);
-  const [skin, setSkinState] = React.useState(getSkin);
 
   // Track the OS color-scheme so the meta line can show what "System" resolves
   // to (and what an explicit choice overrides). Matches the canvas sidebar.
@@ -311,7 +281,6 @@ const ExperimentsDialog = ({
     const onState = () => {
       setInc(getInc());
       setThemeState(getTheme());
-      setSkinState(getSkin());
     };
     document.addEventListener("keydown", onKey);
     window.addEventListener("devicedb:demostate", onState);
@@ -370,15 +339,10 @@ const ExperimentsDialog = ({
     setThemeState(id);
     if (window.DemoState && window.DemoState.setTheme) window.DemoState.setTheme(id);
   };
-  const pickSkin = id => {
-    setSkinState(id);
-    if (window.DemoState && window.DemoState.setSkin) window.DemoState.setSkin(id);
-  };
   const reset = () => {
     if (window.DemoState && window.DemoState.reset) window.DemoState.reset();
     setInc(getInc());
     setThemeState(getTheme());
-    setSkinState(getSkin());
   };
   const foot = /*#__PURE__*/React.createElement("footer", {
     className: "exp-foot"
@@ -390,30 +354,6 @@ const ExperimentsDialog = ({
   const body = /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "exp-intro"
   }, "In-progress features. Settings are saved to this browser only."), /*#__PURE__*/React.createElement("section", {
-    className: "exp-section"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "exp-section-title"
-  }, "Theme"), /*#__PURE__*/React.createElement("div", {
-    className: "exp-skins",
-    role: "radiogroup",
-    "aria-label": "Theme"
-  }, SKIN_OPTIONS.map(opt => /*#__PURE__*/React.createElement("button", {
-    key: opt.id,
-    type: "button",
-    role: "radio",
-    "aria-checked": skin === opt.id,
-    className: "exp-skin" + (skin === opt.id ? " is-active" : ""),
-    onClick: () => pickSkin(opt.id)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "exp-skin-swatch exp-skin-swatch-" + opt.id,
-    "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "exp-skin-text"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "exp-skin-name"
-  }, opt.label), /*#__PURE__*/React.createElement("span", {
-    className: "exp-skin-hint"
-  }, opt.hint)))))), /*#__PURE__*/React.createElement("section", {
     className: "exp-section"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "exp-section-title"

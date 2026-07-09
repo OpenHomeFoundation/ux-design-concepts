@@ -151,17 +151,6 @@ const THEME_OPTIONS = [
   { id: "dark", label: "Dark" },
 ];
 
-/* Skins: full visual themes over the same patterns. Each maps to a
-   skins/*.css file scoped to [data-skin]. 'reference' is the bare token set. */
-const SKIN_OPTIONS = [
-  { id: "reference", label: "Reference", hint: "Graphite on paper. The neutral baseline." },
-  { id: "open-home", label: "Open Home", hint: "Foundation brand: gradient blues, navy ink, yellow actions." },
-  { id: "vibrant", label: "Vibrant", hint: "Saturated color used structurally, playful display type." },
-  { id: "terminal", label: "Terminal", hint: "Monospace everything. Phosphor green after dark." },
-  { id: "brutalist", label: "Brutalist", hint: "Raw system type, hard edges, hard shadows." },
-  { id: "slop", label: "Slop", hint: "Every 2026 AI tell at once, on purpose." },
-];
-
 const LONG_PRESS_MS = 600;
 
 /* Brand wordmark. A normal tap navigates home; pressing and holding for
@@ -236,10 +225,8 @@ const Brand = () => {
 const ExperimentsDialog = ({ onClose }) => {
   const getInc = () => (window.DemoState ? window.DemoState.getIncrements() : {});
   const getTheme = () => (window.DemoState && window.DemoState.getTheme ? window.DemoState.getTheme() : "auto");
-  const getSkin = () => (window.DemoState && window.DemoState.getSkin ? window.DemoState.getSkin() : "reference");
   const [inc, setInc] = React.useState(getInc);
   const [theme, setThemeState] = React.useState(getTheme);
-  const [skin, setSkinState] = React.useState(getSkin);
 
   // Track the OS color-scheme so the meta line can show what "System" resolves
   // to (and what an explicit choice overrides). Matches the canvas sidebar.
@@ -283,7 +270,7 @@ const ExperimentsDialog = ({ onClose }) => {
   React.useEffect(() => {
     document.body.classList.add("modal-open");
     const onKey = (e) => { if (e.key === "Escape") closeAnimated(); };
-    const onState = () => { setInc(getInc()); setThemeState(getTheme()); setSkinState(getSkin()); };
+    const onState = () => { setInc(getInc()); setThemeState(getTheme()); };
     document.addEventListener("keydown", onKey);
     window.addEventListener("devicedb:demostate", onState);
     return () => {
@@ -329,15 +316,10 @@ const ExperimentsDialog = ({ onClose }) => {
     setThemeState(id);
     if (window.DemoState && window.DemoState.setTheme) window.DemoState.setTheme(id);
   };
-  const pickSkin = (id) => {
-    setSkinState(id);
-    if (window.DemoState && window.DemoState.setSkin) window.DemoState.setSkin(id);
-  };
   const reset = () => {
     if (window.DemoState && window.DemoState.reset) window.DemoState.reset();
     setInc(getInc());
     setThemeState(getTheme());
-    setSkinState(getSkin());
   };
 
   const foot = (
@@ -353,23 +335,6 @@ const ExperimentsDialog = ({ onClose }) => {
       <p className="exp-intro">
         In-progress features. Settings are saved to this browser only.
       </p>
-
-      <section className="exp-section">
-        <h3 className="exp-section-title">Theme</h3>
-        <div className="exp-skins" role="radiogroup" aria-label="Theme">
-          {SKIN_OPTIONS.map((opt) =>
-            <button key={opt.id} type="button" role="radio"
-              aria-checked={skin === opt.id}
-              className={"exp-skin" + (skin === opt.id ? " is-active" : "")}
-              onClick={() => pickSkin(opt.id)}>
-              <span className={"exp-skin-swatch exp-skin-swatch-" + opt.id} aria-hidden="true"></span>
-              <span className="exp-skin-text">
-                <span className="exp-skin-name">{opt.label}</span>
-                <span className="exp-skin-hint">{opt.hint}</span>
-              </span>
-            </button>)}
-        </div>
-      </section>
 
       <section className="exp-section">
         <h3 className="exp-section-title">Appearance</h3>

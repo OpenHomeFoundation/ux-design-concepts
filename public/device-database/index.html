@@ -8,7 +8,7 @@
   <!-- Google Fonts: Inter, Source Serif 4, JetBrains Mono — design system stack -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 
   <!-- Theme + increments boot.
        Runs before stylesheets to avoid FOUC. Resolves the effective
@@ -34,13 +34,6 @@
       function apply(s) {
         var root = document.documentElement;
         root.setAttribute('data-resolved-theme', resolveTheme(s.theme));
-        // Skin: a full visual theme layered over the same patterns. The
-        // default ('reference') carries no attribute so the base tokens
-        // apply untouched. Skin CSS lives in skins/*.css, scoped to
-        // [data-skin="..."].
-        var skin = s.skin || 'reference';
-        if (skin !== 'reference') root.setAttribute('data-skin', skin);
-        else root.removeAttribute('data-skin');
         // Increments: each key becomes data-inc-<key>="on" when true.
         var increments = s.increments || {};
         // Strip stale data-inc-* attrs first so toggles-off propagate.
@@ -95,15 +88,6 @@
         setTheme: function (theme) {
           var s = read();
           s.theme = theme;
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
-          catch (e) { /* private mode — in-memory apply still runs */ }
-          apply(s);
-          window.dispatchEvent(new CustomEvent('devicedb:demostate', { detail: s }));
-        },
-        getSkin: function () { return read().skin || 'reference'; },
-        setSkin: function (skin) {
-          var s = read();
-          s.skin = skin;
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
           catch (e) { /* private mode — in-memory apply still runs */ }
           apply(s);
@@ -177,14 +161,6 @@
 
   <link rel="stylesheet" href="tokens.css?v=darkmode">
   <link rel="stylesheet" href="app.css?v=onboarding1">
-  <!-- Skins: full visual themes over the same patterns. Each file is scoped
-       to [data-skin="..."] so loading them all is inert until a skin is
-       picked (long-press the logo, Theme section). -->
-  <link rel="stylesheet" href="skins/open-home.css">
-  <link rel="stylesheet" href="skins/vibrant.css">
-  <link rel="stylesheet" href="skins/terminal.css">
-  <link rel="stylesheet" href="skins/brutalist.css">
-  <link rel="stylesheet" href="skins/slop.css">
 
   <style>
     /* "Design preview" banner, pinned bottom-center. Sized to match the

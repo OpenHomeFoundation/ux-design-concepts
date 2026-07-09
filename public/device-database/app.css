@@ -1021,58 +1021,6 @@ body.modal-open {
 }
 .exp-seg-meta b { font-weight: var(--fw-semibold); color: var(--fg-muted); }
 
-/* Theme (skin) picker: one row per skin, swatch left, name + hint right. */
-.exp-skins {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-}
-.exp-skin {
-  appearance: none;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  text-align: left;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2);
-  cursor: pointer;
-  color: var(--fg);
-  font-family: var(--font-sans);
-  transition: border-color 120ms ease, background 120ms ease;
-}
-.exp-skin:hover { border-color: var(--border-strong); background: var(--surface-tint-soft); }
-.exp-skin.is-active {
-  border-color: var(--fg);
-  box-shadow: inset 0 0 0 1px var(--fg);
-}
-.exp-skin:focus-visible { outline: 0; box-shadow: var(--ring-focus); }
-.exp-skin-swatch {
-  flex: 0 0 28px;
-  width: 28px;
-  height: 28px;
-  margin-top: 1px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-}
-.exp-skin-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.exp-skin-name { font-size: var(--fs-13); font-weight: var(--fw-semibold); line-height: 1.3; }
-.exp-skin-hint { font-size: var(--fs-12); line-height: var(--lh-snug); color: var(--fg-muted); }
-@media (max-width: 1023px) {
-  .exp-skins { grid-template-columns: 1fr; }
-}
-
-/* Swatches: fixed brand chips per skin, independent of the active theme. */
-.exp-skin-swatch-reference { background: linear-gradient(135deg, #fafaf7 0 50%, #2a2a27 50% 100%); }
-.exp-skin-swatch-open-home { background: linear-gradient(118deg, #4f7df9 0%, #9a67f2 70%), #4f7df9; position: relative; }
-.exp-skin-swatch-open-home::after { content: ""; position: absolute; right: 4px; bottom: 4px; width: 9px; height: 9px; border-radius: 50%; background: #f5c542; }
-.exp-skin-swatch-vibrant { background: conic-gradient(#4438ff 0 25%, #ff5c87 25% 50%, #ffb02e 50% 75%, #17c37b 75% 100%); }
-.exp-skin-swatch-terminal { background: #0a0f0a; position: relative; }
-.exp-skin-swatch-terminal::after { content: ">_"; position: absolute; inset: 0; display: grid; place-items: center; font: 700 11px/1 var(--font-mono); color: #7ce38b; }
-.exp-skin-swatch-brutalist { background: #ffffff; border: 2px solid #000000; box-shadow: 2px 2px 0 #000000; }
-.exp-skin-swatch-slop { background: linear-gradient(135deg, #faf6ee 0 45%, #7c5cfc 45% 75%, #4f8efc 75% 100%); }
-
 
 /* Increment rows, number, title, description, switch on the right.
    Each non-locked row is a <label>, so clicking anywhere toggles the

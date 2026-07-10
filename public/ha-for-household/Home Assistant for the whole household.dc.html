@@ -408,6 +408,8 @@
     .ha-btn--danger:hover:not([disabled]) { filter: none !important; background: var(--color-error) !important; color: #fff !important; }
     .ha-btn--danger.cc-danger-soft { background: var(--color-surface-raised) !important; }
     .ha-btn--danger.cc-danger-soft:hover:not([disabled]) { background: var(--color-error) !important; color: #fff !important; }
+    .ha-btn--danger.cc-danger-solid { background: var(--color-error) !important; color: #fff !important; border-color: transparent !important; }
+    .ha-btn--danger.cc-danger-solid:hover:not([disabled]) { background: var(--color-error) !important; color: #fff !important; filter: brightness(1.1) !important; }
     /* Breakpoint-class driven control sizing. The tweak breakpoint override sets
        the logical bp via JS while the real viewport stays wide, so @media can't
        fire; keying off .cc-bp-* makes the 44px touch sizing track the chosen
@@ -7240,6 +7242,39 @@ class Component extends DCLogic {
   flowOf(a) { return a ? (this.H.flows || {})[a.id] || null : null; }
   flowRunsOf(a) { return (this.H.flowRuns || {})[a.id] || []; }
   flowDraftOf(key, flow) { this._flowDrafts = this._flowDrafts || {}; if (!this._flowDrafts[key]) this._flowDrafts[key] = JSON.parse(JSON.stringify(flow)); return this._flowDrafts[key]; }
+  // ---- Undo / redo (session-only, per flow key) --------------------------
+  // Each edit choke point (insert, remove, change type, create path, field
+  // edits) snapshots the draft BEFORE mutating. Continuous field typing
+  // coalesces via a signature so one edit is one undo step, not one per key.
+  flowHistOf(key) { this._flowHist = this._flowHist || {}; if (!this._flowHist[key]) this._flowHist[key] = { undo: [], redo: [] }; return this._flowHist[key]; }
+  flowSnapshot(key, sig) {
+    const d = this._flowDrafts && this._flowDrafts[key];
+    if (!d) return;
+    if (sig != null && this._flowCoalesce === key + "|" + sig) return;
+    const hist = this.flowHistOf(key);
+    hist.undo.push(JSON.parse(JSON.stringify(d)));
+    if (hist.undo.length > 60) hist.undo.shift();
+    hist.redo.length = 0;
+    this._flowCoalesce = sig != null ? key + "|" + sig : null;
+  }
+  flowCanUndo(key) { const hh = this._flowHist && this._flowHist[key]; return !!(hh && hh.undo.length); }
+  flowCanRedo(key) { const hh = this._flowHist && this._flowHist[key]; return !!(hh && hh.redo.length); }
+  flowUndo(key) {
+    const hist = this.flowHistOf(key);
+    if (!hist.undo.length || !this._flowDrafts || !this._flowDrafts[key]) return;
+    hist.redo.push(JSON.parse(JSON.stringify(this._flowDrafts[key])));
+    this._flowDrafts[key] = hist.undo.pop();
+    this._flowCoalesce = null;
+    this.setState({ flowSel: null, flowMenu: null });
+  }
+  flowRedo(key) {
+    const hist = this.flowHistOf(key);
+    if (!hist.redo.length || !this._flowDrafts || !this._flowDrafts[key]) return;
+    hist.undo.push(JSON.parse(JSON.stringify(this._flowDrafts[key])));
+    this._flowDrafts[key] = hist.redo.pop();
+    this._flowCoalesce = null;
+    this.setState({ flowSel: null, flowMenu: null });
+  }
   flowSelFor(key) { const s = this.state.flowSel; return s && s.key === key ? s : null; }
   flowRunFor(key, runs) { const hov = this.state.flowRunHover; const s = (hov && hov.key === key) ? hov : this.state.flowRunSel; return s && s.key === key ? runs.find((r) => r.id === s.id) || null : null; }
   flowStartNode(kind) { return { id: "start", icon: "gesture-tap-button", label: "When this " + this.singular(kind) + " is run", sub: "Manually, from a tag or by voice", fields: [["Run from", "The app, a tag scan, or voice"]] }; }
@@ -7764,7 +7799,8 @@ class Component extends DCLogic {
       btn("fit-to-screen-outline", "Fit the flow", () => { const d = dims(); this.setFlowView(key, this.flowFit(lay, d.w, d.h, bp)); }));
   }
   // ---- Draft mutations (session only, never persisted) ------------------
-  flowInsert(key, pos, blk) {
+  flowInsert(key, pos, blk, noSnap) {
+    if (!noSnap) this.flowSnapshot(key);
     const id = "n" + Math.random().toString(36).slice(2, 7);
     const node = Object.assign({ id }, blk && blk.make ? blk.make() : {});
     if (blk) { node.block = blk.block; node.icon = blk.icon; }
@@ -7785,6 +7821,7 @@ class Component extends DCLogic {
     this.setState({ flowSel: Object.assign({ key }, opts), flowAddCat: null, flowAddTab: "actions", flowAddSearch: "" });
   }
   flowChangeType(key, flow, id, blk, kind) {
+    this.flowSnapshot(key);
     const f = this.flowFindNode(flow, id, kind);
     if (!f || !f.node) return;
     const node = f.node;
@@ -7888,7 +7925,7 @@ class Component extends DCLogic {
     const cats = this.flowAddCats(zone);
     const allCats = isStep ? [].concat(this.flowBlockCatalog("action"), this.flowBlockCatalog("blocks")) : cats;
     const total = allCats.reduce((a2, c2) => a2 + c2.blocks.length, 0);
-    const pick = (blk) => { if (sel.retype) this.flowChangeType(ctx.key, flow, sel.retype, blk, kind); else if (sel.addPath) { const nb = this.flowCreatePath(sel.addPath); this.flowInsert(ctx.key, { arr: nb.steps, index: 0, zone: "step" }, blk); } else this.flowInsert(ctx.key, sel.add, blk); };
+    const pick = (blk) => { if (sel.retype) this.flowChangeType(ctx.key, flow, sel.retype, blk, kind); else if (sel.addPath) { this.flowSnapshot(ctx.key); const nb = this.flowCreatePath(sel.addPath); this.flowInsert(ctx.key, { arr: nb.steps, index: 0, zone: "step" }, blk, true); } else this.flowInsert(ctx.key, sel.add, blk); };
     const clip = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
     const blockRow = (blk) => {
       const col = this.flowKindColor(zone, blk.make ? blk.make() : null);
@@ -7973,6 +8010,8 @@ class Component extends DCLogic {
     const pick = (blk, zoneOv) => {
       this.setState({ flowMenu: null });
       if (m.retype) { this.flowChangeType(ctx.key, flow, m.retype, blk, kind); return; }
+      const preSnap = !!(m.mixed && m.newBranchOf && !m.branch);
+      if (preSnap) this.flowSnapshot(ctx.key);
       let pos;
       if (m.mixed) {
         const b = m.branch || (m.newBranchOf ? this.flowCreatePath(m.newBranchOf) : null);
@@ -7982,7 +8021,7 @@ class Component extends DCLogic {
         } else if (zoneOv === "condition") { if (!flow.conditions) flow.conditions = []; pos = (m.pos && m.pos.zone === "condition") ? m.pos : { arr: flow.conditions, index: flow.conditions.length, zone: "condition" }; }
         else pos = (m.pos && m.pos.zone === "step") ? m.pos : { arr: flow.steps, index: 0, zone: "step" };
       } else pos = m.pos || this.flowDefaultPos(flow, zoneOv || m.zone);
-      this.flowInsert(ctx.key, pos, blk);
+      this.flowInsert(ctx.key, pos, blk, preSnap);
     };
     const clip = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
     const row = (blk, zoneOv, key2) => {
@@ -8104,6 +8143,7 @@ class Component extends DCLogic {
   flowToolbar(kind, flow, ctx) {
     const h = React.createElement; const { Icon } = this.C;
     const key = ctx.key;
+    const mobile = this.effBp() === "mobile";
     const m = this.state.flowMenu && this.state.flowMenu.key === key ? this.state.flowMenu : null;
     const libOpen = this.state.flowLib === undefined ? true : !!this.state.flowLib;
     const testing = !!(this.state.flowTest && this.state.flowTest.key === key && this.state.flowTest.running);
@@ -8119,10 +8159,10 @@ class Component extends DCLogic {
       const showTip = hint === label;
       return h("div", { key: label, style: { position: "relative", display: "inline-flex" } },
         showTip ? h("div", { style: { position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", padding: "4px 8px", background: "var(--color-text-primary)", color: "var(--color-bg)", borderRadius: "var(--radius-sm)", fontFamily: "var(--font-body)", fontSize: "var(--text-xs)", fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", pointerEvents: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.25)", zIndex: 1 } }, label) : null,
-        h("button", { type: "button", "aria-label": label, onClick,
-          onMouseEnter: (e) => { if (!opts.active) e.currentTarget.style.background = "var(--color-surface-raised)"; this.setState({ flowTip: label }); },
+        h("button", { type: "button", "aria-label": label, disabled: !!opts.disabled, onClick: opts.disabled ? undefined : onClick,
+          onMouseEnter: (e) => { if (!opts.active && !opts.disabled) e.currentTarget.style.background = "var(--color-surface-raised)"; this.setState({ flowTip: label }); },
           onMouseLeave: (e) => { e.currentTarget.style.background = opts.active ? "var(--color-surface-raised)" : "transparent"; this.setState((s) => (s.flowTip === label ? { flowTip: null } : null)); },
-          style: { width: 40, height: 40, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", borderRadius: "var(--radius-md)", background: opts.active ? "var(--color-surface-raised)" : "transparent", color: opts.color || "var(--color-text-secondary)", cursor: "pointer", transition: "background-color 150ms ease-out" } },
+          style: { width: 40, height: 40, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", borderRadius: "var(--radius-md)", background: opts.active ? "var(--color-surface-raised)" : "transparent", color: opts.disabled ? "var(--color-text-tertiary)" : (opts.color || "var(--color-text-secondary)"), cursor: opts.disabled ? "default" : "pointer", opacity: opts.disabled ? 0.45 : 1, transition: "background-color 150ms ease-out" } },
           h(Icon, { name: icon, size: "md" })));
     };
     const divider = (k2) => h("span", { key: k2, style: { width: 1, alignSelf: "stretch", margin: "6px 3px", background: "var(--color-border)", flex: "none" } });
@@ -8142,8 +8182,11 @@ class Component extends DCLogic {
         h(Icon, { name: "plus", size: "md" })));
     const parts = [];
     const vmode = this.flowViewMode(key);
+    parts.push(btn("undo-variant", "Undo", () => this.flowUndo(key), { disabled: !this.flowCanUndo(key) }));
+    parts.push(btn("redo-variant", "Redo", () => this.flowRedo(key), { disabled: !this.flowCanRedo(key) }));
+    parts.push(divider("d0"));
     parts.push(btn("play-outline", testing ? "A test run is playing" : "Test run", () => { if (!testing) this.startFlowTest(key, flow); }));
-    if (vmode !== "yaml") {
+    if (vmode !== "yaml" && !mobile) {
       parts.push(divider("d1"));
       if (!flow.script) {
         parts.push(btn("lightning-bolt-outline", "Add a trigger", openAt("trigger"), { active: isOpen("trigger"), color: "var(--color-warning)" }));
@@ -8289,6 +8332,7 @@ class Component extends DCLogic {
       mainCard);
   }
   flowRemove(key, flow, id) {
+    this.flowSnapshot(key);
     const rm = (arr) => {
       if (!arr) return false;
       const i = arr.findIndex((n) => n.id === id);
@@ -8352,10 +8396,10 @@ class Component extends DCLogic {
       const isTime = mono && /^\d{1,2}:\d{2}$/.test(String(value));
       const padTime = (v) => { const p = String(v).split(":"); return (p[0] || "0").padStart(2, "0") + ":" + (p[1] || "00"); };
       const control = isTime
-        ? h("input", { className: "ha-input", type: "time", value: padTime(value), "aria-label": label, style: { fontFamily: "var(--font-mono)" }, onChange: (e) => { node.fields[i][1] = e.target.value; up(); } })
+        ? h("input", { className: "ha-input", type: "time", value: padTime(value), "aria-label": label, style: { fontFamily: "var(--font-mono)" }, onChange: (e) => { this.flowSnapshot(ctx.key, node.id + ":f" + i); node.fields[i][1] = e.target.value; up(); } })
         : (options && options.length)
-        ? h(Select, { value: String(value), options: options.map((o) => ({ value: o, label: o })), "aria-label": label, onChange: (e) => { node.fields[i][1] = e.target.value; up(); }, style: { width: "100%" } })
-        : h(Input, { value: String(value), style: mono ? { fontFamily: "var(--font-mono)" } : undefined, onChange: (e) => { node.fields[i][1] = e.target.value; up(); } });
+        ? h(Select, { value: String(value), options: options.map((o) => ({ value: o, label: o })), "aria-label": label, onChange: (e) => { this.flowSnapshot(ctx.key, node.id + ":f" + i); node.fields[i][1] = e.target.value; up(); }, style: { width: "100%" } })
+        : h(Input, { value: String(value), style: mono ? { fontFamily: "var(--font-mono)" } : undefined, onChange: (e) => { this.flowSnapshot(ctx.key, node.id + ":f" + i); node.fields[i][1] = e.target.value; up(); } });
       return h(FormField, { key: i, label }, control);
     });
     const isChoose = node.type === "choose";
@@ -8364,13 +8408,13 @@ class Component extends DCLogic {
         (node.conditions && node.conditions.length)
           ? ("Runs when " + this.flowJoinList((node.conditions || []).map((c) => (c.label || c.block || "a condition").toLowerCase())) + ((node.steps && node.steps.length) ? (", then " + this.flowJoinList((node.steps || []).map((s) => (s.label || s.block || "a step").toLowerCase())) + ".") : "."))
           : ((node.steps && node.steps.length) ? ("This path runs " + this.flowJoinList((node.steps || []).map((s) => (s.label || s.block || "a step").toLowerCase())) + ".") : "This path has no steps yet. Add one from the canvas.")) : null,
-      node.targets !== undefined ? h(FormField, { label: "Targets" }, h(Input, { value: node.targets, onChange: (e) => { node.targets = e.target.value; up(); } })) : null,
+      node.targets !== undefined ? h(FormField, { label: "Targets" }, h(Input, { value: node.targets, onChange: (e) => { this.flowSnapshot(ctx.key, node.id + ":targets"); node.targets = e.target.value; up(); } })) : null,
       ...fieldRows,
       isChoose ? h("div", { style: col("var(--space-2)") },
         h("div", { style: { fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--color-text-secondary)" } }, "Paths"),
         (node.branches || []).map((b) => h("div", { key: b.id, style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "var(--space-1) var(--space-1) var(--space-1) var(--space-3)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-md)" } },
           h("span", { style: { flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "var(--text-base)" } }, this.flowBranchLabel(b)),
-          (node.branches || []).length > 1 ? h(Button, { variant: "ghost", size: "sm", icon: "trash-can-outline", "aria-label": "Delete path", onClick: () => { const i2 = node.branches.indexOf(b); if (i2 >= 0) { node.branches.splice(i2, 1); up(); } } }) : null)),
+          (node.branches || []).length > 1 ? h(Button, { variant: "ghost", size: "sm", icon: "trash-can-outline", "aria-label": "Delete path", onClick: () => { const i2 = node.branches.indexOf(b); if (i2 >= 0) { this.flowSnapshot(ctx.key); node.branches.splice(i2, 1); up(); } } }) : null)),
         h("div", null, h(Button, { variant: "ghost", size: "sm", icon: "plus", onClick: (ev) => this.openFlowMenu(ctx.key, { mixed: true, newBranchOf: node }, ev) }, "Add path"))) : null,
       f.zone === "condition" && typeof node.met === "boolean" ? h("div", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-sm)", color: node.met ? "var(--color-success)" : "var(--color-error)" } },
         h("span", { style: { width: 7, height: 7, borderRadius: 999, background: "currentColor", flex: "none" } }), node.met ? "This condition is met right now" : "This condition is not met right now") : null,
@@ -8379,7 +8423,7 @@ class Component extends DCLogic {
       (!f.fixed && f.zone !== "branch") ? h("div", null, h(Button, { variant: "danger", size: "sm", icon: "trash-can-outline",
         onClick: () => this.flowRemove(ctx.key, flow, node.id) }, "Remove")) : null,
       (f.zone === "branch" && f.choose && (f.choose.branches || []).length > 1) ? h("div", null, h(Button, { variant: "danger", size: "sm", icon: "trash-can-outline",
-        onClick: () => { const i2 = f.choose.branches.indexOf(node); if (i2 >= 0) { f.choose.branches.splice(i2, 1); this.setState({ flowSel: null }); up(); } } }, "Delete path")) : null);
+        onClick: () => { const i2 = f.choose.branches.indexOf(node); if (i2 >= 0) { this.flowSnapshot(ctx.key); f.choose.branches.splice(i2, 1); this.setState({ flowSel: null }); up(); } } }, "Delete path")) : null);
   }
   // Screen-space position for the node inspector popover: anchored beside the
   // selected node (right of it, flipping left when it would overflow), clamped
@@ -8410,7 +8454,7 @@ class Component extends DCLogic {
           style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", transition: "background 150ms ease-out, color 150ms ease-out" } },
           h(Icon, { name: "close", size: "md" })) : null,
         h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.25, flex: 1, minWidth: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } }, title)) : null,
-      h("div", { style: { overflowY: "auto", minHeight: 0, padding: (title || onClose) ? "var(--space-2) var(--space-5) var(--space-5)" : "var(--space-5)" } }, body));
+      h("div", { style: { overflowY: "auto", minHeight: 0, padding: (title || onClose) ? "var(--space-2) var(--space-5) var(--space-5)" : "0 var(--space-5) var(--space-5)" } }, body));
   }
   // ---- Run history rows (rendered inside the overlay) ----------------------
   flowRunRows(kind, a, flow, runs, ctx) {
@@ -8486,7 +8530,7 @@ class Component extends DCLogic {
   // Details). No segmented tabs. Edit reuses the flat form in flowGenericPanel.
   // The pause radio list (On + duration presets, last = unlimited). Shared by
   // the Pause sub-step. `onDone` fires after a pick so the sub-step can close.
-  pauseOptionRows(a, onDone) {
+  pauseOptionRows(a, onDone, override) {
     const h = React.createElement;
     const pinfo = this.pauseInfo(a);
     const paused = pinfo.mode === "paused";
@@ -8497,11 +8541,12 @@ class Component extends DCLogic {
       { key: "week", label: "Pause for a week" },
       { key: "unlimited", label: "Pause for an unlimited time" },
     ];
-    const pick = (k) => { this.pauseAuto(a, k); if (onDone) onDone(); };
+    const selectMode = override && override.onSelect;
+    const pick = (k) => { if (selectMode) { override.onSelect(k); return; } this.pauseAuto(a, k); if (onDone) onDone(); };
     return opts.map((o, i) => {
-      const sel = paused && o.key === pinfo.key;
+      const sel = selectMode ? override.selKey === o.key : (paused && o.key === pinfo.key);
       const accent = "var(--color-warning)";
-      const showUntil = sel && o.key !== "unlimited" && pinfo.until;
+      const showUntil = !selectMode && sel && o.key !== "unlimited" && pinfo.until;
       return h("button", { key: o.key, type: "button", onClick: () => pick(o.key),
         onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface)"; },
         onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; },
@@ -8513,7 +8558,7 @@ class Component extends DCLogic {
   }
   flowOverviewBody(kind, a, flow, runs, ctx, edit) {
     const h = React.createElement; const { Icon, Chip, Toggle, Button } = this.C;
-    const subStepBack = (onBack, title) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "0 0 var(--space-2)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } },
+    const subStepBack = (onBack, title) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", paddingTop: "var(--space-5)", paddingBottom: "var(--space-2)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } },
       h("button", { type: "button", "aria-label": "Back", onClick: onBack,
         onMouseEnter: (e) => { e.currentTarget.style.opacity = "0.6"; }, onMouseLeave: (e) => { e.currentTarget.style.opacity = "1"; },
         style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-primary)", cursor: "pointer", marginLeft: -8, transition: "opacity 150ms ease-out" } }, this.backChevron()),
@@ -8526,7 +8571,7 @@ class Component extends DCLogic {
         onMouseEnter: (e) => { e.currentTarget.style.opacity = "0.6"; }, onMouseLeave: (e) => { e.currentTarget.style.opacity = "1"; },
         style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-primary)", cursor: "pointer", marginLeft: -8, transition: "opacity 150ms ease-out" } }, this.backChevron());
       return h("div", null,
-        h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "0 0 var(--space-2)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } }, back,
+        h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", paddingTop: "var(--space-5)", paddingBottom: "var(--space-2)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } }, back,
           h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.01em" } }, "Activity")),
         h("div", null, this.flowRunRows(kind, a, flow, runs, ctx)));
     }
@@ -8536,12 +8581,15 @@ class Component extends DCLogic {
     const draft = isAuto && !this.isPublished(a);
     // Pause options open as a sub-step (like the Activity "Show more" log).
     if (isAuto && this.state.flowPauseFull === ctx.key) {
+      const selKey = this.state.flowPauseSel != null ? this.state.flowPauseSel : (paused ? pinfo.key : null);
+      const apply = () => { if (selKey) this.pauseAuto(a, selKey); this.setState({ flowPauseFull: null, flowPauseSel: null }); };
       return h("div", null,
-        subStepBack(() => this.setState({ flowPauseFull: null }), "Pause"),
+        subStepBack(() => this.setState({ flowPauseFull: null, flowPauseSel: null }), "Pause"),
         h("p", { style: { margin: "0 0 var(--space-2)", fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, "Paused automations don\u2019t run for anyone in the home."),
-        h("div", null, this.pauseOptionRows(a, () => this.setState({ flowPauseFull: null }))),
-        paused ? h("div", { style: { marginTop: "var(--space-4)" } },
-          h(Button, { variant: "secondary", onClick: () => { this.resumeAuto(a); this.setState({ flowPauseFull: null }); }, style: { width: "100%", justifyContent: "center", minHeight: 44 } }, "Resume now")) : null);
+        h("div", null, this.pauseOptionRows(a, null, { selKey: selKey, onSelect: (k) => this.setState({ flowPauseSel: k }) })),
+        h("div", { style: { marginTop: "var(--space-4)", display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
+          h(Button, { variant: "primary", disabled: !selKey, onClick: apply, style: { width: "100%", justifyContent: "center", minHeight: 44 } }, paused ? "Update pause" : "Pause automation"),
+          paused ? h(Button, { variant: "secondary", onClick: () => { this.resumeAuto(a); this.setState({ flowPauseFull: null, flowPauseSel: null }); }, style: { width: "100%", justifyContent: "center", minHeight: 44 } }, "Resume now") : null));
     }
     // Notifications open as a sub-step (like Activity / Pause).
     if (isAuto && this.state.flowNotifFull === ctx.key) {
@@ -8560,8 +8608,8 @@ class Component extends DCLogic {
       : (isAuto ? (paused ? pinfo.label + (pinfo.by ? ", by " + this.personName(pinfo.by) : "") : (lastRan ? "Last ran " + lastRan : "Not run yet")) : "Runs on demand");
     const headBg = draft ? "var(--color-text-tertiary)" : (paused ? "var(--color-warning)" : "var(--color-accent)");
     const subColor = draft ? "var(--color-text-tertiary)" : (paused ? "var(--color-warning)" : "var(--color-text-secondary)");
-    const coverPad = this.effBp() === "mobile" ? "var(--space-2)" : "var(--space-5)";
-    const header = h("div", { key: "hd", style: { display: "flex", alignItems: "center", gap: "var(--space-3)", marginTop: "calc(-1 * " + coverPad + ")", paddingTop: coverPad, paddingBottom: "var(--space-2)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } },
+    const coverPad = this.effBp() === "mobile" ? "var(--space-2)" : "var(--space-3)";
+    const header = h("div", { key: "hd", style: { display: "flex", alignItems: "center", gap: "var(--space-3)", paddingTop: "var(--space-5)", paddingBottom: "var(--space-4)", position: "sticky", top: 0, zIndex: 2, background: "var(--color-surface)" } },
       h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column", gap: 1 } },
         h("span", { style: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "var(--text-lg)", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, a.name),
         h("span", { style: { fontSize: "var(--text-sm)", color: subColor, fontWeight: (paused || draft) ? "var(--weight-medium)" : 400 } }, subtitle)));
@@ -8571,10 +8619,10 @@ class Component extends DCLogic {
     if (desc) cards.push(this.detailCardShell("text-box-outline", "var(--color-text-secondary)", "What it does",
       h("p", { style: { margin: 0, color: "var(--color-text-primary)", fontSize: "var(--text-base)", lineHeight: 1.6 } }, desc), null, { key: "does" }));
     // Activity (card shows a short preview; "Show more" opens the full log)
-    const runPreview = runs.slice(0, 4);
+    const runPreview = runs.slice(0, 2);
     cards.push(this.detailCardShell("history", "var(--color-accent)", "Activity",
       h("div", null, this.flowRunRows(kind, a, flow, runPreview, ctx)),
-      runs.length ? this.cardLink("Show more", () => this.setState({ flowActivityFull: ctx.key })) : null,
+      runs.length > 2 ? this.cardLink("Show more", () => this.setState({ flowActivityFull: ctx.key })) : null,
       { key: "act" }));
     // Pause (automations only): a status summary + a link into the options
     // sub-step (mirrors the Activity card's "Show more").
@@ -8584,7 +8632,7 @@ class Component extends DCLogic {
         h("span", { style: { fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", color: "var(--color-warning)" } }, pinfo.label)) : null;
       cards.push(this.detailCardShell("pause", "var(--color-warning)", "Pause",
         null,
-        this.cardLink(paused ? "Change or resume" : "Pause this automation", () => this.setState({ flowPauseFull: ctx.key })),
+        this.cardLink(paused ? "Change or resume" : "Pause this automation", () => this.setState({ flowPauseFull: ctx.key, flowPauseSel: null })),
         { key: "pause", trailing: statusTrailing, subtitle: "Paused automations don\u2019t run for anyone in the home." }));
     }
     // Notifications (automations only): who gets told, mirrors the map card.
@@ -8735,12 +8783,12 @@ class Component extends DCLogic {
             h("div", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)" } }, "Published"),
             h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2, lineHeight: 1.5 } }, "Unpublished automations don\u2019t run and aren\u2019t shown to the household.")),
           h(Toggle, { checked: this.isPublished(a), label: "Publish " + a.name, onChange: (n) => this.setPublished(a, n) })) : null,
-        a.isNew ? null : h("div", { style: { marginTop: "var(--space-2)", paddingTop: "var(--space-3)", display: "flex", flexDirection: "column", gap: "var(--space-3)" } },
-          h(Button, { variant: "danger", className: "cc-danger-soft", onClick: () => this.deleteRoutine(kind, a), style: { width: "100%", justifyContent: "center", minHeight: 44 } }, "Delete " + this.singular(kind)),
-          h(Button, { variant: "secondary", onClick: () => this.duplicateRoutine(kind, a), style: { width: "100%", justifyContent: "center", minHeight: 44 } }, "Duplicate " + this.singular(kind))));
+        a.isNew ? null : h("div", { style: { marginTop: "var(--space-2)", paddingTop: "var(--space-3)", display: "flex", flexDirection: "row", gap: "var(--space-3)" } },
+          h(Button, { variant: "danger", className: "cc-danger-solid", onClick: () => this.deleteRoutine(kind, a), style: { flex: 1, justifyContent: "center", minHeight: 44 } }, "Delete"),
+          h(Button, { variant: "secondary", onClick: () => this.duplicateRoutine(kind, a), style: { flex: 1, justifyContent: "center", minHeight: 44 } }, "Duplicate")));
       // A brand-new routine has no edit history: skip the segmented control
       // and open straight on the titled Details form.
-      if (a.isNew) return h("div", null,
+      if (a.isNew) return h("div", { style: { paddingTop: "var(--space-5)" } },
         h("div", { key: "nt", style: { fontFamily: "var(--font-display)", fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)", padding: "0 0 var(--space-4)" } }, "Details"),
         metaForm);
       // Two segments: Edit history (with per-version detail) and Details.
@@ -8749,10 +8797,10 @@ class Component extends DCLogic {
       const inVersionDetail = etab === "versions" && vsel && vsel.key === ctx.key;
       const eseg = (id, label) => h("button", { key: id, type: "button", className: "cc-toolbar__vbtn", "aria-pressed": etab === id, onClick: () => this.setState({ flowEditTab: id }),
         style: { flex: 1, width: "auto", gap: "var(--space-2)", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, h("span", null, label));
-      const esegs = inVersionDetail ? null : h("div", { key: "eseg", style: { padding: "0 0 var(--space-4)" } },
+      const esegs = inVersionDetail ? null : h("div", { key: "eseg", style: { position: "sticky", top: 0, zIndex: 5, background: "var(--color-surface)", margin: "0 calc(var(--space-5) * -1)", padding: "var(--space-4) var(--space-5)" } },
         h("div", { className: "cc-toolbar__view", role: "group", "aria-label": "Show", style: { display: "flex", width: "100%", background: "var(--color-bg)" } },
           eseg("details", "Details"), eseg("versions", "Edit history")));
-      return h("div", null, esegs, etab === "versions" ? this.flowVersionHistory(kind, a, ctx) : metaForm);
+      return h("div", { style: { paddingTop: 0 } }, esegs, etab === "versions" ? this.flowVersionHistory(kind, a, ctx) : metaForm);
     }
     parts.push(h("div", { key: "status", style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-3)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-md)", padding: "var(--space-3) var(--space-4)" } },
       h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", minWidth: 0 } },
@@ -9044,11 +9092,11 @@ class Component extends DCLogic {
     if (yamlMode) {
       return h("div", { style: { position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "var(--color-bg)" } },
         this.flowYamlBody(kind, a, flow, bp, !mobile && !!overlay), overlay, backCtrl, actionCtrls,
-        !mobile ? this.flowToolbar(kind, flow, ctx) : null);
+        (!mobile || !overlay) ? this.flowToolbar(kind, flow, ctx) : null);
     }
     return h("div", { style: { position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "var(--color-bg)" } },
       canvas, this.flowZoomCtrls(key, lay, bp), overlay, inspectorPanel, runsPanel, addDialog, backCtrl, actionCtrls,
-      ctx.edit && !mobile ? this.flowToolbar(kind, flow, ctx) : null,
+      ctx.edit && (!mobile || !overlay) ? this.flowToolbar(kind, flow, ctx) : null,
       ctx.edit && !mobile ? this.flowMenuEl(kind, flow, ctx) : null);
   }
 

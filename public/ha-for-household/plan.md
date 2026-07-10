@@ -111,6 +111,38 @@ Desktop/tablet edit mode gets a FigJam-style chrome instead of a dialog:
 - **Edit page shows the automation title top-left** (large title in the flow
   header), live-updating from the draft Name field, matching the read view.
 
+**Undo / redo (2026-07-10):** the bottom-center `flowToolbar` gained **Undo** and
+**Redo** icon buttons (`undo-variant` / `redo-variant`) in the leftmost group,
+immediately left of the Test-run (play) button, separated from it by a divider.
+Session-only per flow key, no persistence, no keyboard shortcut yet. The
+toolbar also shows on **mobile** now (bottom-center, when no sheet overlay is
+covering it) but **without the add-block group** (Add trigger / condition /
+action / building block / "add from home") — mobile keeps only undo/redo,
+Test run, and the flow/YAML view toggle. Gated by `mobile` in `flowToolbar`
+and `(!mobile || !overlay)` at the render sites.
+- History lives in `_flowHist[key] = { undo: [], redo: [] }` (stacks of deep
+  JSON clones of the draft), capped at 60 undo entries. `flowHistOf`,
+  `flowSnapshot(key, sig)`, `flowUndo(key)`, `flowRedo(key)`, `flowCanUndo`,
+  `flowCanRedo`.
+- Every draft mutation snapshots the draft **before** mutating: `flowInsert`
+  (new `noSnap` arg so the createPath sites don't double-snapshot),
+  `flowChangeType`, `flowRemove`, both `pick` handlers' `flowCreatePath` paths
+  (snapshot before creating the branch, pass `noSnap` to the following insert),
+  and the inspector's inline edits (field values, `targets`, path splices).
+- Field typing coalesces via a signature (`node.id + ":f" + i`) so a run of
+  keystrokes on one field is a single undo step; structural ops and undo/redo
+  reset the coalesce marker (`_flowCoalesce`).
+- Undo/redo swap the stored `_flowDrafts[key]` object and `setState` to
+  re-render; `flowDraftOf` returns the (replaced) stored draft. Buttons dim
+  (`opts.disabled` added to the toolbar `btn` helper: tertiary color, 0.45
+  opacity, no hover, no pointer) when their stack is empty.
+
+**Delete / Duplicate buttons (2026-07-10):** in the edit panel Details footer,
+the two record actions now sit **side by side in one row** (`flexDirection: row`,
+`flex: 1` each) with shortened labels **"Delete"** / **"Duplicate"** (dropped the
+"automation"/"script" singular). Delete is now a **solid `danger`** button (the
+`cc-danger-soft` class was removed).
+
 ## Automation editor: Duplicate, Edit in YAML, Change mode, Delete — PLANNED (2026-07-10)
 
 The flow editor is missing four record-level actions that HA has: **Duplicate**,

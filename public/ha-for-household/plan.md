@@ -2,6 +2,506 @@
 
 The shared reference for every session. Keep it updated as the build progresses.
 
+## Automation flow pages (detail + edit) — BUILT (last touched 2026-07-09)
+
+Replaces `routineDetail` for automations and scripts (scenes keep the old page)
+and the `editBody` placeholder for both.
+
+**Decisions (agreed with user):**
+- Auto-laid-out flowchart with branches (option C). Vertical spine: When
+  (triggers) -> And if (conditions) -> Then (steps). Choose splits into equal
+  branch columns and rejoins (hairline connectors, `--color-border`). Multiple
+  triggers sit side by side and converge. Mobile: branches and triggers stack
+  vertically as indented groups.
+- One page: read-only flow, Edit button switches the same page to edit mode
+  (URL stays `/automations/edit/:id` for the mode, back = detail).
+- Node click -> inspector, styled like the Map overlay: desktop = floating
+  380px surface panel top-right, shadow, no scrim, X top-left; mobile =
+  dismissible bottom sheet (scrim, X, single max detent) via `renderSheet`.
+- Plain-language labels (matches HA 2026.7 purpose-specific direction), mono
+  entity IDs as secondary detail in the inspector.
+- Read view traces: selectable run history ("Recent runs"), path highlight of
+  the selected run (taken path accent, skipped dimmed), per-step results and
+  timing badges on nodes, outcome + trigger attribution per run, one failed
+  run in demo data (away-lock: annex lock did not respond).
+- Edit view: live condition met indicators (green/red), target counts on
+  action nodes, Test run button that plays a simulated trace through the flow,
+  notes on steps. Realistic forms in the inspector; edits live in a session
+  draft only (never persisted to household.js).
+- Household angle kept: creator, who can edit, People and access section stay
+  on the detail page.
+
+**Rework 2026-07-08 (canvas):** flow pages are now a full-bleed canvas (like the
+Map page), modelled on Homey Advanced Flow / the C.A.F.E. HA integration:
+left-to-right auto-layout, cards joined by bezier connectors with arrowheads,
+pan (drag / wheel), zoom (ctrl+wheel, pinch, corner controls, fit), dot grid.
+Topbar keeps the small title (`isFlowCanvasRoute` in `forceTopbarTitle`,
+full-height body in `renderMain`). The overlay is the map-style panel (desktop
+top-right 380px; mobile a persistent detent sheet id "flow"): with no card
+selected it shows the automation (read: status toggle, description, recent
+runs, details, access; edit: name/description/category/area draft fields plus
+add-to-flow actions); selecting a card swaps it to the node inspector with a
+close X. Branch labels are pills on the edges; edit mode adds insertion pluses
+on edges and dashed ghost "Add" cards.
+
+**Implementation map:**
+- `household.js`: `flow` (triggers/conditions/steps, choose branches, wait) and
+  `runs` (when, trigger, outcome, stopAt, branches, details, duration) on
+  automations and scripts.
+- DC: `flowDetail` (page), `flowGraph` (renderer), `fgBranchRow` (equal-column
+  split/join, horizontal line inset `calc(100%/(2n))`), `flowInspector`
+  (read/edit panel), `flowRunPath(flow, run)` (nodeId -> status/detail),
+  test-run animation via timer state. Sheet id `flownode` in `dismissSheet`.
+
+**Rework 2026-07-08 (add UX: toolbar + block library, replaces the add dialog):**
+Typed blocks first: every flow node carries a `block` type name (HA 2025.11
+dialog taxonomy) in `household.js`; node cards and inspector titles show the
+TYPE ("Time", "Light turn on", "Wait"), the plain-language summary is the card
+subline and the "Summary" field in edit. Catalog in `flowBlockCatalog(zone)`
+(trigger / condition / action / blocks), insertion via `flowInsert(key, pos,
+blk)`, in-place type change via `flowChangeType` (id and note kept).
+
+Desktop/tablet edit mode gets a FigJam-style chrome instead of a dialog:
+- **Flyout menu** (`flowMenuEl`, state `flowMenu`, `openFlowMenu(key, {zone,
+  pos, retype}, ev)`): anchored popover on `--color-overlay`, category headers
+  + block rows, transparent backdrop, Escape closes. Also opened by the
+  in-canvas plus buttons and ghost cards (anchored at the click, exact
+  position) and by "Change type" in the inspector (replace in place).
+- **Top-left "Blocks" library card** (`flowLibPanel`, mirrors the top-right
+  inspector): the primary add surface. Sections: **Suggested** (curated per
+  kind), **In this home** (place path: per-area purpose blocks derived from
+  `household.entities` with honest counts and prefilled targets,
+  `flowLibHomeItems`), then Triggers / Conditions / Actions / Building blocks
+  (collapsed by default). One search across all of it (matches area names
+  too). Open by default in edit mode (`flowLib === undefined`); when closed a
+  small floating "Blocks" pill top-left reopens it.
+- **Bottom-center floating toolbar** (`flowToolbar`): Select, divider, zone
+  colored add buttons (Trigger amber, Condition blue, Action green, Building
+  block purple) each opening an upward flyout, divider, library toggle, Test
+  run. Scripts hide Trigger/Condition.
+- Insert position (`flowDefaultPos`): triggers/conditions append to their
+  lane; steps insert after the selected card, else at the flow's end.
+- Mobile keeps the drill-in sheet picker (`flowAddBody` in the flow sheet);
+  `flowAddDialog` is now the mobile-era fallback only.
+
+**Rework 2026-07-09 (path affordances + inspector + chrome polish):**
+- **Add path** is no longer a floating round `+` mimicking the step-adders. It
+  now renders as the next branch column: a ghost `+` at the far right of a
+  choose node's branch row, tethered by a **dashed connector that leaves the
+  node's right side, runs across the top, and drops down to the `+`** (the
+  `side: true` edge in the edge renderer routes horizontal-then-down so it never
+  crosses the solid branch lines). Same treatment for the end-of-path
+  **Add step** ghost (dashed connector from the last card down to its mini `+`).
+- Clicking Add path opens the normal conditions-and-actions picker
+  (`openFlowMenu(..., { mixed: true, newBranchOf: node })`, mobile
+  `openFlowAdd(..., { addPath })`). The path is **created only once a block is
+  picked** via `flowCreatePath(chooseNode)` (called lazily inside the picker), so
+  abandoning the picker leaves no empty path.
+- **Choose node inspector** gained a **Paths** section: each path listed with a
+  trash affordance (delete gated to keep at least one path), plus an **Add path**
+  ghost button. No rename (paths take their label from their first condition via
+  `flowBranchLabel`).
+- **Branch label chips** on the canvas edges were removed (they duplicated the
+  path label already shown on the card / inspector).
+- **Deleting the last node of a path deletes the path** (`flowDelete`: when a
+  removed node leaves a choose branch with no conditions and no steps, the branch
+  is spliced out, keeping at least one).
+- **Detail panel segments swapped**: **Activity** is now first and the default
+  tab (`flowPanelTab || "activity"`); Overview second.
+- **Edit page shows the automation title top-left** (large title in the flow
+  header), live-updating from the draft Name field, matching the read view.
+
+## Automation editor: Duplicate, Edit in YAML, Change mode, Delete — PLANNED (2026-07-10)
+
+The flow editor is missing four record-level actions that HA has: **Duplicate**,
+**Edit in YAML**, **Change mode**, and (missing entirely from the editor)
+**Delete**. This section is the agreed plan; nothing built yet.
+
+### Where they live: one overflow menu (`⋮`)
+
+Real HA groups exactly these in the editor's top-right kebab menu, so do the
+same. Add a `⋮` round button to the flow page's `actionCtrls` cluster
+(`flowDetail`, ~line 8823), shown in **both read and edit modes** for
+automations and scripts, gated to edit rights (`canEditRoutine(a)` for
+automations, `admin` for scripts). Residents never see it.
+
+- **Desktop / tablet:** a portal popover on `--color-overlay`, reusing the
+  existing overlay-menu pattern (`ccOverlaySelect` / `flowMenuEl`). New helper
+  `routineMenuItem(icon, label, onClick, opt)` mirroring `dashMenuItem`
+  (line 5200): icon + label, `danger` variant, scrim-tap + Escape to close.
+- **Mobile:** the same items as a **dismissible bottom sheet** via `renderSheet`
+  (per `docs/overlays.md`: X top-left, single max detent, scrim, no blur).
+- New state key `state.routineMenu`; add it to the Escape handler (`_onKey`,
+  ~line 688) and clear it in `_onHash`.
+
+Menu order (automations): Duplicate · Edit in YAML · Change mode · (divider) ·
+Delete (danger). Scripts: Duplicate · Edit in YAML · Delete. Scenes keep their
+existing page, unaffected. (Rename is skipped: edit mode already renames via the
+Details Name field.)
+
+### 1. Duplicate — `duplicateRoutine(kind, a)`
+
+Model on `duplicateDash` (5428) + `createRoutine` (4563).
+
+- Deep-clone the record and its flow. New id `single + "-" + Date.now().toString(36)`;
+  name `a.name + " (copy)"`; `creator`/`createdBy` = current persona; `added`/
+  `modified` = now.
+- Land the copy as an **unpublished draft** (`published:false`) so a duplicate
+  never silently starts running before the user has looked at it (matches HA
+  dropping you into the editor).
+- Clone `this.H.flows[a.id]` → `this.H.flows[newId]`; `unshift` the record into
+  `this.H[kind]`; navigate to `/<kind>/edit/<newId>`.
+- Session-only, not persisted to `household.js` (same rule as existing drafts).
+
+### 2. Edit in YAML — `flowToYaml(flow, meta)` + a YAML surface
+
+- Small serializer renders the draft (alias, description, mode, triggers,
+  conditions, steps) as HA-style YAML text. State `state.flowYaml = { key, text }`.
+- Reuse the Files-page YAML editor styling (`filesViewer`, ~3422: mono textarea,
+  view-first). Desktop = the flow `flowPanel` overlay swapped to a full-height
+  YAML body (or a `fyScrim` dialog); mobile = full-height dismissible sheet.
+- **Prototype scope / caveat:** a full YAML → node-graph parser is out of scope.
+  Two honest options, **recommend (a)**:
+  - (a) **View + copy**, read-only, with a note that YAML editing is where the
+    real source of truth lives. Simple and doesn't imply a round-trip we don't
+    do.
+  - (b) Editable text; Save parses only the trivially-regexable bits (alias,
+    description, mode) and stores the raw body, leaving the graph as-is with an
+    "Edited in YAML" marker. More faithful to HA but the graph/YAML can drift.
+- Confirm choice with user before building.
+
+### 3. Change mode — add `mode` to the model
+
+- Add optional `mode` to automation records in `household.js` (default
+  `"single"`). Helpers: `autoMode(a)` → `a.mode || "single"`;
+  `setAutoMode(a, m, max)` writes to a **session override** `state.autoMode[id]`
+  (like `enabled` / `published`), so it works without editing `household.js`.
+- Four modes, plain-language copy (sentence case, no dashes, "and" not "&"):
+  - **Single** — "Run once. If it's already running, ignore new triggers." (default)
+  - **Restart** — "Start again from the top each time it's triggered."
+  - **Queued** — "Let runs line up and happen one after another."
+  - **Parallel** — "Run several at the same time."
+  - Queued / Parallel reveal a **Maximum** number field (default 10).
+- Surface in two places, both writing the same state:
+  - A titled control in the edit panel `flowGenericPanel` meta form (via
+    `ccOverlaySelect`, per CLAUDE.md's overlay-select preference).
+  - A "Change mode" item in the `⋮` menu opening a focused dialog / sheet: the
+    four options as a radio list with descriptions + the Maximum field.
+- Show current mode read-only in the read-view Details (`routineInfoRows`) for
+  automations.
+
+### 4. Delete — `deleteRoutine(kind, a)`
+
+Model on `deleteDash` (5437).
+
+- `askConfirm({ title: "Delete " + a.name + "?", body: "This removes the
+  automation for everyone in the home. It can't be undone.", confirmLabel:
+  "Delete", danger: true, onConfirm })`.
+- onConfirm: splice from `this.H[kind]`; `delete this.H.flows[a.id]`; clear that
+  id's session overrides (`enabled`, `published`, `autoPause`, `autoMode`,
+  notifs); then `this.go("/" + kind)`.
+- Available from the `⋮` menu in both read and edit modes; gated to edit rights.
+
+### Housekeeping
+
+- New state keys: `routineMenu`, `flowYaml`, `autoMode`. Wire into the Escape
+  handler and the `_onHash` reset; add `autoMode` to the sign-out reset clear
+  list (~line 874) next to `enabled` / `published`.
+
+## Automation pause (self-resuming off) — BUILT (2026-07-10)
+
+Research finding: residents want to **pause** automations, not disable them. A
+plain on/off toggle models the wrong intent. People turn one off temporarily
+(guests over, sleeping in, movie night, a party) and then forget, so the lights
+never come on and they blame the automation. Reference pattern: Signal's "Mute
+notifications" (duration presets that auto-expire), adapted to a shared home.
+
+### The verb split (the core decision)
+
+- **Pause** = the resident's temporary, self-resuming action. Picks a duration,
+  the automation stops running, then **resumes on its own** when the timer ends.
+  This is the default action for any non-admin persona and the primary path.
+- **Off** = the maintainer's deliberate, indefinite disable (the true HA
+  `enabled: false`). Stays off until someone turns it back on. Admin only as a
+  distinct choice; residents reach the same end via "Pause until I turn it back
+  on" (an indefinite pause, still framed as pause, not a config change).
+
+So an automation now has **three states, not two**: `on` / `paused` (with an
+`until` timestamp + who) / `off`. Note: with the merged Pause control (see the
+detail-panel section below), **off is just "paused for an unlimited time"**
+("voor onbepaalde tijd"), so the states collapse to `on` / `paused (until X | 
+forever)` in the UI even though the data still distinguishes a real HA disable.
+
+### Interaction (a toggle toggles; Pause is a separate button)
+
+The toggle stays a **pure binary on/off**: one tap, immediate, no dialog, ever.
+It maps to the true HA `enabled` state (on ↔ off). The duration behaviour is a
+**separate Pause button/action**, never wired into the toggle.
+
+- **Toggle** → flips on/off instantly. Off is the deliberate, indefinite
+  disable. Resuming from paused/off is just toggling on. No chooser.
+- **Pause button** (secondary, icon `pause`, label "Pause") → opens the duration
+  chooser. Home-tuned presets rather than Signal's literal set:
+  - Pause for 1 hour
+  - Pause until this evening (8 hours)  ← "eight hours" reframed to the outcome
+  - Pause until tomorrow
+  - Pause for a week
+  - Pause for an unlimited time ("voor onbepaalde tijd") ← this IS the old "off"
+- While **paused**, the Pause button becomes **"Resume"** (icon `play`) and the
+  automation carries a `Paused until 18:00` / `Paused until Fri` /
+  `Paused, no end` chip. Tone and a mono time carry the state, per the copy
+  rules; the chip uses the warning/attention treatment, never a new color.
+- The toggle and the Pause button are **independent controls that sit side by
+  side** on dense rows. But on the **automation detail panel** they are merged
+  into one **Pause card** (below): the last radio option, "unlimited", replaces
+  a separate off toggle, so there is one control, not a toggle plus a button.
+
+### Honesty for a shared home (the wrinkle Signal doesn't have)
+
+A shared automation paused by one person stops running **for everyone**. The
+chooser states this plainly ("Paused automations don't run for anyone in the
+home"), and every surface that shows a paused automation shows **who paused it
+and until when** ("Paused by Daan until 18:00 today"), with a **Resume now**
+action. This is the same "candid, acknowledge state honestly" voice used
+elsewhere.
+
+### Where you control it
+
+- **Everywhere the toggle appears today, add a Pause/Resume button beside it**
+  where there is room: routine list rows + cards (`routinesBody`
+  renderRow/renderCard, line ~4568), routine detail header (`routineDetail`,
+  line ~7048), flow detail header (line ~8454), the For-you `AutomationItem`
+  widget (line ~10156), and the desktop panel automations list (line ~10196).
+  On dense rows where a second control does not fit, the toggle stays and Pause
+  lives in the row overflow menu / on the detail page only.
+- **Automation detail page is home base.** The toggle + a Pause button sit
+  together. When paused it shows a banner: "Paused by Daan until 18:00 today"
+  with **Resume** and **Change duration** (reopens the chooser). This is the one
+  place the full state + provenance always lives.
+- The chooser is the **overlay engine** (bottom sheet `<768`, centered dialog
+  `>=768`): a radio list of the presets + a confirm ("Pause") and cancel,
+  matching the reference screenshot. Reuse `renderSheet` / `fyScrim`; it is a
+  radio picker, not a bare `askConfirm` (which has no options).
+
+### Data + wiring
+
+- Replace the binary `state.enabled[id]` boolean with a status object:
+  `state.autoStatus[id] = { mode: "on"|"paused"|"off", until: <ms|null>,
+  by: <personId|null> }`. Migrate `isEnabled` / `setEnabled` (line 998) to read
+  from it; add `pauseAuto(a, durationKey)`, `resumeAuto(a)`, `disableAuto(a)`
+  and a `pauseStatus(a)` helper returning `{ mode, label, by, until }`.
+- **Auto-resume in a prototype:** no real scheduler. Store the absolute `until`
+  timestamp; a helper compares it against `Date.now()` on each render so an
+  expired pause reports as `on` again. Optionally a single `setInterval` on the
+  root to re-render as timers lapse. Preset durations resolve to real clock
+  times so "until this evening" and "until tomorrow" snap to sensible hours
+  (e.g. 18:00, next 07:00), shown as mono times.
+- Persist per instance (demo state), keyed like the other `cc-*` state; never
+  clear keys we don't own.
+- Collection page: the existing "Group by status" (`groupOf` status, line 4550)
+  gains a **Paused** group alongside On / Off; the status column/chip shows the
+  resume time for paused rows.
+
+### Scope / non-goals
+
+- No real scheduling engine, no per-person pause (a shared automation pauses for
+  the whole home; a personal-space automation pauses for its owner). Per-person
+  scoping of shared automations is explicitly out of scope for this pass.
+- Bulk enable/disable in the list toolbar (line 4186) keeps its plain
+  enable/disable for now; a "Pause selected" bulk action is a follow-up.
+
+### Verification
+
+- The toggle flips on/off instantly with no dialog. A separate **Pause** button
+  opens the chooser with the five presets; picking one closes it and the
+  automation shows "Paused until X by <me>" (chip + banner) in the list, detail,
+  and For-you widget, while the toggle itself is unaffected. The button reads
+  **Resume** while paused and clears the pause in one tap. Correct on mobile
+  (sheet), tablet + desktop (dialog).
+
+## Automation detail panel: single map-style card stack — BUILT (2026-07-10)
+
+Replace the automation read panel's **two-segment control** (Activity / Details,
+`flowOverviewBody`, line ~8297) with **one scrolling panel** that mirrors the
+**map person/zone detail** (the reference screenshot): a compact identity header
+at the top, then a vertical stack of self-contained cards, then pinned actions
+at the bottom. No segmented tabs. Everything visible at once, scroll to reach
+more, exactly like the map.
+
+### Reuse the map panel's card vocabulary (already built)
+
+The map detail (`mapPersonPanel` / zone panel, lines ~9446 to ~9500) already
+defines the exact look, so **reuse it, don't reinvent**:
+
+- **Card** = `background: var(--color-surface-raised)`, `borderRadius:
+  var(--radius-xl)`, `padding: var(--space-4) var(--space-4) var(--space-3)`,
+  column flex. On desktop the panel wraps each card in `0 var(--space-3)`
+  side padding; on mobile the cards go edge to edge.
+- **Card header** = a **30x30 colored icon squircle** (`radius-md`, solid color
+  bg, white MDI glyph) with the title directly under it (`--font-display`,
+  `--text-base`, weight 700, `-0.01em`, `marginTop: var(--space-3)`).
+- **`cardDivider()`** (1px `--color-border`, `space-3` margin) separates the
+  body from a footer action.
+- **`cardLink(label, onClick)`** = the accent footer link ("Show more", etc.).
+- Panel root = `display:flex; flex-direction:column; gap: var(--space-3)`, a
+  header block first, action `Button`s last. Extract a shared `detailCardShell(
+  icoName, icoColor, title, body, footerLink)` from the map code so both use it.
+
+### The identity header (top, above the cards)
+
+Icon squircle (robot) + name + a one-line status subtitle, matching the map
+header's "name / secondary" rhythm. Subtitle states the live state honestly:
+"On, last ran 22 minutes ago" or "Paused until 18:00, by Daan" or "Paused, no
+end". Back chevron stays where the flow header puts it.
+
+### The cards (stacked, top to bottom)
+
+1. **Activity** (icon `history`, accent blue, like the map). The recent-runs
+   timeline (`flowRunRows`), each run **tappable to expand** its detail (same
+   click-to-show interaction the map activity and the version list already use),
+   then `cardDivider()` + **"Show more"** → the full run log (`/activity`
+   filtered to this automation). This is the old "Activity" segment, now a card.
+
+2. **Pause** (icon `pause`/`motion-pause`, warning/amber). **The merged
+   toggle+pause control** (see the pause section above): a radio list of
+   durations, the last being **"For an unlimited time" ("voor onbepaalde
+   tijd")** which is the old off. Running = no option selected + a "Pause"
+   affordance; paused = the chosen row selected with its resume time + a
+   **"Resume now"** link in the footer. One control replaces the toggle-plus-
+   button pair. Honest shared-home line under the title: "Paused automations
+   don't run for anyone in the home."
+
+3. **What it does** (icon `text-box-outline`, neutral). The plain-language
+   summary from `flowSuggestDesc` ("When the sun sets, turn on the porch light,
+   but only if someone is home"), plus the author's description if present. Gives
+   a resident who can't read a flow a reason the automation exists.
+
+### Other card ideas (proposed, pick what earns its place)
+
+- **What it controls** (icon `tune` / `devices`): the devices, areas or scenes
+  this automation touches (`a.affects`), each a row linking to that entity. "Do
+  I dare pause this?" becomes answerable. Strong candidate.
+- **Details** (icon `information-outline`): category, area, creator,
+  added/modified, space, run count. The old "Details" segment as a card
+  (`routineInfoRows`). Keep, but demote below the action-oriented cards.
+- **Edit history** (icon `history` variant): who changed what, restore a
+  version. Already built for edit mode (`flowVersionHistory`); could surface
+  read-only here for maintainers, or stay in edit. Lower priority.
+- **Notifications** (icon `bell`, red, straight from the screenshot): "Tell me
+  when this runs / when it fails." Mirrors the map's Notifications card. Nice-to-
+  have; only if we want per-automation alerts in scope.
+
+Recommended default order: **Activity → Pause → What it does → What it controls
+→ Details.** Notifications and Edit-history deferred unless you want them in.
+
+### Read vs edit: same panel, two bodies (mirror the map zones)
+
+Model automation read↔edit on the **map zone** read↔edit difference
+(`zoneDetailView` vs `zoneEditView`), keeping **the existing pencil → Done
+transition** (do NOT adopt the zone's back-chevron exit):
+
+- **Enter with the pencil, leave with Done.** The current CTA slot and the
+  `/automations/edit/:id` route already give exactly this; keep them. The pencil
+  swaps the panel into edit; **Done** swaps it back to read. No new mode switch,
+  no back-chevron-to-read.
+- **The panel body swaps whole**, like the zones: read = the card stack above;
+  edit = a **flat, section-labelled form** ("Edit automation") like
+  `zoneEditView` (stacked labelled sections, no segmented tabs).
+- **The flow canvas behind becomes the editable surface in edit** (drag nodes,
+  add steps), static in read, exactly as a zone's shape turns draggable
+  (`edit-zone`) only in its edit view.
+- **Runtime cards drop out of edit.** Pause and Activity are runtime concerns,
+  not configuration; edit shows only authored fields (name, description,
+  category, area), the same way a zone's edit form shows only name / shape /
+  icon / color.
+- **Drop the edit segmented control** (`flowGenericPanel`'s Edit history /
+  Details segments, line ~8477). Edit becomes one scrolling form. **Edit
+  history** moves to a section at the bottom of that form (or a "View edit
+  history" link), never a top-level tab competing with Details.
+- Keep it feeling in place: the swap is body-only inside the same floating panel
+  / sheet, so pencil → Done reads as the same panel changing state, not a jump.
+
+### Wiring
+
+- Rewrite `flowOverviewBody` to drop the `seg(...)` segmented control and return
+  the header + the card stack (reusing the extracted `detailCardShell`). Delete
+  the `flowPanelTab` state branch (activity vs overview) once merged.
+- Desktop/tablet: renders inside the existing `flowPanel` overlay (map-style
+  floating panel, already positioned). Mobile: inside the existing `renderSheet`
+  flow sheet. Both already exist for this page (line ~8621), so only the panel
+  **body** changes.
+- **Edit body:** rework `flowGenericPanel`'s edit branch into the flat
+  section-labelled form (no `eseg` segmented control); move the version list
+  under a bottom "Edit history" section/link. Read and edit share the same
+  panel container; only the body swaps on the pencil → Done boundary.
+
+### Verification
+
+- Open any automation: one scrolling panel, no tabs, identity header on top,
+  cards stacked (Activity, Pause, What it does, ...), actions pinned at the
+  bottom, visually matching the map person panel. Tapping a run expands it;
+  "Show more" opens the run log. The Pause card's last option "for an unlimited
+  time" turns it off; picking a duration shows the resume time and a "Resume
+  now" link. Correct on mobile (sheet) and desktop/tablet (floating panel).
+
+### As built (2026-07-10) — what shipped, and where it diverged from the plan
+
+The read panel and pause work landed together; a few decisions changed during
+review (all in `Home Assistant for the whole household.dc.html`):
+
+- **Read panel = `flowOverviewBody`** rewritten as the map-style card stack.
+  Shared card shell extracted as `detailCardShell(icoName, icoColor, title,
+  body, footer, opts)` + `ccCardDivider()` (opts: `key`, `subtitle`,
+  `trailing`). Sticky identity header (icon squircle + name + status subtitle);
+  header title and all sub-step titles use `--text-lg` to match the map overlay.
+  Card order: **What it does → Activity → Pause → Notifications → Details.**
+  "What it controls" was built then removed on request. The Details card is a
+  plain surface-raised card (no icon/title, rows non-linked).
+- **Everything is an in-panel sub-step, not a segmented tab.** Activity "Show
+  more" (`state.flowActivityFull`), Pause options (`state.flowPauseFull`), and
+  Notifications "Add notification" (`state.flowNotifFull`) each swap the panel
+  body to a back-arrow sub-step (`subStepBack(onBack, title)` helper). All three
+  reset on navigation (added to `_onHash` + a dedicated reset) so returning to an
+  automation always opens the main step.
+- **Pause model** (`state.autoPause`, `pauseInfo/pauseAuto/resumeAuto/`
+  `pauseUntilFor/pauseUntilLabel`, `isEnabled` now derived from pause). Off =
+  unlimited pause. The Pause card shows a status only when paused (dot + "Paused
+  until X" on the title row, trailing) and a link into the options sub-step; the
+  sub-step is a radio list of durations (**no "On" option** — Signal-style) with
+  a big "Resume now" button shown when paused.
+- **Published (lifecycle) state** (`state.published`, `isPublished/`
+  `setPublished`), separate from pause. The collection list's status toggle now
+  means **Published vs Draft** (group labels, `statusLabel: "Published"` column
+  header); drafts are hidden from non-admins (`routinesBody` filter) and shown as
+  "Draft" in the detail header. A **Published** toggle was added to the edit
+  Details form.
+- **Notifications card** (`state.autoNotifs`, `autoNotifTypes/autoNotifs/`
+  `toggleAutoNotif`): runs / fails / stays-paused, toggled in a sub-step.
+- **Edit view keeps pencil -> Done and the two-segment control** (Details +
+  Edit history, Details default and first). The version detail uses the date as
+  its header (avatar removed) and a full-width borderless "Restore this version"
+  button. "Suggest" icon is `star-four-points-outline` (matches the toolbar).
+- **Run trace:** hovering an activity row previews its trace on the flow canvas
+  (`state.flowRunHover`); clicking pins it (`flowRunSel`).
+
+## Map detail panels: in-panel sub-steps — BUILT (2026-07-10)
+
+The map person and zone detail panels (`mapPersonPanel` / `zoneDetailView`)
+adopted the same in-panel sub-step pattern as the automation panel:
+
+- **Activity "Show more"** opens an in-panel sub-step (`state.mapActivityFull`,
+  keyed by person/zone id) with a back arrow, instead of navigating to
+  `/activity`. Reset in `closeMapDetail` / `mapRowTap` / `_onHash`.
+- **Add notification** on the person panel opens an in-panel sub-step (the old
+  `addMenu` fixed overlay was dead code and is bypassed); the zone panel already
+  drilled into `zoneNotifyForm`. Only the **"Notify me"** option remains (the
+  "notify the other person" option was removed).
+- **Notify form** (`mapNotifyForm` + zone equivalent): the Location group now
+  lists **zones only** (no "my/their current location", no "New location"), and
+  all choice rows use a **radio on the left** instead of a trailing check.
+- **Notifications card dropped for the "Me" person**; sub-step content is wrapped
+  in surface-raised cards for consistent spacing.
+
 ## What this is
 
 > ## STATUS INDEX (verified against code 2026-07-03) — READ FIRST

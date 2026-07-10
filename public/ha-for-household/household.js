@@ -224,6 +224,237 @@ export const household = {
     { id: "wake-up", name: "Wake up", description: "Gradually raises the bedroom lights over ten minutes", space: "shared", enabled: false, creator: "Daan" },
   ],
 
+  // ---- Automation / script flows (the node graphs) ---------------------
+  // Rendered by the flow pages. Node kinds: trigger, condition, action, wait,
+  // choose (with branches). Plain-language labels; technical detail lives in
+  // `fields` rows ([label, value, mono?]) shown in the inspector.
+  // `met` on a condition is the live "is this true right now" indicator.
+  flows: {
+    "morning-routine": {
+      triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 6:30", sub: "Every weekday", fields: [["Time", "6:30", true], ["Repeats", "Monday to Friday"]] }],
+      conditions: [
+        { id: "c1", icon: "calendar-check", block: "Time", label: "It is a weekday", met: true, fields: [["Days", "Monday to Friday"]] },
+        { id: "c2", icon: "home-account", block: "Presence", label: "Someone is home", met: true, fields: [["People", "Anyone"], ["Right now", "Sofie, Lars and Tess are home"]] },
+      ],
+      steps: [
+        { id: "a1", icon: "thermostat", block: "Climate set temperature", label: "Set the heating to 21°", targets: "2 thermostats on the ground floor", fields: [["Target", "21.0°C", true], ["Entities", "climate.living_room, climate.hallway", true]] },
+        { id: "ch1", type: "choose", icon: "call-split", block: "Choose", label: "Is the sun up yet?", branches: [
+          { id: "b1", label: "Not up yet", met: false, conditions: [
+            { id: "c1", icon: "weather-night", block: "Sun", label: "The sun is below the horizon", fields: [["State", "Below horizon"], ["Before", "Sunrise"]] },
+          ], steps: [
+            { id: "a2", icon: "lightbulb-on-outline", block: "Light", label: "Turn on the hallway lights", targets: "2 lights in the Hallway", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "80%"], ["Entities", "light.hallway_ceiling, light.hallway_lamp", true]] },
+          ] },
+          { id: "b2", label: "Already up", met: true, conditions: [
+            { id: "c2", icon: "weather-sunny", block: "Sun", label: "The sun is up", fields: [["State", "Above horizon"], ["After", "Sunrise"]] },
+          ], steps: [
+            { id: "a3", icon: "blinds-open", block: "Cover open", label: "Open the living room blinds", targets: "1 cover in the Living room", fields: [["Position", "Fully open"], ["Entity", "cover.living_room_blinds", true]] },
+          ] },
+        ] },
+      ],
+      notes: { ch1: "Sunrise moves through the year, so the routine checks instead of hardcoding a time." },
+    },
+    "hallway-motion": {
+      triggers: [{ id: "t1", icon: "motion-sensor", block: "Motion", label: "Motion in the hallway", sub: "Any motion sensor there", fields: [["Area", "Hallway"], ["Sensors", "binary_sensor.hallway_motion", true]] }],
+      conditions: [{ id: "c1", icon: "clock-outline", block: "Time", label: "Between 6:00 and 23:00", met: true, fields: [["From", "6:00", true], ["To", "23:00", true]] }],
+      steps: [
+        { id: "a1", icon: "lightbulb-on-outline", block: "Light", label: "Turn on the hallway lights", targets: "2 lights in the Hallway", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "100%"], ["Entities", "light.hallway_ceiling, light.hallway_lamp", true]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait until the hallway is clear", sub: "No motion for 2 minutes", fields: [["Condition", "No motion"], ["For", "2 minutes"]] },
+        { id: "a2", icon: "lightbulb-off-outline", block: "Light", label: "Turn the hallway lights off", targets: "2 lights in the Hallway", fields: [["State", "Off", false, ["On", "Off"]], ["Entities", "light.hallway_ceiling, light.hallway_lamp", true]] },
+      ],
+    },
+    "unoccupied-off": {
+      triggers: [{ id: "t1", icon: "home-export-outline", block: "Person leaves", label: "The last person leaves", sub: "Home becomes unoccupied", fields: [["People", "Everyone"], ["Zone", "Home"]] }],
+      conditions: [],
+      steps: [{ id: "a1", icon: "lightbulb-group-off-outline", block: "Light", label: "Turn off every light", targets: "17 lights in the whole home", fields: [["State", "Off", false, ["On", "Off"]], ["Target", "All lights"], ["Transition", "3 seconds"]] }],
+    },
+    "heating-occupied": {
+      triggers: [{ id: "t1", icon: "home-import-outline", block: "Person arrives", label: "Anyone arrives home", fields: [["People", "Anyone"], ["Zone", "Home"]] }],
+      conditions: [{ id: "c1", icon: "thermostat", block: "State", label: "The heating is off or in eco", met: false, fields: [["Right now", "Heating to 21.0°C"]] }],
+      steps: [{ id: "a1", icon: "thermostat", block: "Climate set temperature", label: "Set the heating to 21.5°", targets: "2 thermostats on the ground floor", fields: [["Target", "21.5°C", true], ["Entities", "climate.living_room, climate.hallway", true]] }],
+    },
+    "boost-ac": {
+      triggers: [{ id: "t1", icon: "gesture-double-tap", block: "Button pressed", label: "The panic button is pressed", sub: "Living room panic button", fields: [["Device", "Living room panic button"], ["Entity", "event.panic_button", true]] }],
+      conditions: [],
+      steps: [
+        { id: "a1", icon: "air-conditioner", block: "Climate set mode", label: "Run the AC at full", targets: "1 AC unit in the Living room", fields: [["Mode", "Cool, max fan"], ["Entity", "climate.living_room_ac", true]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait 10 minutes", fields: [["For", "10 minutes"]] },
+        { id: "a2", icon: "air-conditioner", block: "Climate set mode", label: "Set the AC back to auto", targets: "1 AC unit in the Living room", fields: [["Mode", "Auto"], ["Entity", "climate.living_room_ac", true]] },
+      ],
+    },
+    "sunset-lights": {
+      triggers: [{ id: "t1", icon: "weather-sunset", block: "Sun", label: "At sunset", fields: [["Event", "Sun sets"], ["Offset", "None"]] }],
+      conditions: [{ id: "c1", icon: "home-account", block: "Presence", label: "Someone is home", met: true, fields: [["People", "Anyone"], ["Right now", "Sofie, Lars and Tess are home"]] }],
+      steps: [
+        { id: "a1", icon: "lightbulb-on-outline", block: "Light", label: "Fade the garden lights on", targets: "3 lights in the Garden", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "60%"], ["Transition", "2 minutes"]] },
+        { id: "a2", icon: "lightbulb-on-outline", block: "Light", label: "Fade the living room lights on", targets: "4 lights in the Living room", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "45%"], ["Transition", "2 minutes"]] },
+      ],
+      notes: { a1: "Sofie tuned the brightness down from 80 percent, the garden felt like a stadium." },
+    },
+    "away-lock": {
+      triggers: [
+        { id: "t1", icon: "home-export-outline", block: "Person leaves", label: "The last person leaves", fields: [["People", "Everyone"], ["Zone", "Home"]] },
+        { id: "t2", icon: "clock-outline", block: "Time", label: "At 23:30", sub: "Every night", fields: [["Time", "23:30", true]] },
+      ],
+      conditions: [{ id: "c1", icon: "door-closed", block: "State", label: "Every door is closed", met: true, fields: [["Doors", "Front, garage, annex"], ["Right now", "All closed"]] }],
+      steps: [
+        { id: "a1", icon: "lock-outline", block: "Lock", label: "Lock the front door", targets: "1 lock in the Hallway", fields: [["Entity", "lock.front_door", true]] },
+        { id: "a2", icon: "lock-outline", block: "Lock", label: "Lock the garage door", targets: "1 lock in the Garage", fields: [["Entity", "lock.garage_door", true]] },
+        { id: "a3", icon: "lock-outline", block: "Lock", label: "Lock the annex door", targets: "1 lock in the Annex", fields: [["Entity", "lock.annex_door", true]] },
+        { id: "a4", icon: "shield-home-outline", block: "Scene activate", label: "Set the home to away", fields: [["Heating", "Eco"], ["Lights", "Off"]] },
+      ],
+    },
+    "lars-bedtime": {
+      triggers: [
+        { id: "t1", icon: "clock-outline", block: "Time", label: "At 19:30", fields: [["Time", "19:30", true]] },
+        { id: "t2", icon: "clock-outline", block: "Time", label: "At 20:00", fields: [["Time", "20:00", true]] },
+      ],
+      conditions: [],
+      steps: [
+        { id: "ch1", type: "choose", icon: "call-split", block: "Choose", label: "Which time is it?", branches: [
+          { id: "b1", label: "19:30, wind down", conditions: [
+            { id: "c1", icon: "clock-outline", block: "Time", label: "The time is 19:30", fields: [["After", "19:30", true], ["Before", "20:00", true]] },
+          ], steps: [
+            { id: "a1", icon: "lightbulb-on-50", block: "Light", label: "Dim Lars's lamp to warm", targets: "1 light in Lars's room", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "30%"], ["Color", "Warm white"], ["Entity", "light.lars_lamp", true]] },
+          ] },
+          { id: "b2", label: "20:00, lights out", conditions: [
+            { id: "c2", icon: "clock-outline", block: "Time", label: "The time is 20:00 or later", fields: [["After", "20:00", true]] },
+          ], steps: [
+            { id: "a2", icon: "lightbulb-off-outline", block: "Light", label: "Turn Lars's lamp off", targets: "1 light in Lars's room", fields: [["State", "Off", false, ["On", "Off"]], ["Entity", "light.lars_lamp", true]] },
+          ] },
+        ] },
+      ],
+    },
+    "annex-night": {
+      triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 22:00", fields: [["Time", "22:00", true]] }],
+      conditions: [],
+      steps: [
+        { id: "a1", icon: "lightbulb-on-30", block: "Light", label: "Turn on the annex night light", targets: "1 light in the Annex hallway", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "20%"], ["Entity", "light.annex_hallway", true]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait until 6:00", fields: [["Until", "6:00", true]] },
+        { id: "a2", icon: "lightbulb-off-outline", block: "Light", label: "Turn the night light off", targets: "1 light in the Annex hallway", fields: [["State", "Off", false, ["On", "Off"]], ["Entity", "light.annex_hallway", true]] },
+      ],
+      notes: { a1: "Kept deliberately dim so it never wakes Elizabeth." },
+    },
+    "annex-heating": {
+      triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 7:00", fields: [["Time", "7:00", true]] }],
+      conditions: [],
+      steps: [
+        { id: "a1", icon: "thermostat", block: "Climate set temperature", label: "Hold the annex at 22.5°", targets: "1 thermostat in the Annex", fields: [["Target", "22.5°C", true], ["Entity", "climate.annex", true]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait until 22:00", fields: [["Until", "22:00", true]] },
+        { id: "a2", icon: "thermostat", block: "Climate set temperature", label: "Lower to 18° for the night", targets: "1 thermostat in the Annex", fields: [["Target", "18.0°C", true], ["Entity", "climate.annex", true]] },
+      ],
+    },
+    "annex-morning": {
+      triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 7:30", fields: [["Time", "7:30", true]] }],
+      conditions: [{ id: "c1", icon: "home-account", block: "Presence", label: "Elizabeth is home", met: true, fields: [["Person", "Elizabeth"], ["Right now", "Home"]] }],
+      steps: [
+        { id: "a1", icon: "blinds-open", block: "Cover open", label: "Open Elizabeth's blinds", targets: "1 cover in the Annex", fields: [["Position", "Fully open"], ["Entity", "cover.annex_blinds", true]] },
+        { id: "a2", icon: "thermostat", block: "Climate set temperature", label: "Warm the room to 22.5°", targets: "1 thermostat in the Annex", fields: [["Target", "22.5°C", true], ["Entity", "climate.annex", true]] },
+      ],
+    },
+    "goodnight": {
+      script: true,
+      steps: [
+        { id: "a1", icon: "lock-outline", block: "Lock", label: "Lock the front and garage doors", targets: "2 locks", fields: [["Entities", "lock.front_door, lock.garage_door", true]] },
+        { id: "a2", icon: "lightbulb-group-off-outline", block: "Light", label: "Turn off the downstairs lights", targets: "9 lights on the ground floor", fields: [["State", "Off", false, ["On", "Off"]], ["Transition", "5 seconds"]] },
+        { id: "ch1", type: "choose", icon: "call-split", block: "Choose", label: "Is anyone still downstairs?", branches: [
+          { id: "b1", label: "Someone is", met: false, conditions: [
+            { id: "c1", icon: "motion-sensor", block: "Presence", label: "Someone is downstairs", fields: [["Area", "Ground floor"], ["State", "Detected"]] },
+          ], steps: [
+            { id: "a3", icon: "lightbulb-on-30", block: "Light", label: "Keep the hallway light at 20%", targets: "1 light in the Hallway", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "20%"], ["Entity", "light.hallway_lamp", true]] },
+          ] },
+          { id: "b2", label: "No one", met: true, conditions: [
+            { id: "c2", icon: "motion-sensor-off", block: "Presence", label: "No one is downstairs", fields: [["Area", "Ground floor"], ["State", "Clear"]] },
+          ], steps: [
+            { id: "a4", icon: "thermostat", block: "Climate set temperature", label: "Set the heating to night", targets: "2 thermostats", fields: [["Target", "17.0°C", true]] },
+          ] },
+        ] },
+      ],
+    },
+    "arrive-home": {
+      script: true,
+      steps: [
+        { id: "a1", icon: "lock-open-variant-outline", block: "Unlock", label: "Unlock the front door", targets: "1 lock in the Hallway", fields: [["Entity", "lock.front_door", true]] },
+        { id: "a2", icon: "lightbulb-on-outline", block: "Light", label: "Light the hallway", targets: "2 lights in the Hallway", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "100%"]] },
+        { id: "a3", icon: "speaker", block: "Media play", label: "Resume the living room music", targets: "1 speaker in the Living room", fields: [["Entity", "media_player.living_room", true]] },
+      ],
+    },
+    "leaving-home": {
+      script: true,
+      steps: [
+        { id: "a1", icon: "lightbulb-group-off-outline", block: "Light", label: "Turn off every light", targets: "17 lights in the whole home", fields: [["State", "Off", false, ["On", "Off"]], ["Target", "All lights"]] },
+        { id: "a2", icon: "lock-outline", block: "Lock", label: "Lock every door", targets: "3 locks", fields: [["Entities", "lock.front_door, lock.garage_door, lock.annex_door", true]] },
+        { id: "a3", icon: "shield-home-outline", block: "Scene activate", label: "Set the home to away", fields: [["Heating", "Eco"]] },
+      ],
+    },
+    "wake-up": {
+      script: true,
+      steps: [
+        { id: "a1", icon: "lightbulb-on-10", block: "Light", label: "Bedroom lights to 10%", targets: "2 lights in the Bedroom", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "10%"], ["Color", "Warm white"]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait 5 minutes", fields: [["For", "5 minutes"]] },
+        { id: "a2", icon: "lightbulb-on-50", block: "Light", label: "Bedroom lights to 50%", targets: "2 lights in the Bedroom", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "50%"]] },
+        { id: "w2", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait 5 minutes", fields: [["For", "5 minutes"]] },
+        { id: "a3", icon: "lightbulb-on", block: "Light", label: "Bedroom lights to full", targets: "2 lights in the Bedroom", fields: [["State", "On", false, ["On", "Off"]], ["Brightness", "100%"], ["Color", "Cool white"]] },
+      ],
+    },
+  },
+
+  // ---- Recent runs (traces) --------------------------------------------
+  // outcome: done | stopped (a condition ended the run) | error.
+  // branches: chosen branch per choose node. details: per-node result strings.
+  flowRuns: {
+    "morning-routine": [
+      { id: "r1", when: "today 6:32", trigger: "t1", outcome: "done", duration: "4.1s", branches: { ch1: "b1" }, details: { a1: "Heating set to 21.0°C", a2: "Turned on 2 lights", c2: "Sofie and Lars were home" } },
+      { id: "r2", when: "Fri 6:30", trigger: "t1", outcome: "done", duration: "3.8s", branches: { ch1: "b2" }, details: { a1: "Heating set to 21.0°C", a3: "Blinds opened" } },
+      { id: "r3", when: "Sat 6:30", trigger: "t1", outcome: "stopped", stopAt: "c1", duration: "0.1s", details: { c1: "Saturday, not a weekday" } },
+    ],
+    "hallway-motion": [
+      { id: "r1", when: "today 7:48", trigger: "t1", outcome: "done", duration: "2m 14s", details: { a1: "Turned on 2 lights", w1: "Clear after 2m 8s", a2: "Turned off 2 lights" } },
+      { id: "r2", when: "today 7:12", trigger: "t1", outcome: "done", duration: "3m 02s", details: { a1: "Turned on 2 lights", a2: "Turned off 2 lights" } },
+      { id: "r3", when: "yesterday 23:41", trigger: "t1", outcome: "stopped", stopAt: "c1", duration: "0.1s", details: { c1: "23:41 is outside 6:00 to 23:00" } },
+      { id: "r4", when: "yesterday 22:19", trigger: "t1", outcome: "done", duration: "2m 40s", details: { a1: "Turned on 2 lights", a2: "Turned off 2 lights" } },
+    ],
+    "unoccupied-off": [
+      { id: "r1", when: "yesterday 9:10", trigger: "t1", outcome: "done", duration: "3.2s", by: "Daan left last", details: { a1: "Turned off 11 lights, 6 were already off" } },
+    ],
+    "heating-occupied": [
+      { id: "r1", when: "today 7:02", trigger: "t1", outcome: "done", duration: "0.6s", by: "Tess arrived home", details: { c1: "Heating was in eco", a1: "Heating set to 21.5°C" } },
+      { id: "r2", when: "yesterday 16:48", trigger: "t1", outcome: "stopped", stopAt: "c1", duration: "0.1s", by: "Sofie arrived home", details: { c1: "Heating was already on" } },
+    ],
+    "boost-ac": [],
+    "sunset-lights": [
+      { id: "r1", when: "yesterday 20:14", trigger: "t1", outcome: "done", duration: "2m 01s", details: { a1: "3 lights faded to 60%", a2: "4 lights faded to 45%" } },
+      { id: "r2", when: "Sat 20:12", trigger: "t1", outcome: "done", duration: "2m 00s", details: { a1: "3 lights faded to 60%", a2: "4 lights faded to 45%" } },
+    ],
+    "away-lock": [
+      { id: "r1", when: "today 8:20", trigger: "t1", outcome: "done", duration: "5.4s", by: "Sofie left last", details: { a1: "Locked", a2: "Locked", a3: "Locked", a4: "Heating to eco, 11 lights off" } },
+      { id: "r2", when: "yesterday 23:30", trigger: "t2", outcome: "error", stopAt: "a3", duration: "30.2s", details: { a1: "Locked", a2: "Locked", a3: "The annex door lock did not respond within 30 seconds" } },
+      { id: "r3", when: "yesterday 8:05", trigger: "t1", outcome: "done", duration: "4.9s", by: "Daan left last", details: { a1: "Locked", a2: "Locked", a3: "Locked", a4: "Heating to eco" } },
+    ],
+    "lars-bedtime": [
+      { id: "r1", when: "yesterday 20:00", trigger: "t2", outcome: "done", duration: "0.4s", branches: { ch1: "b2" }, details: { a2: "Lamp turned off" } },
+      { id: "r2", when: "yesterday 19:30", trigger: "t1", outcome: "done", duration: "0.5s", branches: { ch1: "b1" }, details: { a1: "Lamp dimmed to 30%, warm white" } },
+    ],
+    "annex-night": [
+      { id: "r1", when: "today 6:00", trigger: "t1", outcome: "done", duration: "8h 00m", details: { a1: "Night light on at 20%", w1: "Waited until 6:00", a2: "Night light off" } },
+    ],
+    "annex-heating": [
+      { id: "r1", when: "today 7:05", trigger: "t1", outcome: "done", duration: "15h 00m", details: { a1: "Holding 22.5°C" } },
+    ],
+    "annex-morning": [
+      { id: "r1", when: "today 7:30", trigger: "t1", outcome: "done", duration: "1.9s", details: { c1: "Elizabeth was home", a1: "Blinds opened", a2: "Heating set to 22.5°C" } },
+    ],
+    "goodnight": [
+      { id: "r1", when: "yesterday 23:02", trigger: "start", outcome: "done", duration: "6.0s", by: "Run by Daan", branches: { ch1: "b2" }, details: { a1: "2 doors locked", a2: "9 lights off", a4: "Heating set to 17.0°C" } },
+    ],
+    "arrive-home": [
+      { id: "r1", when: "today 8:14", trigger: "start", outcome: "done", duration: "1.2s", by: "Front door tag, scanned by Sofie", details: { a1: "Unlocked", a2: "2 lights on", a3: "Resumed playing" } },
+    ],
+    "leaving-home": [
+      { id: "r1", when: "today 8:20", trigger: "start", outcome: "done", duration: "4.1s", by: "Front door tag, scanned by Sofie", details: { a1: "11 lights off", a2: "3 doors locked", a3: "Home set to away" } },
+    ],
+    "wake-up": [],
+  },
+
   // ---- Tags (physical NFC stickers and QR codes) ----------------------
   // A tag is a physical thing you scan. Scanning fires a tag_scanned event you
   // point automations at. Its value is the scans it produces and what they run.

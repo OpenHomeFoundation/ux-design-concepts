@@ -138,10 +138,35 @@ never collide:
 
 All paths live in `Home Assistant for the whole household.dc.html`.
 
+- **`ccPanel(spec, bp)`** — the shared **contextual panel** primitive behind the
+  Map, Automation, and Dashboard detail panels. One spec drives both forms:
+  desktop = a floating 380px surface card (`--radius-lg`, shadow
+  `0 8px 28px rgba(0,0,0,0.28)`, `z 1001`, top-right by default via
+  `desktopPos`); mobile = a bottom sheet routed through `renderSheet`. This is a
+  DIFFERENT family from centered dialogs (`fyScrim`) and confirmations
+  (`renderConfirm`) — a panel is anchored/contextual, stays beside its page, and
+  can be persistent (Map) or dismissible (Dashboard).
+  - `spec`: `id`, `title`, `subtitle` (string or `{text,color,strong}`),
+    `segments` (`{items:[{id,label}], active, onChange, label}`), `onClose`,
+    `onBack`, `body`, `footer`, `headerTrailing`; desktop `desktopPos` /
+    `desktopBodyPad` / `width`; mobile `detents` / `defaultDetent` /
+    `persistent` / `scrimAtMax` / `backdrop` / `bg` / `bodyPad` / `onDismiss`.
+  - **Header** (`panelHeader`) and **segments** (`panelSegments`) are shared
+    chrome. The leading slot is the back chevron when `onBack` is set, else the
+    close X (`onClose`), else nothing — one 36px icon button (`panelIconBtn`).
+  - **Sub-step contract** (enforced once, so all three pages behave the same):
+    passing `onBack` shows the chevron AND drops the X AND hides the segments.
+  - Segments use the `.cc-toolbar__view` sliding-pill CSS (two segments).
+- **`ccSubHead(onBack, title, subtitle, bp)`** — a sub-step header rendered
+  INSIDE a panel body, for deep sub-steps that keep their own state (Map person /
+  zone / review / notify forms; Automation Activity / Pause / Notifications).
+  Pixel-matches `panelHeader`, sticky so it pins while the body scrolls. Used
+  when the sub-step isn't lifted into the chrome `onBack`.
 - **`renderSheet(spec, bp)`** — the bottom-sheet engine. Detents, drag, handle/X,
   `bg`, `footer`, two-level filter drill-down. Scrim `--color-scrim` @ `z 1000`,
-  panel @ `z 1001`. Used by: Filters, Display options, Map, Add widget (mobile),
-  Configure widget (mobile).
+  panel @ `z 1001`. `ccPanel` builds on it for the mobile form. Also used
+  directly by: Filters, Display options, Add widget (mobile), Configure widget
+  (mobile).
 - **`fyScrim(bp, card, close)`** — the centered desktop dialog frame: shared
   scrim token, no blur, `cc-scrim-in` + `cc-dialog-in`. Used by Add widget /
   Configure widget (desktop) and the Display-options customize modal (desktop).
@@ -155,6 +180,10 @@ All paths live in `Home Assistant for the whole household.dc.html`.
   scrim/z/entrance.
 
 ### Still to do (upstream / future)
+- Migrate the remaining Dashboard **dialogs** that still hand-roll the
+  sheet<->`fyScrim` split (`dashDraft`, `dashInspector`, `dashCardPick`,
+  `addWidget`, `widgetConfig`) — these are the *dialog* family, not `ccPanel`;
+  a shared dialog primitive parallel to `ccPanel` would finish the job.
 - The z-index scale is added to the **local** `_ds/.../design-tokens.css` copy.
   Upstream it to the real design-system source
   (`/projects/fababd17-1e21-468b-98a9-76cd37494ccc/design-tokens.css`).

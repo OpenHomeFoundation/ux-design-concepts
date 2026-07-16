@@ -6,6 +6,12 @@
 
 ## Design patterns (reuse these)
 
+### Automations always use the flow (flowchart) detail view
+Every automation in `household.js` `automations` MUST have a matching entry in
+`flows` (keyed by the automation id). Without one, the detail page falls back
+to the legacy `routineDetail` layout, which is deprecated: never rely on it,
+and always author a flow when adding an automation.
+
 ### Titled section card
 A section on a settings / account page is a **bold heading above a surface card**
 (not a heading inside the card). Use it for grouping fields (Contact information,
@@ -29,6 +35,20 @@ Prefer `ccOverlaySelect(menuKey, value, options, onChange, { fullWidth, align, l
 (the app's own popover, styled to match) over the design system's native `Select`
 on settings/forms. It uses `state.toolbarMenu` for open/close. The Location source
 picker on the Presence page and every Region select on the Home information page use it.
+
+### Mobile topbar account avatar
+The account avatar (top-right of the mobile topbar, `avatarBtn` in
+`renderTopbar`) appears **only on a top-level destination**: a root you reach
+directly, from the tabbar or the More directory (`isTopLevelDest` = a
+single-segment route like `/home`, `/devices`, `/people`, `/logs`, `/weather`).
+This is independent of the back arrow: a root opened from More keeps its
+back-to-More arrow *and* shows the avatar, because it is top-level, just not in
+the visible tabbar. Back button and avatar are orthogonal concerns, back =
+"not reachable from the visible tabbar", avatar = "this is a top-level
+destination". The avatar hides on any drill-in (a deeper path,
+`/devices/x`, `/home/floor/y`), in a transient mode (`selecting`, home
+`fyEdit`), and inside your own account area (`accountLanding`, `/my/*`) where it
+would be redundant.
 
 ### Topbar title on settings / account pages
 Settings and My-account pages hide the large in-page title and always show the

@@ -202,6 +202,7 @@ export const household = {
     { id: "heating-occupied", name: "Turn heating on when the home is occupied", description: "Brings the heating to the target temperature when anyone is home", space: "shared", enabled: true, lastTriggered: "today 7:02", creator: "Home Assistant", category: "Climate", presencePeople: ["anyone"] },
     { id: "boost-ac", name: "Boost AC when the panic button is pressed", description: "Runs the living room AC at full for ten minutes when the panic button is pressed", space: "shared", enabled: false, lastTriggered: "never", creator: "Daan", area: "living-room", category: "Climate" },
     { id: "sunset-lights", name: "Sunset lights", description: "Fades the garden and living room lights on at sunset", space: "shared", enabled: true, lastTriggered: "yesterday 20:14", creator: "Daan", createdBy: "daan", contributors: ["daan", "sofie"], editors: ["maintainers", "sofie"], category: "Lighting" },
+    { id: "plant-watering", name: "Water the balcony plants", description: "Runs the balcony drip irrigation for five minutes every morning, skipped when rain is forecast", space: "shared", enabled: true, lastTriggered: "today 7:15", creator: "Sofie", createdBy: "sofie", contributors: ["sofie"], editors: ["sofie"], category: "Routines" },
     { id: "away-lock", name: "Lock the doors when everyone leaves", description: "Locks the front door, garage and annex once the home is empty", space: "shared", enabled: true, lastTriggered: "today 8:20", creator: "Daan", category: "Security", presencePeople: ["anyone"] },
     { id: "lars-bedtime", name: "Lars's bedtime lamp", description: "Dims Lars's lamp to warm at 19:30 and off at 20:00", space: "shared", enabled: true, lastTriggered: "yesterday 20:00", creator: "Daan", area: "lars-room", affects: ["lars"], category: "Lighting" },
     { id: "annex-night", name: "Annex night light", description: "Keeps Elizabeth's hallway softly lit between 22:00 and 6:00", space: "shared", enabled: true, lastTriggered: "today 6:00", creator: "Daan", area: "greet-room", affects: ["greet"], category: "Lighting" },
@@ -229,7 +230,19 @@ export const household = {
   // choose (with branches). Plain-language labels; technical detail lives in
   // `fields` rows ([label, value, mono?]) shown in the inspector.
   // `met` on a condition is the live "is this true right now" indicator.
+  // RULE: every automation in `automations` MUST have an entry here. An
+  // automation without a flow falls back to the legacy routineDetail layout,
+  // which we no longer use.
   flows: {
+    "plant-watering": {
+      triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 7:15", sub: "Every morning", fields: [["Time", "7:15", true], ["Repeats", "Every day"]] }],
+      conditions: [{ id: "c1", icon: "weather-rainy", block: "Weather", label: "No rain forecast today", met: true, fields: [["Source", "Forecast for today"], ["Right now", "Dry, 24°C"]] }],
+      steps: [
+        { id: "a1", icon: "sprinkler-variant", block: "Switch", label: "Run the balcony drip irrigation", targets: "1 valve on the Balcony", fields: [["State", "On", false, ["On", "Off"]], ["Entity", "switch.balcony_irrigation", true]] },
+        { id: "w1", type: "wait", icon: "timer-sand", block: "Wait", label: "Wait 5 minutes", fields: [["For", "5 minutes"]] },
+        { id: "a2", icon: "sprinkler-variant", block: "Switch", label: "Turn the irrigation off", targets: "1 valve on the Balcony", fields: [["State", "Off", false, ["On", "Off"]], ["Entity", "switch.balcony_irrigation", true]] },
+      ],
+    },
     "morning-routine": {
       triggers: [{ id: "t1", icon: "clock-outline", block: "Time", label: "At 6:30", sub: "Every weekday", fields: [["Time", "6:30", true], ["Repeats", "Monday to Friday"]] }],
       conditions: [
@@ -1305,6 +1318,12 @@ export const dashboards = [
     id: "family-wall", name: "Family wall", icon: "monitor-dashboard",
     viewers: ["everyone"], editors: ["sofie"], createdBy: "sofie",
     created: "12 Mar 2026", modified: "yesterday 21:04", startedFrom: "family",
+    history: [
+      { by: "sofie", action: "Rearranged the cards", time: "yesterday 21:04" },
+      { by: "daan", action: "Added the living room camera", time: "3 Mar 2026" },
+      { by: "sofie", action: "Added the quick actions card", time: "18 Feb 2026" },
+      { by: "sofie", action: "Created the dashboard", time: "12 Mar 2026" },
+    ],
     cards: [
       { type: "weather" },
       { type: "actions", title: "Quick actions", kind: "scenes", ids: ["good-morning", "movie-night", "away"] },
@@ -1316,6 +1335,11 @@ export const dashboards = [
     id: "movie-night", name: "Movie night", icon: "movie-open-outline",
     viewers: ["daan", "sofie"], editors: ["daan"], createdBy: "daan",
     created: "4 Feb 2026", modified: "last week", startedFrom: "media",
+    history: [
+      { by: "daan", action: "Added the Climate card", time: "last week" },
+      { by: "daan", action: "Renamed to Movie night", time: "6 Feb 2026" },
+      { by: "daan", action: "Created the dashboard", time: "4 Feb 2026" },
+    ],
     cards: [
       { type: "media", id: "living_room_speaker" },
       { type: "entities", title: "Living room", ids: ["living_room_ceiling", "living_room_lamp", "living_room_tv_backlight"] },
@@ -1326,6 +1350,11 @@ export const dashboards = [
     id: "daan-home", name: "Daan's dashboard", icon: "view-dashboard",
     viewers: ["daan"], editors: ["daan"], createdBy: "daan",
     created: "18 Jan 2026", modified: "today 7:41", startedFrom: "blank",
+    history: [
+      { by: "daan", action: "Updated the Routines card", time: "today 7:41" },
+      { by: "daan", action: "Added a weather card", time: "22 Jan 2026" },
+      { by: "daan", action: "Created the dashboard", time: "18 Jan 2026" },
+    ],
     cards: [
       { type: "entities", title: "Bedroom", ids: ["main_bed_lamp", "main_bed_reading", "main_bed_thermostat"] },
       { type: "actions", title: "Routines", kind: "scenes", ids: ["good-morning", "away"] },
@@ -1336,6 +1365,10 @@ export const dashboards = [
     id: "sofie-home", name: "Sofie's dashboard", icon: "view-dashboard",
     viewers: ["sofie"], editors: ["sofie"], createdBy: "sofie",
     created: "20 Jan 2026", modified: "today 8:12", startedFrom: "blank",
+    history: [
+      { by: "sofie", action: "Edited My lights", time: "today 8:12" },
+      { by: "sofie", action: "Created the dashboard", time: "20 Jan 2026" },
+    ],
     cards: [
       { type: "entities", title: "My lights", ids: ["living_room_lamp", "main_bed_lamp", "kitchen_ceiling"] },
       { type: "weather" },
@@ -1512,17 +1545,36 @@ export function directoryFor(persona) {
   });
 }
 
-// Bookmark items resolved from ids, always trailing More.
-// Resolves against the directory first, then bookmarkExtras (subpage shortcuts
-// like the front door, which are favourites, not More destinations).
-export function bookmarksFor(persona) {
+// Resolve a single bookmark id to a shortcut object {id, label, icon, route}.
+// A bookmark points at a top-level section (directory id), an area
+// (`area:<areaId>`, label + icon inherited from the area), or a curated subpage
+// shortcut (bookmarkExtras). Returns null if the id is unknown or the persona
+// cannot reach it (e.g. an area outside a guest's scope).
+export function bookmarkResolve(persona, id) {
+  if (!id) return null;
+  if (id.indexOf("area:") === 0) {
+    const aid = id.slice(5);
+    if (!canAccessArea(persona, aid)) return null;
+    const a = household.areas[aid];
+    if (!a) return null;
+    return { id: id, label: a.name, icon: a.icon || "floor-plan", route: "/home/area/" + aid };
+  }
+  if (id.indexOf("d:") === 0) {
+    const d = dashboards.find((x) => x.id === id.slice(2));
+    if (!d || !canViewDashboard(persona, d)) return null;
+    return { id: id, label: d.name, icon: d.icon || "view-dashboard", route: "/d/" + d.id };
+  }
   const byId = Object.fromEntries([...directory, ...bookmarkExtras].map((d) => [d.id, d]));
-  const items = persona.bookmarks
-    .map((id) => byId[id])
-    .filter(Boolean)
-    .slice(0, 5)
-    .map((d) => ({ id: d.id, label: d.label, icon: d.icon, route: d.route }));
-  return items;
+  const d = byId[id];
+  if (!d) return null;
+  return { id: d.id, label: d.label, icon: d.icon, route: d.route };
+}
+
+// Bookmark items resolved from an id list (defaults to the persona's set).
+// Not capped: the rail scrolls, the mobile tabbar shows the first three.
+export function bookmarksFor(persona, ids) {
+  const list = ids || persona.bookmarks || [];
+  return list.map((id) => bookmarkResolve(persona, id)).filter(Boolean);
 }
 
 // ---- Dashboard access -------------------------------------------------
@@ -1678,7 +1730,7 @@ export const aiTasks = {
   provider: "Assist with AI (Home Assistant Cloud)",
   dataGeneration: [
     { id: "suggest-names", name: "Suggest automation names", desc: "Proposes clear names for new automations.", enabled: true, stock: true },
-    { id: "draft-routine", name: "Draft a zone or automation", desc: "Turns a plain-language idea into a draft you can review, tweak, and suggest.", enabled: true },
+    { id: "draft-routine", name: "Build automations from a description", desc: "Turns a plain-language description into an automation flowchart you can review, tweak, and add or suggest.", enabled: true },
   ],
   imageGeneration: [
     { id: "gen-images", name: "Generate images", desc: "Creates images for dashboards and notifications.", enabled: true, stock: true },
@@ -1756,7 +1808,7 @@ export const explore = {
 if (typeof window !== "undefined") {
   window.__HH_MOD = {
     household, directory, bookmarkExtras, extensionCategories, mapData, entityRegistry, integrations,
-    getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, energyFor,
+    getPersona, entitiesIn, areaList, visibleFloors, canAccessArea, directoryFor, bookmarksFor, bookmarkResolve, energyFor,
     normalizeStructure, floorsOfBuilding, groundFloorOf, outdoorAreaList, visibleBuildings,
     dashboards, dashboardTemplates, grantMatches, canEditDashboard, canViewDashboard, dashboardsFor, dashboardSpaceFor,
     aiTasks, suggestions, explore,

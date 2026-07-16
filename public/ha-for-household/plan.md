@@ -2,6 +2,194 @@
 
 The shared reference for every session. Keep it updated as the build progresses.
 
+## Coercive-control-resistant design — PLAN (opened 2026-07-13)
+
+Source: the "Coercive Control Resistant Design" checklist (Nuttall & Nash, IBM),
+referenced in Annika's review doc "Review HA for the whole household". Five
+principles; we treat **1 (gaslighting)** and **2 (privacy & choice)** as concrete
+build work and **3 security / 4 technical ability / 5 diversity** as standing
+guardrails (recorded at the bottom of this section). Reviewers: Annika, Matthias,
+Niels. Copy rule reminder: "history", not "audit trail", in UI; "and" never "&".
+
+### Principle 1: Combatting gaslighting
+
+Status: items 2-4 BUILT 2026-07-13 (automation read-view edit history; zone +
+device edit history; new-user-access notice + toggle on Explore; Notifications
+card extended to scenes/scripts, integrations, voice assistants). Item 1 held,
+item 5 already-covered.
+
+Checklist items -> where each lands in the concept:
+
+1. **Do not let one user rewrite truth/history.** Already honoured: the activity
+   log is immutable and edit history is versioned (never edited in place). No
+   build; hold the line (never add an "edit log entry" affordance anywhere).
+
+2. **Clearly show when records/settings changed (who/what/when).**
+   - **Automations read view** [TASK]: the edit history already exists
+     (`flowVersionRows` / `flowVersionHistory`) but only shows in the *edit*
+     panel. Surface it in the **read** panel (`flowGenericPanel`) as a read-only
+     "Edit history" card, mirroring the dashboard read panel
+     (`dashHistory` -> `histCard` via `detailCardShell("history", …, "Edit
+     history", …)`). Scenes/scripts share the flow pages, so they inherit it.
+   - **Zones** [TASK]: zones are editable (`zoneEditView`, name/shape/location/
+     icon/color) but keep no history. Add a `history` array to zone records and
+     an "Edit history" card in `zoneDetailView`.
+   - **Devices** [TASK]: device settings (rename, area reassignment, options)
+     keep no history. Add a `history` array to device records and an "Edit
+     history" card in the device detail. This is the "extend to devices and
+     zones … and basically everything that can be modified" from Annika [c].
+   - Model: reuse the dashboard/flow shape `{ by, change, time }`, newest first,
+     rendered through `detailCardShell` for visual consistency across object
+     types.
+
+3. **Notify existing users when a new user gains access** [TASK]. Home is the
+   **Explore** page (resident-facing). When a person is added to the home or
+   granted access to a space, write a notice shown on Explore, and add a
+   per-user **notification toggle** on that page to control it. (Ties to
+   principle 2's "know who can view their data / who is informed".)
+
+4. **Notify users of actions/changes to shared services** [TASK]. Mechanism is
+   the existing **Notifications card** (automations + dashboards; zones already
+   have `zoneNotifyForm`). Extend the same card pattern to the remaining shared
+   objects whose changes affect others: **scenes/scripts**, **shared
+   integrations/services**, **voice assistants**. Rule: any shared object gets a
+   Notifications card.
+
+5. **Remote control provides notification + local override** [ALREADY COVERED].
+   Home Assistant already exposes this through the entity's **activity and
+   history** data, shown on the entity: you can see who controlled what (person
+   vs automation vs remote actor), and a person present can always operate the
+   entity directly. Provenance + override + log therefore exist today; no new
+   build. Keep surfacing the who-controlled-what attribution on entities.
+
+### Principle 2: Privacy & choice
+
+Current surfaces: **My data** page (`myDataBody`) lists each data type (Presence,
+Health, Calendar, Voice) with a Shared / Private / Ask-each-time access chip;
+each detail (`myDataDetailBody`) offers those three choices + a "How it's used"
+line. Presence has its own page (per-person visibility everyone / home-away /
+private / off, plus location source). Voice has a keep-history toggle + delete.
+Shield notice already: "You decide what the home keeps about you, and who can
+see it." Defaults live in `personalData[].access`.
+
+Checklist items -> where each lands:
+
+1. **Informed and intentional choices** [TASK]. The 3-way access choice + "How
+   it's used" mostly covers this; strengthen with a plain "what this means for
+   others" line per choice so the impact of each option is explicit.
+
+2. **Know who can view your data and who is informed of your actions** [TASK].
+   Access is coarse today (Shared/Private/Ask). Add a concrete **"who can see
+   this"** surface per data type, listing the **actual people by name and
+   avatar** (reuse `ProfileAvatar`), plus **"who is notified of your actions."**
+   Single who-can-see surface. Ties to Principle 1 item 3 (new-user-access
+   notice).
+
+3. **Regular privacy notifications** [TASK]. Add a **privacy check-in** as a
+   **notification option on the My account -> Notifications** page (a toggle the
+   user controls), prompting a periodic review of their data settings. Lives
+   with the other notification options, not a forced interruption. **Cadence:
+   monthly, on by default** (frequent enough to stay meaningful, infrequent
+   enough to avoid notification fatigue; a check-in people reflexively dismiss
+   defeats the purpose). Toggle offers on (monthly) / off.
+
+4. **Amend settings clearly and easily** [BUILT]. My data is reachable and
+   editable. Nothing to do.
+
+5. **Assess the most appropriate defaults** [DECISION + onboarding TASK].
+   Default is **privacy-protective**: location limited/off, health private,
+   voice-keep off, calendar shared. AND we **onboard the user and ask them
+   explicitly** what they want rather than silently applying defaults, so the
+   choice is intentional (checklist item 1). Defaults are the safe starting
+   point the onboarding presents. **Onboarding flow to be built later**; recorded
+   here so the defaults + explicit-ask decision isn't lost.
+
+### Principles 3 to 5 (guardrails)
+
+- **3 Security & data** — guardrail: threat-model the malevolent *authenticated*
+  user (the maintainer/resident power imbalance is the whole frame). Design
+  principle to hold, not a screen.
+- **4 Technical ability** — guardrail: usable without "tinkering", accessible
+  language, approachable to non-maintainers. Validates the comment/suggestion
+  direction. Standing principle.
+- **5 Diversity** — guardrail: diverse users, unhappy paths, edge cases. A
+  research/QA principle, not a screen.
+
+Overarching warning from the deck: do not design the product into a "saviour"
+role.
+
+## Review doc follow-ups (beyond the CC checklist) — PLAN (opened 2026-07-13)
+
+Other feedback from Annika's review doc that sits outside the five CC principles.
+Grounded in the foundational vision (OpenHomeFoundation/ux-design discussion #40,
+"Home Assistant for the whole household") and its cited research.
+
+1. **Upcoming automations for residents** [OPEN TASK]. Review [v]-[z]: residents
+   want to anticipate what the home is about to do, not only see it in
+   retrospect. A time-wise list of automations about to run ("Sunset lights, in
+   5 min", "Goodnight, at 22:30"). Known hard part (agreed in the thread):
+   triggers are not only time-based (events too), so the list can't claim to be
+   the full picture, frame honestly as "scheduled next", not "everything that
+   will happen". Where it lives (Explore? a home widget? the automations
+   overview?) is still to decide. Ties to #40's "awareness of presence" +
+   haunted-house-syndrome framing.
+
+2. **Who can pause an automation** [DECISION TAKEN]. Everyone in the household
+   can **pause** an automation, even without edit rights, and the pause is
+   **tracked** (who paused it, when, shown in history/activity). Matches #40's
+   "residents should always be able to step in and override... even if they
+   can't edit". The self-resuming pause is already built; implementation work is
+   to (a) ungate the pause control for all household members (not just editors)
+   and (b) write a history/activity entry attributing the pause. Distinct from
+   Delete/disable-permanently, which stays maintainer-only.
+
+3. **Maintainer notified of pending suggestions** [COVERED]. Handled by the
+   Explore page + notification plan (CC Principle 1 item 3 / Principle 2 item 2).
+   No separate work; the "suggestions are hidden" concern [g]/[h] is answered by
+   surfacing them on Explore with a notification option.
+
+4. **Comment / note feature (resident to maintainer)** [TASK, surfaces TBD]. The
+   lightweight "something felt wrong" / "please change this" note that replaces
+   the WhatsApp back-and-forth (review [i]-[s], #40 "Reporting and feedback";
+   research: Schulz 2022, "communication features that allow cohabitants to
+   comment... notes or hints for specific devices or features"). The seed already
+   exists as the **zone-suggestion review note** (`reviewNote`). Extend the same
+   note affordance to more surfaces, candidates to choose from:
+   - **Automations** (comment on / flag an existing automation, the biggest
+     review thread).
+   - **Devices / entities** (a "something felt wrong" note in more-info, #40's
+     "a button that says something felt wrong").
+   - **Areas / rooms**.
+   - **Dashboards**.
+   Notes collect for the maintainer on the **Explore page** (that IS the
+   maintainer inbox, no separate inbox surface). **No chat box**: a note is a
+   one-shot flag/suggestion (like the zone review note), optionally paired with
+   the existing "suggest an automation" flow, not a back-and-forth conversation.
+   Decision needed: which surfaces first.
+
+5. **Rename "scoped access" to "custom access"** [TASK]. Review [aa]: "scoped" is
+   unclear and "limited/restricted" reads negative. Decision: use **"Custom
+   access"** in UI copy. Touches `scopedBanner` and any resident/non-resident
+   access wording (the persona-level `scoped` data key can stay; this is copy
+   only). Sentence case, and "and" not "&" per the copy rules.
+
+6. **Maintainer is also a resident (double role)** [EXPLORE]. Review "About the
+   maintainer": the person is both using the home and maintaining it, and seeing
+   maintenance concerns while off-duty is stressful. #40 defines the maintainer
+   role as covering **both** the household member who administers it **and a
+   hired professional who is not a household member**. So the architecture should
+   not assume maintainer == resident. Explore: a way to separate/relax the
+   maintenance view from the resident view (a mode, a surfaced-only-when-needed
+   maintenance area, or similar), and handle the paid-non-resident maintainer.
+   Direction to explore, not yet a spec.
+
+7. **Edit-mode visual distinction** [OPEN TASK]. Review final note: make it
+   visually obvious when a screen is in editing. Options: colorful "+" buttons, a
+   distinct edit-mode color scheme / chrome, stronger contrast on editable
+   regions. Applies across the app's shared view/edit pattern (Services, Tags,
+   Voice, Dashboards, Entities, flow edit). Needs a consistent treatment rather
+   than per-page one-offs.
+
 ## Automation flow pages (detail + edit) — BUILT (last touched 2026-07-09)
 
 Replaces `routineDetail` for automations and scripts (scenes keep the old page)
@@ -143,7 +331,13 @@ the two record actions now sit **side by side in one row** (`flexDirection: row`
 "automation"/"script" singular). Delete is now a **solid `danger`** button (the
 `cc-danger-soft` class was removed).
 
-## Automation editor: Duplicate, Edit in YAML, Change mode, Delete — PLANNED (2026-07-10)
+## Automation editor: Duplicate, Edit in YAML, Change mode, Delete — BUILT (2026-07-10)
+
+All four record-level actions shipped: `duplicateRoutine` (content-copy) and
+`deleteRoutine` (trash-can-outline, danger + `askConfirm`) in the overflow menu,
+`flowToYaml`/`flowYamlBody` behind a Flow view / YAML view segmented control,
+and `runMode`/`runModeRows` (Change mode: single / restart / queued / parallel,
+plain-language labels). The plan below is the original agreed design.
 
 The flow editor is missing four record-level actions that HA has: **Duplicate**,
 **Edit in YAML**, **Change mode**, and (missing entirely from the editor)
@@ -668,11 +862,97 @@ contextual "For you" / Activity+Automations panel.
 - Each persona gets a sensible **default** bookmark set on first load, but every
   user can customise their own (add, remove, reorder).
 - Implementation: subpage shortcuts that are not More destinations live in
-  `bookmarkExtras` in `household.js`; `bookmarksFor()` resolves a persona's
-  bookmark ids against the `directory` first, then `bookmarkExtras`. The
-  directory (More page) no longer contains "Front door".
-- **TODO (next):** design the flow for **saving and editing bookmarks** (how a
-  user adds the current/any page as a bookmark, removes, and reorders them).
+  `bookmarkExtras` in `household.js`; `bookmarksFor(persona, ids)` resolves an id
+  list (defaults to `persona.bookmarks`) via `bookmarkResolve(persona, id)`,
+  which understands three id shapes: a `directory` id, an `area:<areaId>` (label
+  + icon inherited from the area, route `/home/area/<id>`), and a `bookmarkExtras`
+  id. No longer capped (the rail scrolls).
+
+### Saving and editing bookmarks (built 2026-07-15)
+- **Scope:** top-level sections and areas only (not individual devices). Labels
+  and icons are always **inherited** from the destination.
+- **Add / remove entry points:**
+  - **More page star:** every directory row carries a bookmark **star**
+    (`star` / `star-outline`); tap toggles `toggleBookmark(id)`. Works on every
+    breakpoint. Dashboards (`d:` rows) get no star.
+  - **Desktop/tablet rail (Apple-Dock model):** favourites are pointer-draggable
+    with the **same mechanism as the home widgets** (`bmRailDown/Move/Over/Up`
+    mirroring `fyPointer*`/`fyDragOver` 1:1): pointer capture on press, a keyed
+    element map (`_bmCardEls`, id -> el), the picked icon lifts (scale 1.1 +
+    shadow, transform set imperatively so React never clobbers it) and follows
+    the cursor, the other favourites **glide** into place via FLIP
+    (`_bmFlipRects` in `componentDidUpdate`), and the dragged icon is rebased in
+    the `setState` callback so it stays under the cursor after each reorder.
+    Drag an item **off** the rail (past its left/right edge) to remove it on
+    release (turns red while off-rail); the rail `overflow` is opened during the
+    drag (`bmRailSetClip`) so the lifted icon isn't clipped.
+  - **Item states are CSS-driven** (`.cc-rail-btn` in the helmet `<style>`, not
+    imperative, so hover can never get stuck): rest = tertiary icon, transparent;
+    **hover = gentle `--color-surface-raised` fill**; **active = white
+    (`--color-text-primary`) icon, no background box**. Buttons carry
+    `outline: none` (no focus ring). The logo is a plain inline-styled button
+    (the DS `.ha-bnav` styles only inject when a `BookmarkNav` mounts, which no
+    longer happens on desktop, so relying on that class boxed the logo).
+  - **Recent items:** rendered identically to favourites, under a short hairline
+    separator; up to 3 recently opened destinations not already bookmarked; drag
+    one up into the set to keep it (inserted at the drop index on release). The
+    one currently open shows at the top and is marked active.
+- **Reorder / remove elsewhere:** a **Manage bookmarks** overlay (bottom sheet on
+  mobile via `overlayFrame`, centered dialog on desktop) reached from **My
+  account -> Appearance** (`bookmarksSection`, account scope only). Drag handle
+  reorders (`bmSheetDown/Move/Up`, pointer-based so touch works), X removes. The
+  section also carries a **Reset to defaults** button (`resetBookmarks`, clears
+  the `cc-bm-<persona>` override), disabled when already on defaults.
+- **Rail layout:** logo + search pinned on top, favourites + recents scroll in
+  the middle, **More + account avatar pinned at the bottom** so the four fixed
+  affordances never scroll away even when favourites overflow. The DS
+  `BookmarkNav` is now used **only** for the mobile tabbar (first 3 favourites +
+  Search + More); the desktop/tablet rail is the custom `renderRail` nav.
+- **Removal is instant** (no confirmation); re-add from the More page.
+- **Persistence:** `bmOrder` (id list, `null` = persona default) in
+  `localStorage` `cc-bm-<persona>` (survives reload); recents in **`sessionStorage`**
+  `cc-recent-<persona>` (so they **start empty each session**). Both restored on
+  persona switch and wiped by Reset demo data (cc-* sweep).
+- **Recents behaviour (`recordRecent` / `recentBookmarkItems`):** recorded on
+  every navigation (`go` + hashchange). `routeToBookmarkId` maps a route to a
+  bookmark id (top-level directory route or `/home/area/:id`). Account pages
+  (`/my/*`) are **never** recorded (the account avatar already lives in the
+  rail). A page already in the visible set keeps its slot (no reshuffle while you
+  bounce between visible recents); opening anything else moves it to the top and
+  pushes the oldest out (list capped at 6, 3 shown).
+- **Note:** the forced "always show Map in the rail" hack was removed, so the
+  rail is now fully user-controlled; Map stays reachable from the More page.
+- **Drag gaps both directions (built 2026-07-16):** the recents tail now opens a
+  44px drop gap whichever way you drag. Dragging a **favourite down** past the
+  last one into the recents zone slides the whole tail (hairline + recents +
+  More) down and lands the fav at the end (`bmFavGap` state, `bmRailOverEnd`
+  forces the dragged id to the end, `bmApplyOrder` factored out of `bmRailOver`
+  for the shared FLIP/rebase); dragging a **recent up** into the favourites
+  pushes the favs down as before, and the tail (hairline included) shifts too.
+  Single `tailShift` drives all of it; the dragged recent is excluded so it
+  follows the cursor.
+- **Recent stays recent unless dropped in the favourites (built 2026-07-16):** a
+  recent only becomes a bookmark when the cursor is inside the favourites region
+  (above the last fav's bottom edge, where a gap actually opened); dropped back
+  among the recents it stays a recent. `bmRailMove` gates both the gap preview
+  and `bmRailUp`'s `addBookmark` on `inFavs`.
+- **Recents count:** trimmed from 3 to **2** shown (`recentBookmarkItems(2)` in
+  both `bmRailBody` and `recordRecent`).
+- **Rail label tooltip (built 2026-07-16):** hovering a rail icon shows its label
+  to the **right** of the icon (`railTipEnter/Leave`, `state.railTip`), portaled
+  to `document.body` via `renderRailTip` so it escapes the rail's `overflow`
+  clip. No delay. Styled to match the flow-toolbar tip (`flowTip`): `4px 8px`
+  padding, `--weight-medium`, `--color-text-primary` on `--color-bg`, small drop
+  shadow. When a favourite is dragged **off to remove**, the same tip shows the
+  word **"Remove"** in the error color (`danger` flag) beside the icon.
+- **Dragged icon keeps its color (built 2026-07-16):** on lift, the icon's
+  resting color is captured and pinned with `setProperty("color", …,
+  "important")` so React's per-drag re-render (`style.color: fg`) can't flip it
+  to the active white; only the remove zone recolors it to `--color-error`.
+  Cleared with `removeProperty("color")` in `bmRailResetEl`.
+- **Rail is now mirrored into `index.html`** (the standalone build copy, synced
+  2026-07-16 by copying the current `.dc.html` verbatim); the source of truth
+  remains the `.dc.html`.
 
 ## Routes (hash based, deep-linkable)
 
@@ -844,9 +1124,6 @@ space and belongs in Settings. That settings destination was missing. Added:
     listener still refreshes editor + 3D on cross-tab edits.
   - Dropped from the old experiment: create-methods screen, 3D preview
     button, home size slider, reset/start-over, add building.
-  - Design exploration lives in `Floors and Areas Options.dc.html`
-    (chosen: 4b street-line list + 2a direct-edit canvas + inline floor
-    header + 2b area subpage).
 - **Home topbar action change** (per review): removed the old overflow menu
   (Activity / History / Settings) from the home topbar. The home perspective
   now shows `+` (add) and, for maintainers, an **overflow (`...`) menu** whose
@@ -1863,9 +2140,10 @@ private dashboard.
 
 - `/d/:id` - view any dashboard (one route; space is emergent, not in the URL).
   Non-viewers get a no-access state; unknown id -> not found.
-- Editing is in-place `state.dashEdit` (pencil -> Done, reset on navigation,
-  gated by `canEditDashboard`), mirroring `serviceEdit` / `tagsEdit` /
-  `voiceEdit`.
+- `/d/:id/edit` - the editing mode is its own route (pencil -> edit page,
+  Done -> back to `/d/:id`), gated by `canEditDashboard`, mirroring
+  `/automations/edit/:id`. (Superseded: the first version was an in-place
+  `state.dashEdit` toggle.)
 - Retire the `/my/dashboard` stub: "My dashboard" becomes simply a dashboard
   whose viewer is just you. Keep a redirect for safety.
 
@@ -1893,19 +2171,62 @@ community dashboard from the Admin **Community store -> Custom dashboards**
 category (a placeholder "install" that drops a prefab into your dashboards).
 Secondary, admin-only.
 
-### Editing (the editor)
+### Editing (the editor) — REBUILT on the flow-editor model
 
-- In-place `dashEdit` mode, **card-level** (not a full drag-resize grid engine,
-  out of scope for a flows prototype): **add card** from a palette of card types
-  (entities, area, camera, weather, scene), **remove**, **reorder**, reusing the
-  vocabulary already built for the For-you add/remove/config overlays.
-- Pencil shown only to editors. View-only viewers never see it.
+The editor adopts the automation flow editor's machinery (see the flow detail
+section) instead of the first in-place toggle:
+
+- **Draft + commit:** edits mutate a session draft copy of the cards
+  (`_dashDrafts`, per dashboard id); **Done commits** the draft back to the
+  dashboard, back leaves it pending. No half-finished edit is ever visible to
+  other viewers of a shared dashboard.
+- **Undo / redo** with snapshot coalescing (`dashSnapshot` / `dashUndo` /
+  `dashRedo`, same pattern as `flowSnapshot`): topbar controls next to Done.
+- **Card inspector:** tapping a card selects it (`state.dashSel`) and opens a
+  configuration panel — floating map-style panel on desktop, bottom sheet on
+  mobile (same presentation split as the flow node inspector). Per type: title
+  (entities / actions), device multi-pick with search (entities), camera or
+  speaker radio pick, scenes-vs-scripts switch + item pick (actions). Remove
+  card lives at the bottom of the inspector, like deleting a flow node.
+- **Drag to reorder** (mirrors `flowStepDown/Move/Up/Over`), replacing the old
+  chevron up/down buttons. In edit mode the whole card is one target: click
+  selects, drag reorders; card content is inert.
+- **Configure-then-add:** picking a type from the add-card palette inserts an
+  unconfigured card, selects it and opens the inspector (no canned demo
+  content). Unconfigured cards render a dashed "tap to set it up" placeholder
+  in edit mode.
+- **Bottom toolbar** (mirrors `flowToolbar`): the **cards vs YAML segmented
+  switcher on the left**, then undo / redo and a prominent "+" add-card
+  button. Fixed bottom-center; sits above the tab bar on mobile. (Both
+  toolbars lead with the view switcher.) The "+" opens a **small popover
+  anchored to the button** on desktop (sheet on mobile), same vocabulary as
+  the flow editor's "+" menu.
+- **YAML view:** a session-only editable text mirror of the draft as Lovelace
+  YAML (`dashToYaml`), regenerated on every card edit / undo / redo; it does
+  not re-parse back into cards (same prototype scope as the flow YAML view).
+  Copy button in the corner.
+- **Save / cancel / discard on exit (both editors):** leaving the editor via
+  back with a dirty draft asks "Save your changes?" (Save / Keep editing /
+  Discard, via the extended `askConfirm` with a `discardLabel` third button).
+  Done always commits (`dashCommit` / `flowCommit`, which now really copies
+  the flow draft back to `H.flows` + applies `_meta` name/description). Clean
+  drafts drop silently.
+- **Draft restored notice:** if someone leaves without resolving the dialog
+  (nav elsewhere, bookmarks), the dirty draft is kept; re-opening that editor
+  shows a one-button "Draft restored" dialog (`noteDraftRestored`, keyed by
+  `_lastEditKey`, reset on every hashchange).
+- Escape closes the inspector; pencil shown only to editors. View-only viewers
+  never see it.
 
 ### Managing
 
 - Each dashboard's `...` overflow: Rename, **Edit access** (the view/edit grant
   sheet), Duplicate, **Set as my home**, Delete. Delete / rename / access gated
   to editors; *Set as my home* is per-person and always available to a viewer.
+- The dashboard **view page** carries the same overflow menu (Settings, Set as
+  my home, Duplicate, Delete) next to the audience line. Management moved out
+  of edit mode entirely: the edit page is purely about cards (the old in-edit
+  "manage bar" is gone).
 
 ### Default landing page (Appearance, two levels)
 
@@ -2163,9 +2484,63 @@ Explore holds: (1) a getting-started checklist (returnable tip center, progress 
 
 Generation is config generation, not free-form interface: draft automations, scenes, zone shapes, and dashboards assembled from the existing component vocabulary, always reviewable and editable. Powered by an HA AI Task (data generation) configured in Settings -> AI tasks; the drafting task is a sibling of the stock "Suggest automation names".
 
-### The resident suggest flow (zones + automations, same shape)
+### The compose + suggest flow (automations) — REVISED 2026-07-14
 
-Compose three ways, converging on one Suggest button: (1) type the idea in plain language (upgrades today's "Request automation" stub); (2) draft with AI (optional; a data-generation AI task turns the sentence into a draft; shown only when such a task is configured, otherwise a maintainer sees a link to Settings -> AI tasks and a resident sees "Ask a maintainer to set up an AI task"); (3) build it (the real editor: draw the zone, build the automation). Then Suggest. The maintainer is reached by push + the Explore open-loop tray, deep-linking to the review view: approve as-is, edit then approve, or decline with a note. Inline the pending item shows as a ghost pin / "Suggested" pill until resolved.
+Unified compose for maintainer and resident, gated on whether a
+data-generation **AI task** is configured (`aiDraftReady()`, keyed
+`draft-routine`). Inspiration for the AI-build entry is the iOS 27 Shortcuts
+"What do you want your shortcut to do?" prompt: one plain-language description
+box with an example hint that generates the flow into the editor. In this
+household the AI task **is** set up.
+
+**AI task set up:**
+
+- **Resident** (compose sheet). Types a description, then picks one of three:
+  1. **Send to maintainer** (description only, no build).
+  2. **Build with AI** — turn the description into a flowchart; opens the flow
+     editor seeded with the AI-drafted flow.
+  3. **Build it manually** — opens a blank flow editor.
+  After building (2 or 3), the editor's primary action is a **Suggest** step
+  that offers two choices: **Suggest with flowchart** or **Suggest description
+  only** (the resident may not be happy with what they built and can hand the
+  build off to the maintainer, keeping just the description). Either way it
+  lands as a pending suggestion; the resident never publishes directly.
+- **Maintainer** (compose sheet). Two options, both go **live** immediately:
+  **Build with AI** (write a description, AI builds it) or **Build it
+  manually**.
+- **Maintainer review of a suggestion:**
+  - **Has a flowchart:** preview the built flow (When / Only if / Then), then
+    Approve as-is / Edit and approve / Decline with a note.
+  - **Description only:** the maintainer must build it. Actions are **Build
+    with AI** (from the resident's description) or **Build manually** (plus
+    Decline). Saving in the editor **resolves the suggestion as approved**,
+    credited to the resident and co-authored by the maintainer.
+
+**AI task not set up:**
+
+- **Resident:** Suggest with a description, or Build it manually.
+- **Maintainer:** Build it manually only.
+
+Throughout: anything a resident produces is a pending suggestion a maintainer
+reviews and adds; maintainers go live directly. The maintainer is reached by
+push + the Explore open-loop tray, deep-linking to the review view. Inline the
+pending item shows as a "Suggested" pill until resolved.
+
+**Zones** keep the simpler describe (+ optional AI draft) + name + Suggest
+path; building a zone is drawing it on the map, reviewed in place (unchanged).
+
+**Implementation notes (for the build):**
+- `createRoutine(kind, opts)` gains `opts.suggest` (resident build: owns the
+  record via `editors:["maintainers", personaId]`, flags `suggestDraft:true`,
+  `published:false`) plus `name`/`description` seeds. Suggest-draft records are
+  filtered out of all automation lists (`routinesBody`, search, `autoCardBody`).
+- Editor "Done" forks on `a.suggestDraft`: a suggest-draft shows **Suggest**
+  (opening the with/without-flowchart choice) instead of committing live; back/
+  cancel discards and removes the temp record.
+- `sugSubmit` carries `draft.flow` (deep copy) when sent with a flowchart;
+  `sugResolve` lands `draft.flow` into `H.flows[newId]` on approve.
+- Review screen previews `draft.flow`; a no-flow suggestion swaps Approve for
+  Build with AI / Build manually, and the editor save resolves it approved.
 
 ### Co-authoring and joint credit
 
@@ -2865,3 +3240,26 @@ Reference implementations to model on: `cloudAccountBody` / `cloudSub` (list ->
 subpage drill-in), `homeInfoBody` `titled()` (section cards), `serviceEditBody`
 (connected + gallery), `entityFilterGroups` (integration filter to deep-link),
 `brandLogo` / `brandDomain` (logos), `askConfirm` (delete).
+
+## Shared contextual panel (Map / Automation / Dashboard) — BUILT (2026-07-13)
+
+The three detail panels (Map, Automation flow, Dashboard "Details") were
+hand-rolled and drifting (different headers, shadows, z-index 1000/1300,
+segments only on Map and buried in the body, three ways of doing the sub-step
+back). Unified behind one primitive.
+
+- **`ccPanel(spec, bp)`** is the single shell: desktop floating 380px card
+  (`--radius-lg`, shadow `0 8px 28px rgba(0,0,0,0.28)`, `z 1001`, top-right via
+  `desktopPos`); mobile bottom sheet via `renderSheet`. `panelHeader` +
+  `panelSegments` + `panelIconBtn` are the shared chrome. `ccSubHead` is the
+  matching sticky sub-step header used inside panel bodies for deep sub-steps.
+  Full spec + rules in `docs/overlays.md`.
+- **Sub-step contract:** `onBack` shows the back chevron AND drops the X AND
+  hides the segments. Segments are a chrome slot (two-segment sliding pill).
+- **Migrated:** Map (`mapPanelSpec` + `mapDetailHead`->`ccSubHead`, People/Zones
+  segments now in chrome), Automation (`flowPanel` delegates to `ccPanel`;
+  mobile flow sheet + `subStepBack` unified), Dashboard (`dashInfoOverlay`;
+  title is now the dashboard name, was "Details").
+- **Not migrated (out of scope, dialog family):** `dashDraft`, `dashInspector`,
+  `dashCardPick`, `addWidget`, `widgetConfig` — centered `fyScrim` dialogs, not
+  contextual panels. A parallel shared dialog primitive is the follow-up.

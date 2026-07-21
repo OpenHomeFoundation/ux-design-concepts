@@ -13,7 +13,7 @@ const ITEMS = [
   toggle: true,
   title: "Bluetooth proxy",
   short: "Extend Bluetooth range",
-  desc: "Relay nearby Bluetooth devices to Home Assistant, extending coverage into this part of your home.",
+  desc: "Add nearby Bluetooth devices into Home Assistant. Adding multiple Bluetooth proxies allows for better connectivity with devices across your home.",
   long: "Your Proxy listens for nearby Bluetooth advertisements and forwards them to Home Assistant over your network, with no extra dongle on your server, and no cables to run. Place the Proxy wherever coverage is thin and it fills the gap.",
   features: [
   { icon: ICONS.accessPoint, title: "Reach further into your home", desc: "Pick up thermometers, plant sensors and trackers that sit too far from your main hub." },
@@ -26,7 +26,7 @@ const ITEMS = [
   accent: ACCENT.audio,
   title: "Stream audio",
   short: "Multi-room sound, recommended with Music Assistant",
-  desc: "The speaker on your Proxy works as a Home Assistant media player out of the box. Music Assistant turns it into a synchronized, multi-room system: lossless, with album art.",
+  desc: "Stream audio from Home Assistant (including announcements, media, or radio); just note this audio will be unsynchronized with other players. For synchronized whole-home audio, use Music Assistant.",
   long: "Music Assistant is a free media library manager that turns the speaker on your Proxy into part of a synchronized, multi-room sound system inside Home Assistant, keeping built-in playback while adding lossless audio and rich controls.",
   features: [
   { icon: ICONS.accessPoint, title: "Synchronized multi-room", desc: "Play one song across every speaker in your home, locked to the same beat." },
@@ -38,9 +38,9 @@ const ITEMS = [
   key: "connectivity",
   icon: ICONS.accessPoint,
   accent: ACCENT.connectivity,
-  title: "Extend connectivity",
-  short: "Zigbee & Z-Wave via Connect Line",
-  desc: "Plug a Connect ZBT-2 or ZWA-2 into your Proxy to add Zigbee, Thread and Z-Wave radios to Home Assistant.",
+  title: "Connect anywhere",
+  short: "Network connectivity for Zigbee or Z-Wave",
+  desc: "Plug a Connect ZBT-2 or ZWA-2 into the USB port to enable Zigbee or Z-Wave connectivity over Ethernet or Wi-Fi. Get your antenna in an optimal location for better device responsiveness.",
   long: "Plug a Home Assistant Connect ZBT-2 or ZWA-2 into your Proxy's USB port to add wireless radios, with no separate coordinator and no need to run anything near your server. The Proxy becomes the coordinator for that network.",
   features: [
   { icon: ICONS.accessPoint, title: "Zigbee & Thread", desc: "Connect ZBT-2 adds both radios in a single adapter." },
@@ -53,7 +53,7 @@ const ITEMS = [
   accent: ACCENT.serial,
   title: "Control a device over serial",
   short: "AV receivers, amplifiers and more",
-  desc: "Proxy a serial connection so Home Assistant can control devices like A/V receivers and multi-zone amplifiers.",
+  desc: "Add serial devices into Home Assistant, allowing for control of A/V receivers and multi-zone amplifiers.",
   long: "Bridge an RS-232 serial connection over your network so Home Assistant can control gear like A/V receivers and multi-zone amplifiers; the serial link lives at the Proxy, right next to your equipment.",
   features: [
   { icon: ICONS.swap, title: "No server-side cabling", desc: "The serial connection stays at the Proxy, wherever your hardware sits." },
@@ -116,22 +116,25 @@ function AudioPlayers({ status, onAction, compact }) {
           <span className="audio-player__meta">Built-in playback</span>
         </span>
         <span className="audio-player__end">
-          <span className="chip chip--neutral">Active</span>
+          <span className="chip chip--active">Active</span>
         </span>
       </div>
 
       {installed ?
-      <div className="audio-player">
-          <span className="audio-player__icon">
-            <BrandIcon domain="music_assistant" size={28} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
-          </span>
-          <span className="audio-player__text">
-            <span className="audio-player__name">Music Assistant</span>
-            <span className="audio-player__meta">Synchronized multi-room audio</span>
-          </span>
-          <span className="audio-player__end">
-            <span className="chip chip--neutral">Active</span>
-          </span>
+      <div className="audio-player audio-player--stack">
+          <div className="audio-player__row">
+            <span className="audio-player__icon">
+              <BrandIcon domain="music_assistant" size={28} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
+            </span>
+            <span className="audio-player__text">
+              <span className="audio-player__name">Music Assistant</span>
+              <span className="audio-player__meta">Synchronized multi-room audio</span>
+            </span>
+            <span className="audio-player__end">
+              <span className="chip chip--active">Active</span>
+            </span>
+          </div>
+          <Btn variant="outlined" onClick={() => onAction("open")}>Open Music Assistant</Btn>
         </div> :
 
       <div className="ma-upsell">
@@ -175,7 +178,7 @@ function ItemActions({ item, status, adapter, blocked, dismissed, onAction }) {
   }
   if (item.toggle) {
     return status === "completed" ?
-    <Btn variant="text" onClick={() => onAction("turnoff")}>Turn off</Btn> :
+    <Btn variant="outlined" onClick={() => onAction("turnoff")}>Turn off</Btn> :
     <Btn variant="filled" onClick={() => onAction("turnon")}>Turn on</Btn>;
   }
   return (
@@ -291,7 +294,8 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
     if (action === "turnoff") onUndismiss(key);else
     if (action === "dismiss") onDismiss(key);else
     if (action === "undismiss") onUndismiss(key);else
-    if (action === "learn") window.open("https://www.home-assistant.io/", "_blank");
+    if (action === "learn") window.open("https://www.home-assistant.io/", "_blank");else
+    if (action === "open") window.open("https://music-assistant.io/", "_blank");
   }
 
   const inFlow = !!flow;
@@ -327,7 +331,7 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
             </div> :
 
           <React.Fragment>
-              <p className="dialog__intro">Your Proxy can do four things. Set them up whenever you like, at your own pace, and come back here any time. Your progress is saved.</p>
+              <p className="dialog__intro">This adapter unlocks four simultaneous capabilities in Home Assistant. Set them up now, or come back to this checklist any time.</p>
               <div className="checklist">
                 {ITEMS.map((item) => {
                 const { blocked, blockedHint } = blockInfo(item);
@@ -353,6 +357,8 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
         {inFlow ?
         step.auto || (typeof step.hideFooter === "function" ? step.hideFooter(flowData) : step.hideFooter) ? null :
         <footer className="dialog__foot">
+              {step.secondary ?
+              <div className="dialog__foot-secondary"><Btn variant="text" onClick={step.secondary.onClick}>{step.secondary.label}</Btn></div> : null}
               <Btn variant="filled" onClick={next} disabled={step.canContinue ? !step.canContinue(flowData) : false}>
                 {typeof step.primary === "function" ? step.primary(flowData) : step.primary}
               </Btn>

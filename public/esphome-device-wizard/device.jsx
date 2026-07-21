@@ -193,7 +193,7 @@ function ActivityCard() {
 }
 
 /* ---------------- "Connect Proxy is ready" banner ---------------- */
-function ProxyBanner({ statuses, onOpen, deviceName }) {
+function ProxyBanner({ statuses, onOpen, onDefer, deviceName }) {
   // "started" if any capability has been configured or is mid-flow
   // (beyond the default-ready Bluetooth proxy)
   const started = Object.entries(statuses).some(
@@ -201,21 +201,39 @@ function ProxyBanner({ statuses, onOpen, deviceName }) {
   );
   const title = started
     ? `Continue setup for ${deviceName}`
-    : `Setup your ${deviceName}`;
+    : `Setup your Connect device`;
   return (
     <div className="ha-card proxy-banner">
       <div className="proxy-banner__main">
         <h2 className="proxy-banner__title">{title}</h2>
-        <p className="proxy-banner__lead">This adapter unlocks four capabilities in Home Assistant. Set them up now, or come back to this checklist any time.</p>
+        <p className="proxy-banner__lead">This adapter unlocks four simultaneous capabilities in Home Assistant. Set them up now, or come back to this checklist any time.</p>
         <div className="entry-hero__actions">
-          <Btn variant="filled" onClick={onOpen}>Start setup</Btn>
-          <Btn variant="text" onClick={onOpen}>Review later</Btn>
+          <Btn variant="filled" onClick={onOpen}>Configure</Btn>
+          <Btn variant="text" onClick={onDefer}>Review later</Btn>
         </div>
       </div>
       <div className="proxy-banner__pips">
         {ITEMS.map((i) => <CapabilityPip key={i.key} item={i} status={statuses[i.key]}></CapabilityPip>)}
       </div>
     </div>
+  );
+}
+
+/* ---------------- deferred "finish setup" reminder strip ---------------- */
+function ReminderStrip({ statuses, deviceName, onOpen }) {
+  const done = ITEMS.filter((i) => statuses[i.key] === "completed").length;
+  return (
+    <Card
+      title="Setup your Connect device"
+      className="review-card"
+      footer={
+        <a className="linkbtn" href="#" onClick={(e) => { e.preventDefault(); onOpen(); }}>Configure</a>
+      }
+    >
+      <div className="review-card__pips">
+        {ITEMS.map((i) => <CapabilityPip key={i.key} item={i} status={statuses[i.key]}></CapabilityPip>)}
+      </div>
+    </Card>
   );
 }
 
@@ -227,7 +245,7 @@ const LAYOUTS = {
   1: [["deviceInfo", "controls", "sensors", "events", "diagnostic", "related", "activity"]],
 };
 
-function Masonry({ cards, forceCols }) {
+function Masonry({ cards, forceCols, insertBefore }) {
   const ref = React.useRef(null);
   const [autoCols, setAutoCols] = React.useState(3);
   React.useEffect(() => {
@@ -249,7 +267,7 @@ function Masonry({ cards, forceCols }) {
     <div className="masonry" ref={ref} data-cols={cols}>
       {layout.map((colKeys, i) => (
         <div className="masonry__col" key={i}>
-          {colKeys.map((k) => <React.Fragment key={k}>{cards[k]}</React.Fragment>)}
+          {colKeys.map((k) => <React.Fragment key={k}>{insertBefore && insertBefore[k] ? insertBefore[k] : null}{cards[k]}</React.Fragment>)}
         </div>
       ))}
     </div>
@@ -277,6 +295,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "detection": "zbt",
   "speaker": "plugged",
   "musicAssistant": "not-setup",
+  "setupCard": "full",
   "viewport": "fit"
 }/*EDITMODE-END*/;
 
@@ -295,6 +314,8 @@ function App() {
     maSetup: t.musicAssistant === "setup",
   });
   const [open, setOpen] = React.useState(false);
+  const deferred = t.setupCard === "compact";
+  const setDefer = (v) => setTweak("setupCard", v ? "compact" : "full");
   const vp = t.viewport || "fit";
   const constrained = vp !== "fit";
 
@@ -329,9 +350,15 @@ function App() {
               <IntegrationLogo></IntegrationLogo>
             </div>
 
-            <ProxyBanner statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)}></ProxyBanner>
+            {deferred
+              ? null
+              : <ProxyBanner statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)} onDefer={() => setDefer(true)}></ProxyBanner>}
 
-            <Masonry cards={cards} forceCols={constrained ? VP_COLS[vp] : undefined}></Masonry>
+            <Masonry
+              cards={cards}
+              forceCols={constrained ? VP_COLS[vp] : undefined}
+              insertBefore={deferred ? { deviceInfo: <ReminderStrip statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)}></ReminderStrip> } : undefined}
+            ></Masonry>
           </div>
         </div>
       </div>
@@ -359,6 +386,13 @@ function App() {
           value={vp}
           options={[{ value: "fit", label: "Fit" }, { value: "desktop", label: "Desktop" }, { value: "tablet", label: "Tablet" }, { value: "mobile", label: "Mobile" }]}
           onChange={(v) => setTweak("viewport", v)}
+        ></window.TweakRadio>
+        <window.TweakSection label="Setup card"></window.TweakSection>
+        <window.TweakRadio
+          label=""
+          value={t.setupCard}
+          options={[{ value: "full", label: "Full banner" }, { value: "compact", label: "Compact card" }]}
+          onChange={(v) => setTweak("setupCard", v)}
         ></window.TweakRadio>
         <window.TweakSection label="Plugged in adapter"></window.TweakSection>
         <window.TweakRadio

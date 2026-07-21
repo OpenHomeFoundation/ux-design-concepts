@@ -111,6 +111,8 @@ const FLOWS = {
     accent: ACCENT.audio,
     icon: ICONS.music,
     initial: {},
+    // Skip the info/upsell screen and go straight to installing when a speaker is connected.
+    startStep: (d) => (d.speaker === "none" ? 0 : 1),
     steps: [
       {
         body: (d, set) => {
@@ -165,13 +167,14 @@ const FLOWS = {
         ),
         primary: "Done",
         final: true,
+        secondary: { label: "Open Music Assistant", onClick: () => window.open("https://music-assistant.io/", "_blank") },
       },
     ],
   },
 
   /* 2 · EXTEND CONNECTIVITY (Connect Line: ZBT-2 / ZWA-2) ------------------- */
   connectivity: {
-    title: "Extend connectivity",
+    title: "Connect anywhere",
     accent: ACCENT.connectivity,
     icon: ICONS.accessPoint,
     initial: { network: "new" },

@@ -8,7 +8,7 @@
 <body>
 <x-dc>
 <helmet>
-  <title>Bookmark bar concept</title>
+  <title>Favorites bar concept</title>
   <script>
     /* Pre-paint theme resolver: stamp data-theme before first paint so the
        synced DS light/dark tokens apply with no flash. Instance default +
@@ -27,11 +27,25 @@
       } catch (e) {}
     })();
   </script>
-  <meta name="description" content="A concept for the Home Assistant bookmark bar: each person pins the destinations they care about to a personal bar, with the rest of the home reachable through the More menu. Explores how bookmarks are grouped, managed, and adapt across mobile, tablet, and desktop.">
+  <meta name="description" content="A concept for the Home Assistant favorites bar: each person pins the destinations they care about to a personal bar, with the rest of the home reachable through the More menu. Explores how favorites are grouped, managed, and adapt across mobile, tablet, and desktop.">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="apple-touch-icon" href="assets/favicon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Home Assistant">
+  <!-- Resources referenced only as strings in JS (not HTML attrs): declared so
+       the standalone bundler inlines them into window.__resources. -->
+  <meta name="ext-resource-dependency" content="ds/assets/ha-mark.svg" data-resource-id="haMark">
+  <meta name="ext-resource-dependency" content="ds/assets/daan.png" data-resource-id="avatarDaan">
+  <meta name="ext-resource-dependency" content="ds/assets/sofie.png" data-resource-id="avatarSofie">
+  <meta name="ext-resource-dependency" content="ds/assets/tess.png" data-resource-id="avatarTess">
+  <meta name="ext-resource-dependency" content="ds/assets/lars.png" data-resource-id="avatarLars">
+  <meta name="ext-resource-dependency" content="assets/Advanced SSH & Web Terminal.png" data-resource-id="appSsh">
+  <meta name="ext-resource-dependency" content="assets/ESPHome Device Builder.png" data-resource-id="appEsphome">
+  <meta name="ext-resource-dependency" content="assets/File editor.png" data-resource-id="appFileEditor">
+  <meta name="ext-resource-dependency" content="assets/Matter Server.png" data-resource-id="appMatter">
+  <meta name="ext-resource-dependency" content="assets/Z-Wave JS.png" data-resource-id="appZwave">
+  <meta name="ext-resource-dependency" content="assets/hacs.svg" data-resource-id="hacs">
+  <meta name="ext-resource-dependency" content="assets/nabucasa-logo.png" data-resource-id="nabucasa">
   <!-- Stylesheets first, and flattened: link the two token/font sheets directly
        instead of the @import-only styles.css so they download in PARALLEL.
        The old single <link href="ds/styles.css"> chained styles.css -> fonts.css
@@ -544,7 +558,7 @@
   </div>
 </template>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:896},&quot;person&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;daan&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;breakpoint&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;mobile&quot;,&quot;tablet&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Point of view&quot;,&quot;label&quot;:&quot;Form factor&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Mood&quot;,&quot;label&quot;:&quot;Theme&quot;},&quot;resetDemo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;,&quot;label&quot;:&quot;Reset demo data (flip to restore initial state)&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:896},&quot;person&quot;:{&quot;editor&quot;:null,&quot;default&quot;:&quot;daan&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;breakpoint&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;mobile&quot;,&quot;tablet&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Point of view&quot;,&quot;label&quot;:&quot;Form factor&quot;},&quot;platformStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Current&quot;,&quot;iOS native&quot;,&quot;Android native&quot;],&quot;default&quot;:&quot;Current&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Point of view&quot;,&quot;label&quot;:&quot;Platform style (mobile only)&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Mood&quot;,&quot;label&quot;:&quot;Theme&quot;},&quot;mobileAccount&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;topbar&quot;,&quot;menu&quot;],&quot;default&quot;:&quot;topbar&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Point of view&quot;,&quot;label&quot;:&quot;Mobile account avatar&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -605,6 +619,7 @@ class Component extends DCLogic {
       svcTasks: {},
       svcAdded: [],
       titleCollapsed: false,
+      scrolled: false,
       menu: null,
       navMenu: false,
       navMenuQuery: "",
@@ -632,6 +647,7 @@ class Component extends DCLogic {
       groupCollapsed: {},
       acctMenu: false,
       fabHidden: false,
+      tabbarHidden: false,
       cloudSub: null,
       cloud: { remoteConn: true, extActivation: true, webrtc: true, google: true, alexa: true, ttsLang: "nl-NL", ttsVoice: "colette", urlRevealed: false },
       home: { name: "Abbey Road", units: "metric", tz: "Europe/Amsterdam", elevation: "13", currency: "EUR", country: "NL", language: "nl" },
@@ -678,13 +694,14 @@ class Component extends DCLogic {
       // FAB: hide on scroll down, show on scroll up (mobile only)
       if (sc) {
         const y = sc.scrollTop;
+        if ((y > 2) !== !!this.state.scrolled) this.setState({ scrolled: y > 2 });
         const last = this._lastScrollY || 0;
         const delta = y - last;
         if (y <= 8) {
-          if (this.state.fabHidden) this.setState({ fabHidden: false });
+          if (this.state.fabHidden || this.state.tabbarHidden) this.setState({ fabHidden: false, tabbarHidden: false });
         } else if (Math.abs(delta) > 6) {
           const hide = delta > 0;
-          if (hide !== this.state.fabHidden) this.setState({ fabHidden: hide });
+          if (hide !== this.state.fabHidden || hide !== this.state.tabbarHidden) this.setState({ fabHidden: hide, tabbarHidden: hide });
         }
         this._lastScrollY = y;
       }
@@ -731,7 +748,7 @@ class Component extends DCLogic {
     this._onMotion = () => { this.applyAppearance(); this.forceUpdate(); };
     if (this._mqDark) { if (this._mqDark.addEventListener) this._mqDark.addEventListener("change", this._onScheme); else if (this._mqDark.addListener) this._mqDark.addListener(this._onScheme); }
     if (this._mqMotion) { if (this._mqMotion.addEventListener) this._mqMotion.addEventListener("change", this._onMotion); else if (this._mqMotion.addListener) this._mqMotion.addListener(this._onMotion); }
-    this._onHash = () => { this._lastEditKey = null; this._lastScrollY = 0; this.setState({ route: this.parseHash(), settingsSel: this._pendingSettingsSel || null, integrationSel: this._pendingIntegrationSel || null, serviceEdit: false, tagsEdit: false, voiceEdit: false, entitiesEdit: false, dashEdit: false, dashSel: null, dashMenu: null, dashCardPick: null, dashManagerOpen: false, camMode: "live", camSel: null, camClip: null, camScrub: 62, camEventType: "all", camEventCam: "all", camEventQ: "", filesPath: [], filesEdit: false, filesDraft: null, filesChecked: false, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false, customizeId: null, filtersSheet: null, acctMenu: false, fabHidden: false, sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "", sheetClosing: false, mapSheetClosed: false, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null, mapDetent: 0, fyEdit: false, addWidgetOpen: false, widgetConfig: null, confirm: null, flowActivityFull: null, flowPauseFull: null, flowNotifFull: null, flowRunSel: null, flowRunHover: null, mapActivityFull: null }); this._pendingSettingsSel = null; this._pendingIntegrationSel = null; this.recordRecent(this.parseHash()); if (this._pendingZoneReview) { const pr = this._pendingZoneReview; this._pendingZoneReview = null; const zs = this.sugById && this.sugById(pr.id); if (zs) this.enterZoneReview(zs, pr.bp); } };
+    this._onHash = () => { this._lastEditKey = null; this._lastScrollY = 0; this.setState({ route: this.parseHash(), settingsSel: this._pendingSettingsSel || null, integrationSel: this._pendingIntegrationSel || null, serviceEdit: false, tagsEdit: false, voiceEdit: false, entitiesEdit: false, dashEdit: false, dashSel: null, dashMenu: null, dashCardPick: null, dashManagerOpen: false, camMode: "live", camSel: null, camClip: null, camScrub: 62, camEventType: "all", camEventCam: "all", camEventQ: "", filesPath: [], filesEdit: false, filesDraft: null, filesChecked: false, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false, customizeId: null, filtersSheet: null, acctMenu: false, fabHidden: false, tabbarHidden: false, sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "", sheetClosing: false, mapSheetClosed: false, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null, mapDetent: 0, fyEdit: false, addWidgetOpen: false, widgetConfig: null, confirm: null, flowActivityFull: null, flowPauseFull: null, flowNotifFull: null, flowRunSel: null, flowRunHover: null, mapActivityFull: null, scrolled: false }); this._pendingSettingsSel = null; this._pendingIntegrationSel = null; this.recordRecent(this.parseHash()); if (this._pendingZoneReview) { const pr = this._pendingZoneReview; this._pendingZoneReview = null; const zs = this.sugById && this.sugById(pr.id); if (zs) this.enterZoneReview(zs, pr.bp); } };
     window.addEventListener("hashchange", this._onHash);
     this._onKey = (e) => { if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && (e.key === "k" || e.key === "K")) { e.preventDefault(); if (this.state.bp === "mobile") { this.setState({ searchQuery: "" }); this.go("/search"); } else { this.setState({ searchOpen: true, searchQuery: "" }); } return; }
       if (!e.metaKey && !e.ctrlKey && !e.altKey && (e.key === "i" || e.key === "I")) { const t = e.target; const editable = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable); if (!editable) { const rt = this.state.route || ""; if (this.isFlowCanvasRoute(rt)) { const cur = this.state.flowInfoOpen == null ? (this.state.bp === "desktop") : this.state.flowInfoOpen; this.setState({ flowInfoOpen: !cur }); e.preventDefault(); return; } if (rt.split("/").filter(Boolean)[0] === "d") { this.setState((s) => ({ dashInfoOpen: !s.dashInfoOpen, dashInfoEdit: s.dashInfoOpen ? false : s.dashInfoEdit })); e.preventDefault(); return; } } }
@@ -804,6 +821,9 @@ class Component extends DCLogic {
     // has no home, so open the docked panel and land on Explore instead of
     // stranding the user on the bare menu list.
     if (this.effBp() !== "mobile" && this.state.route === "/more") { this.setState({ navMenu: true }); this.go("/home"); return; }
+    // /more is no longer a mobile page either: the menu is a left drawer. Land
+    // home and open the drawer so an old link/recent doesn't show the bare list.
+    if (this.effBp() === "mobile" && this.state.route === "/more") { this.setState({ navMenu: true }); this.go("/home"); return; }
     if (prevProps && prevProps.theme !== this.props.theme) this.applyAppearance();
     const rects = this._fyFlipRects;
     if (rects && this._fyCardEls) {
@@ -953,6 +973,8 @@ class Component extends DCLogic {
   // ---- navigation ----
   go(route, settingsSel) {
     this._prevRoute = this.state.route;
+    // On mobile the menu is a left drawer, not a page: close it on navigation.
+    if (this.effBp() === "mobile" && this.state.navMenu) this.setState({ navMenu: false, navMenuQuery: "" });
     this._pendingSettingsSel = settingsSel || null;
     if (("#" + route) !== window.location.hash) window.location.hash = "#" + route;
     else this.setState({ route, settingsSel: settingsSel || null, serviceEdit: false, tagsEdit: false, voiceEdit: false, entitiesEdit: false, dashEdit: false, dashSel: null, dashMenu: null, dashCardPick: null, dashManagerOpen: false, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false });
@@ -1102,7 +1124,7 @@ class Component extends DCLogic {
     if (!id) return false;
     if (id === "more" || id === "search") return true;
     const items = this.bookmarkItems();
-    const visible = bp === "mobile" ? items.slice(0, 3) : items;
+    const visible = bp === "mobile" ? items.slice(0, 4) : items;
     return visible.some((it) => it.id === id);
   }
   setPersona(id) {
@@ -1116,7 +1138,7 @@ class Component extends DCLogic {
     let recent = []; try { recent = JSON.parse(sessionStorage.getItem("cc-recent-" + id) || "[]") || []; } catch (e) {} if (!Array.isArray(recent)) recent = [];
     this.setState((s) => ({ personaId: id, settingsSel: null, cloudSub: null, titleCollapsed: false, menu: null, searchOpen: false,
       theme: Object.assign({}, s.theme, { user: uTheme }), landing: Object.assign({}, s.landing, { user: uLanding }), a11y,
-      bmOrder: bmOrder, recent: recent, bmManageOpen: false, bmDrag: null, bmSheetDrag: null,
+      bmOrder: bmOrder, recent: recent, bmManageOpen: false, bmDrag: null, bmSheetDrag: null, navMenu: false, tabbarHidden: false, hideSidebar: null, hideTabbar: null,
       fyRemoved: fy.removed || [], fyExtra: fy.extra || [], fySuggestOn: fy.suggestOn !== false, fyEdit: false, widgetConfig: null, addWidgetOpen: false }),
       () => this.applyAppearance());
     this.go("/home");
@@ -1231,12 +1253,13 @@ class Component extends DCLogic {
     if (bp === "mobile" && !page.onBack && !page.submenu && this._prevRoute === "/more" && route !== "/more" && !this.routeReachableFromBar(route, bp)) {
       page.onBack = () => this.go("/more");
     }
-    // Desktop/tablet: a top-level page shown in the menu is always reachable via
-    // the docked panel, so it never carries a back button. A state-based
-    // drill-in (a selected settings section, integration, cloud sub-page, etc.)
-    // shares the dest route but IS a sub-page, so it keeps its back arrow.
+    // A top-level page shown in the menu is reachable directly from the menu
+    // (the docked panel on desktop/tablet, the drawer on mobile), so it never
+    // carries a back button on any breakpoint. A state-based drill-in (a
+    // selected settings section, integration, cloud sub-page, etc.) shares the
+    // dest route but IS a sub-page, so it keeps its back arrow.
     const menuDrill = this.state.settingsSel || this.state.integrationSel || this.state.cloudSub || this.state.planArea || this.state.planFloorOpen;
-    if (bp !== "mobile" && !menuDrill && this.navDestRoutes().indexOf(route) >= 0) page.onBack = undefined;
+    if (!menuDrill && this.navDestRoutes().indexOf(route) >= 0) page.onBack = undefined;
     const panelContent = this.renderPanel(route, persona);
     const frame = this.renderFrame(page, persona, bp, { items, activeId, onNavigate, panelContent });
     const forced = (this.props.breakpoint && this.props.breakpoint !== "auto") ? this.props.breakpoint : null;
@@ -1285,18 +1308,35 @@ class Component extends DCLogic {
     const main = this.renderMain(page, persona, bp, ctx.panelContent);
     const scroller = h("div", { className: "cc-main", ref: this.scrollerRef, style: { flex: 1, minWidth: 0, minHeight: 0, overflowY: "auto" } }, main);
     if (bp === "mobile") {
-      // Hybrid tabbar: 3 user-picked bookmarks + Search + the merged menu button.
+      // Favorites bar: 3 user-picked favorites + Search. The menu now lives in
+      // the topbar hamburger, which pushes the whole page right to reveal it.
       const bar = this.renderMobileTabbar(persona, bp, ctx);
       const flowEditing = (() => { const p = (this.state.route || "").split("/").filter(Boolean); return ((p[0] === "automations" || p[0] === "scripts") && p[1] === "edit") || (p[0] === "d" && p[2] === "edit"); })();
-      return h("div", { style: { display: "flex", flexDirection: "column", height: "100%", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", position: "relative" } },
-        topbar, scroller, this.selectActionBar(bp),
-        flowEditing ? null : h("nav", { "aria-label": "Bookmarks", style: { flex: "none", height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", background: "var(--color-surface)", borderTop: "1px solid var(--color-border-subtle)" } }, bar),
-        this.renderMobileFab(persona));
+      const showBar = !flowEditing && !this.hideTabbar() && !this.state.navMenu;
+      const tabH = "calc(64px + env(safe-area-inset-bottom))";
+      const dur = this.reduceMotion() ? "0ms" : "200ms";
+      const menuOpen = !!this.state.navMenu;
+      const drawerW = "min(80vw, 336px)";
+      // Bottom clearance for the scroller depends on the platform bar height:
+      // Android's M3 bar is 80px; the iOS floating bar needs room for its inset.
+      const plat = this.platformStyle();
+      const barH = plat === "android" ? "calc(80px + env(safe-area-inset-bottom))"
+        : plat === "ios" ? "calc(88px + env(safe-area-inset-bottom))"
+        : tabH;
+      const mobileScroller = h("div", { className: "cc-main", ref: this.scrollerRef, style: { flex: 1, minWidth: 0, minHeight: 0, overflowY: "auto", paddingBottom: showBar ? barH : 0 } }, main);
+      const appCol = h("div", { style: { position: "absolute", inset: 0, display: "flex", flexDirection: "column", background: "var(--color-bg)", transform: menuOpen ? "translateX(" + drawerW + ")" : "none", transition: "transform " + dur + " var(--easing-out)", zIndex: 2 } },
+        topbar, mobileScroller, this.selectActionBar(bp),
+        showBar ? this.renderPlatformTabbar(persona, bp, ctx, { tabH: tabH, dur: dur, bar: bar }) : null,
+        this.renderMobileFab(persona),
+        menuOpen ? h("button", { type: "button", "aria-label": "Close menu", onClick: () => this.toggleNavMenu(), style: { position: "absolute", inset: 0, border: "none", padding: 0, background: "color-mix(in srgb, var(--color-scrim) 45%, transparent)", cursor: "pointer", zIndex: 50 } }) : null);
+      return h("div", { style: { position: "relative", height: "100%", overflow: "hidden", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)" } },
+        this.mobileMenuPanel(persona, drawerW),
+        appCol);
     }
     const showPanel = bp === "desktop" && ctx.panelContent;
     const isMap = false; // skeleton mode: no live map, rail stays in normal flow
     return h("div", { style: { display: "flex", height: "100%", position: "relative", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)" } },
-      this.renderRail(persona, bp, ctx, isMap ? "var(--color-surface)" : "var(--color-bg)", isMap),
+      (this.hideSidebar() && !this.state.bmManageOpen) ? null : this.renderRail(persona, bp, ctx, isMap ? "var(--color-surface)" : "var(--color-bg)", isMap),
       this.navMenuPanel(persona, bp),
       page.submenu || null,
       h("div", { style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative", zIndex: (bp !== "mobile" && this.state.menu) ? 901 : 1 } },
@@ -1312,16 +1352,17 @@ class Component extends DCLogic {
   renderRail(persona, bp, ctx, bg, roundRight) {
     const h = React.createElement;
     const rr = roundRight ? "var(--radius-lg)" : undefined;
-    return h("aside", { "aria-label": "Bookmarks", style: { width: 80, flex: "none", display: "flex", flexDirection: "column", background: bg || "var(--color-bg)", overflow: "hidden", borderTopRightRadius: rr, borderBottomRightRadius: rr, position: roundRight ? "absolute" : "relative", left: roundRight ? 0 : undefined, top: roundRight ? 0 : undefined, bottom: roundRight ? 0 : undefined, zIndex: roundRight ? 950 : 2 } },
+    return h("aside", { "aria-label": "Favorites", style: { width: 80, flex: "none", display: "flex", flexDirection: "column", background: bg || "var(--color-bg)", overflow: "hidden", borderTopRightRadius: rr, borderBottomRightRadius: rr, position: roundRight ? "absolute" : "relative", left: roundRight ? 0 : undefined, top: roundRight ? 0 : undefined, bottom: roundRight ? 0 : undefined, zIndex: roundRight ? 950 : 2 } },
       h("div", { style: { height: 64, flex: "none", display: "flex", alignItems: "center", justifyContent: "center" } },
         h("button", { onClick: () => { if (this._logoLong) { this._logoLong = false; return; } this.goHome(); }, "aria-label": "Home", title: "Home", className: "cc-rail-btn",
           onPointerDown: () => { this._logoLong = false; clearTimeout(this._logoTimer); this._logoTimer = setTimeout(() => { this._logoLong = true; this.openBmManage(); }, 500); },
           onPointerUp: () => clearTimeout(this._logoTimer),
           onPointerLeave: () => clearTimeout(this._logoTimer),
           style: { width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer", borderRadius: "var(--radius-md)", padding: 0, outline: "none", WebkitTapHighlightColor: "transparent" } },
-          h("img", { src: "ds/assets/ha-mark.svg", alt: "Home Assistant", width: 24, height: 24, style: { display: "block" } }))),
-      this.railIconBtn("menu", "Menu", () => this.toggleNavMenu(), this.exploreCount() > 0),
+          h("img", { src: (window.__resources&&window.__resources.haMark)||"ds/assets/ha-mark.svg", alt: "Home Assistant", width: 24, height: 24, style: { display: "block" } }))),
+      this.railIconBtn("menu", "All pages", () => this.toggleNavMenu(), this.exploreCount() > 0),
       this.railIconBtn("magnify", "Search", () => {}),
+      this.railIconBtn("assistant", "Assist", () => this.showToast("Assist is a placeholder in this prototype.")),
       h("div", { ref: (el) => { this._bmRailEl = el; }, style: { flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" } },
         (this.state.navMenu && !this.state.bmManageOpen) ? null : h("div", { style: { margin: "auto 0", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "var(--space-2) 0" } },
           this.bmRailBody(persona, bp, ctx))),
@@ -1619,19 +1660,46 @@ class Component extends DCLogic {
       style: { width: 40, height: 40, border: "none", padding: 0, cursor: "pointer", borderRadius: "var(--radius-md)", lineHeight: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", outline: "none", WebkitTapHighlightColor: "transparent" } },
       h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "sm", style: { width: 28, height: 28, fontSize: 12, flex: "none", boxShadow: active ? "0 0 0 2px var(--color-accent)" : "none" } }));
   }
-  // Topbar hamburger (desktop/tablet): opens the docked menu. Collapses away
-  // when the menu is open, where the panel's own close X takes over.
+  // Topbar hamburger. Mobile: always present, opens the left menu drawer.
+  // Desktop/tablet: shown only when the sidebar is hidden, opening the docked menu.
   navHamburgerBtn(bp) {
-    return null;
-    if (bp === "mobile") return null;
     const h = React.createElement; const { Icon } = this.C;
     const open = this.state.navMenu;
     const dur = this.reduceMotion() ? "0ms" : "140ms";
+    if (bp === "mobile") {
+      const badge = this.exploreCount() > 0;
+      const btn = this.topAction("menu", "Menu", () => this.toggleNavMenu());
+      if (!badge) return btn;
+      return h("span", { style: { position: "relative", display: "inline-flex", flex: "none" } },
+        btn,
+        h("span", { "aria-hidden": "true", style: { position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: "50%", background: "var(--color-error)", pointerEvents: "none" } }));
+    }
+    if (!this.hideSidebar()) return null;
     return h("button", { type: "button", "aria-label": "Menu", "aria-expanded": open, title: "Menu", onClick: () => this.toggleNavMenu(),
       onMouseEnter: (e) => { if (!open) e.currentTarget.style.background = "var(--color-surface-raised)"; },
       onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; },
-      style: { flex: "none", width: open ? 0 : 40, height: 40, marginLeft: "calc(-1 * var(--space-8))", marginRight: open ? 0 : "var(--space-1)", opacity: open ? 0 : 1, pointerEvents: open ? "none" : "auto", overflow: "hidden", border: "none", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", borderRadius: "var(--radius-md)", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "width " + dur + " var(--easing-out), opacity " + dur + " var(--easing-out), margin " + dur + " var(--easing-out), background-color var(--duration-normal) var(--easing-out)" } },
+      style: { flex: "none", width: open ? 0 : 40, height: 40, marginRight: open ? 0 : "var(--space-1)", opacity: open ? 0 : 1, pointerEvents: open ? "none" : "auto", overflow: "hidden", border: "none", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", borderRadius: "var(--radius-md)", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "width " + dur + " var(--easing-out), opacity " + dur + " var(--easing-out), margin " + dur + " var(--easing-out), background-color var(--duration-normal) var(--easing-out)" } },
       h(Icon, { name: "menu", size: "md" }));
+  }
+  // Mobile menu as a static left panel revealed by pushing the whole page right
+  // (replaces the old /more page). The app column slides over it; a scrim over
+  // the pushed page taps to close.
+  mobileMenuPanel(persona, width) {
+    const h = React.createElement; const { Icon, Button } = this.C;
+    const open = !!this.state.navMenu;
+    const dur = this.reduceMotion() ? "0ms" : "200ms";
+    const logo = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) var(--space-4) var(--space-6)" } },
+      // Hidden test toggle: tapping the logo cycles the mobile platform style.
+      h("button", { type: "button", "aria-label": "Home Assistant", onClick: () => this.cyclePlatformStyle(),
+        style: { display: "inline-flex", alignItems: "center", gap: "var(--space-3)", border: "none", background: "transparent", padding: 0, cursor: "pointer", outline: "none", WebkitTapHighlightColor: "transparent" } },
+      h("img", { src: (window.__resources && window.__resources.haMark) || "ds/assets/ha-mark.svg", alt: "Home Assistant", width: 28, height: 28, style: { display: "block", flex: "none" } }),
+      h("span", { style: { fontFamily: "var(--font-display)", fontWeight: "var(--weight-bold)", fontSize: "var(--text-lg)", letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Home Assistant")));
+    return h("aside", { "aria-label": "Menu", style: { position: "absolute", top: 0, bottom: 0, left: 0, width: width, maxWidth: "92vw", display: "flex", flexDirection: "column", background: "var(--color-bg)", transform: open ? "none" : "translateX(-100%)", transition: "transform " + dur + " var(--easing-out)", zIndex: 1 } },
+      h("div", { style: { flex: 1, minHeight: 0, overflowY: "auto", padding: "var(--space-5) var(--space-4) var(--space-4)" } },
+        logo,
+        this.navMenuList(persona, "mobile"),
+        h("div", { style: { padding: "var(--space-4) 0 var(--space-2)" } },
+          h(Button, { variant: "ghost", size: "md", icon: "star", style: { width: "100%" }, onClick: () => this.openBmManage() }, "Manage favorites"))));
   }
   // A curated hue per menu row (settings-tile look). Cycles a distinct palette.
   navMenuColor(i) {
@@ -1668,8 +1736,7 @@ class Component extends DCLogic {
       onMouseLeave: (e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; } },
       img ? h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", overflow: "hidden", background: /hacs/.test(img) ? "#41BDF5" : "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box", padding: /hacs/.test(img) ? 0 : 4 } }, h("img", { src: encodeURI(img), alt: "", style: { maxWidth: "100%", maxHeight: "100%", objectFit: /hacs/.test(img) ? "cover" : "contain", display: "block" } })) : this.colorTile(icon, color),
       h("span", { style: { flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, label),
-      (route === "/explore" && this.exploreCount() > 0) ? h("span", { style: { flex: "none", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 10, background: "var(--color-error)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: "var(--weight-bold)", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 } }, this.exploreCount()) : null,
-      bp === "mobile" ? h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }) : null);
+      (route === "/explore" && this.exploreCount() > 0) ? h("span", { style: { flex: "none", minWidth: 20, height: 20, padding: "0 6px", borderRadius: 10, background: "var(--color-error)", color: "#fff", fontSize: "var(--text-xs)", fontWeight: "var(--weight-bold)", display: "inline-flex", alignItems: "center", justifyContent: "center", lineHeight: 1 } }, this.exploreCount()) : null);
     // Notifications and the account both moved out of the menu: notifications is
     // now a My account subpage, the account is the rail-foot avatar.
     // The rest, organised into logical groups (titled cards).
@@ -1691,20 +1758,41 @@ class Component extends DCLogic {
     // (on desktop these live on the rail: avatar foot + bell).
     let acctCard = null;
     if (bp === "mobile") {
-      const acctActive = active.indexOf("/my") === 0;
-      const userRow = h("button", { key: "user", type: "button", onClick: () => this.go("/my/settings"),
-        style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", cursor: "pointer", font: "inherit", padding: "var(--space-3) var(--space-4)", color: "var(--color-text-primary)", background: acctActive ? "var(--color-accent-subtle)" : "transparent" },
-        onMouseEnter: (e) => { if (!acctActive) e.currentTarget.style.background = "var(--color-surface-raised)"; },
-        onMouseLeave: (e) => { if (!acctActive) e.currentTarget.style.background = "transparent"; } },
-        h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "md", style: { flex: "none" } }),
-        h("span", { style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 } },
-          h("span", { style: { fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, persona.name),
-          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Manage your account")),
-        h(Icon, { name: "chevron-right", size: "sm", style: { color: "var(--color-text-tertiary)", flex: "none" } }));
-      const notifRow = tileRow("bell-outline", "Notifications", "#e6702b", "/notifications", 1, active === "/notifications");
-      acctCard = card([userRow, notifRow]);
+      const rows = [];
+      if ((this.props.mobileAccount ?? "topbar") === "menu") {
+        const acctActive = active.indexOf("/my") === 0;
+        rows.push(h("button", { key: "user", type: "button", onClick: () => this.go("/my/settings"),
+          style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", cursor: "pointer", font: "inherit", padding: "var(--space-3) var(--space-4)", color: "var(--color-text-primary)", background: acctActive ? "var(--color-accent-subtle)" : "transparent" },
+          onMouseEnter: (e) => { if (!acctActive) e.currentTarget.style.background = "var(--color-surface-raised)"; },
+          onMouseLeave: (e) => { if (!acctActive) e.currentTarget.style.background = "transparent"; } },
+          h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "md", style: { flex: "none" } }),
+          h("span", { style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 } },
+            h("span", { style: { fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, persona.name),
+            h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Manage your account"))));
+      }
+      rows.push(tileRow("bell-outline", "Notifications", "#e6702b", "/notifications", rows.length, active === "/notifications"));
+      acctCard = card(rows);
     }
-    return h("div", { style: rootStyle }, searchBox, acctCard, this.navMenuGroups().map(groupCard));
+    // Desktop/tablet with the sidebar hidden: the rail is gone, so surface its
+    // controls (account, notifications, search, assist) at the top of the menu.
+    let railCard = null;
+    if (bp !== "mobile" && this.hideSidebar()) {
+      const acctActive = active.indexOf("/my") === 0;
+      const rowStyle = (idx, isActive) => ({ display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", cursor: "pointer", font: "inherit", fontSize: "var(--text-base)", padding: "var(--space-3) var(--space-4)", color: "var(--color-text-primary)", backgroundColor: isActive ? "var(--color-accent-subtle)" : "transparent", backgroundImage: idx > 0 ? "linear-gradient(var(--color-border-subtle), var(--color-border-subtle))" : "none", backgroundRepeat: "no-repeat", backgroundPosition: "right top", backgroundSize: "calc(100% - var(--space-4)) 1px" });
+      const hov = (isActive) => ({ onMouseEnter: (e) => { if (!isActive) e.currentTarget.style.backgroundColor = "var(--color-surface-raised)"; }, onMouseLeave: (e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; } });
+      const accountRow = h("button", Object.assign({ key: "acct", type: "button", onClick: () => this.go("/my/settings"), style: rowStyle(0, acctActive) }, hov(acctActive)),
+        h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "sm", style: { width: 30, height: 30, flex: "none" } }),
+        h("span", { style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column" } },
+          h("span", { style: { fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, persona.name),
+          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, "Manage your account")));
+      const notifRow = tileRow("bell-outline", "Notifications", "#e6702b", "/notifications", 1, active === "/notifications");
+      const searchRow = tileRow("magnify", "Search", "#1C6FD6", "/search", 2, active === "/search");
+      const assistRow = h("button", Object.assign({ key: "assist", type: "button", onClick: () => this.showToast("Assist is a placeholder in this prototype."), style: rowStyle(3, false) }, hov(false)),
+        this.colorTile("assistant", "#7c5ab8"),
+        h("span", { style: { flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, "Assist"));
+      railCard = card([accountRow, notifRow, searchRow, assistRow]);
+    }
+    return h("div", { style: rootStyle }, searchBox, railCard, acctCard, this.navMenuGroups().map(groupCard));
   }
   // Logical groups for the menu list. Every More destination lands in a group;
   // Notifications lives with the account card, so it is omitted here.
@@ -1735,14 +1823,14 @@ class Component extends DCLogic {
       { title: "History", items: [
         ["History", "history", "/history"], ["Activity", "timeline-clock-outline", "/activity"]] },
       { title: "Apps", items: [
-        ["Advanced SSH and Web Terminal", "console", "/ssh", "assets/Advanced SSH & Web Terminal.png"],
-        ["ESPHome Device Builder", "chip", "/esphome", "assets/ESPHome Device Builder.png"], ["File editor", "file-document-edit-outline", "/file-editor", "assets/File editor.png"],
-        ["Matter Server", "server-network", "/matter-server", "assets/Matter Server.png"], ["Z-Wave JS", "z-wave", "/zwave-js", "assets/Z-Wave JS.png"]] },
+        ["Advanced SSH and Web Terminal", "console", "/ssh", (window.__resources&&window.__resources.appSsh)||"assets/Advanced SSH & Web Terminal.png"],
+        ["ESPHome Device Builder", "chip", "/esphome", (window.__resources&&window.__resources.appEsphome)||"assets/ESPHome Device Builder.png"], ["File editor", "file-document-edit-outline", "/file-editor", (window.__resources&&window.__resources.appFileEditor)||"assets/File editor.png"],
+        ["Matter Server", "server-network", "/matter-server", (window.__resources&&window.__resources.appMatter)||"assets/Matter Server.png"], ["Z-Wave JS", "z-wave", "/zwave-js", (window.__resources&&window.__resources.appZwave)||"assets/Z-Wave JS.png"]] },
       { title: "Community", items: [
         ["Settings", "cog-outline", "/settings"],
         ["Developer tools", "hammer-wrench", "/developer-tools"],
         ["Companion app", "cellphone", "/companion"],
-        ["HACS", "shopping-outline", "/hacs", "assets/hacs.svg"]] },
+        ["HACS", "shopping-outline", "/hacs", (window.__resources&&window.__resources.hacs)||"assets/hacs.svg"]] },
     ];
   }
   // Desktop/tablet docked menu panel (pushes the content area). Always mounted;
@@ -1758,49 +1846,210 @@ class Component extends DCLogic {
       style: { flex: "none", width: 36, height: 36, border: "none", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", borderRadius: "var(--radius-md)", display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "background-color var(--duration-normal) var(--easing-out), color var(--duration-normal) var(--easing-out)" } },
       h(Icon, { name: "close", size: "md" }));
     return h("aside", { "aria-label": "Menu", "aria-hidden": open ? undefined : true, style: { flex: "none", width: open ? railW : 0, height: "100%", overflow: "hidden", background: "color-mix(in srgb, var(--color-bg) 82%, transparent)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", transition: "width " + dur + " var(--easing-out)", pointerEvents: open ? "auto" : "none" } },
-      h("div", { style: { width: railW, height: "100%", display: "flex", flexDirection: "column", opacity: open ? 1 : 0, transform: open ? "none" : "translateX(-8px)", transition: "opacity " + dur + " var(--easing-out), transform " + dur + " var(--easing-out)" } },
+      h("div", { style: { width: railW, height: "100%", boxSizing: "border-box", paddingLeft: this.hideSidebar() ? "var(--space-4)" : 0, display: "flex", flexDirection: "column", opacity: open ? 1 : 0, transform: open ? "none" : "translateX(-8px)", transition: "opacity " + dur + " var(--easing-out), transform " + dur + " var(--easing-out)" } },
         h("div", { style: { height: 64, flex: "none", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-2)", padding: "0 var(--space-4)" } },
           h("h2", { style: { margin: 0, fontFamily: "var(--font-display)", fontWeight: "var(--weight-bold)", fontSize: "var(--text-lg)", letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Home Assistant"),
           closeBtn),
         h("div", { style: { flex: 1, minHeight: 0, overflowY: "auto" } },
           this.navMenuList(persona, bp),
           h("div", { style: { padding: "var(--space-2) var(--space-4) var(--space-6)" } },
-            h(Button, { variant: "primary", size: "md", style: { width: "100%" }, onClick: () => this.openBmManage() }, "Manage bookmarks")))));
+            h(Button, { variant: "ghost", size: "md", icon: "star", onClick: () => this.openBmManage() }, "Manage favorites")))));
   }
   // Custom mobile tabbar: 3 bookmarks + Search + the merged menu button (last).
   renderMobileTabbar(persona, bp, ctx) {
     const h = React.createElement; const { Icon } = this.C;
-    const items = [...ctx.items.slice(0, 3), { id: "search", label: "Search", icon: "magnify" }];
-    const menuActive = (this.state.route || "") === "/more" || (this.state.route || "").indexOf("/my") === 0;
+    const items = this.tabbarItems(ctx);
     const cell = (key, node, label, activeState, onClick) => h("button", { key: key, type: "button", "aria-label": label, "aria-current": activeState ? "page" : undefined, onClick: onClick,
       style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, border: "none", background: "transparent", cursor: "pointer", padding: "6px 0", color: activeState ? "var(--color-text-primary)" : "var(--color-text-tertiary)", outline: "none", WebkitTapHighlightColor: "transparent" } },
       node,
       h("span", { style: { fontFamily: "var(--font-body)", fontSize: "var(--text-xs)", fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" } }, label));
-    const cells = items.map((it) => cell(it.id, h(Icon, { name: it.icon, size: "md" }), it.label, ctx.activeId === it.id, () => ctx.onNavigate(it.id)));
-    const menuIcon = h("span", { style: { position: "relative", display: "inline-flex" } },
-      h(Icon, { name: "menu", size: "md" }),
-      this.exploreCount() > 0 ? h("span", { "aria-hidden": "true", style: { position: "absolute", top: -2, right: -3, width: 8, height: 8, borderRadius: "50%", background: "var(--color-error)" } }) : null);
-    cells.push(cell("menu", menuIcon, "Menu", menuActive, () => this.go("/more")));
+    const cells = items.map((it) => cell(it.id, h(Icon, { name: it.icon, size: "md" }), it.label, this.tabbarActiveId(ctx) === it.id, () => ctx.onNavigate(it.id)));
+    return h("div", Object.assign({ style: { display: "flex", alignItems: "stretch", height: "100%", padding: "0 var(--space-1)", touchAction: "manipulation" } }, this.tabbarPointerHandlers()), cells);
+  }
+
+  // ==== Platform style (mobile only) =====================================
+  // A mobile-only visual theme other components can opt into. It NEVER applies
+  // on tablet or desktop, and never touches the desktop rail. To extend it to
+  // more elements later (back button, overlay menus, ...), branch on
+  // platformStyle() inside that element's render. Currently: the tab bar.
+  platformStyle() {
+    if (this.effBp() !== "mobile") return "current";
+    // Hidden runtime test override (tap the menu logo to cycle) wins over the prop.
+    if (this.state.platformOverride) return this.state.platformOverride;
+    const v = String(this.props.platformStyle || "current").toLowerCase();
+    if (v.indexOf("ios") >= 0) return "ios";
+    if (v.indexOf("android") >= 0) return "android";
+    return "current";
+  }
+  cyclePlatformStyle() {
+    const order = ["current", "ios", "android"];
+    const next = order[(order.indexOf(this.platformStyle()) + 1) % order.length];
+    this.setState({ platformOverride: next });
+  }
+  // Shared tab bar data + gestures so every platform variant navigates and
+  // long-presses identically; only the visual shell changes.
+  tabbarItems(ctx) {
+    return [...ctx.items.slice(0, 4), { id: "search", label: "Search", icon: "magnify" }];
+  }
+  // The active id for the tab bar. When the current route maps to a tab, it
+  // becomes (and is remembered as) active; when navigating to a page not in the
+  // tab bar, the last active tab stays highlighted.
+  tabbarActiveId(ctx) {
+    const ids = this.tabbarItems(ctx).map((it) => it.id);
+    if (ctx.activeId && ids.indexOf(ctx.activeId) >= 0) { this._lastTabActiveId = ctx.activeId; return ctx.activeId; }
+    if (this._lastTabActiveId && ids.indexOf(this._lastTabActiveId) >= 0) return this._lastTabActiveId;
+    return ctx.activeId;
+  }
+  tabbarPointerHandlers() {
     // Long press anywhere on the bar (500ms without moving into a scroll/tap)
-    // opens Manage bookmarks. A fired long press swallows the button's click so
+    // opens Manage favorites. A fired long press swallows the button's click so
     // it doesn't also navigate.
     const clearTabLong = () => { if (this._tabLongTimer) { clearTimeout(this._tabLongTimer); this._tabLongTimer = null; } };
     const onDown = (e) => {
       clearTabLong();
       const sx = e.clientX, sy = e.clientY;
       this._tabLongStart = { x: sx, y: sy };
-      this._tabLongTimer = setTimeout(() => {
-        this._tabLongTimer = null; this._tabLong = true;
-        this.openBmManage();
-      }, 500);
+      this._tabLongTimer = setTimeout(() => { this._tabLongTimer = null; this._tabLong = true; this.openBmManage(); }, 500);
     };
     const onMove = (e) => {
       const s = this._tabLongStart; if (!s) return;
       if (Math.abs(e.clientX - s.x) > 10 || Math.abs(e.clientY - s.y) > 10) clearTabLong();
     };
-    return h("div", { style: { display: "flex", alignItems: "stretch", height: "100%", padding: "0 var(--space-1)", touchAction: "manipulation" },
-      onPointerDown: onDown, onPointerMove: onMove, onPointerUp: clearTabLong, onPointerCancel: clearTabLong, onPointerLeave: clearTabLong,
-      onClickCapture: (e) => { if (this._tabLong) { e.stopPropagation(); e.preventDefault(); this._tabLong = false; } } }, cells);
+    return { onPointerDown: onDown, onPointerMove: onMove, onPointerUp: clearTabLong, onPointerCancel: clearTabLong, onPointerLeave: clearTabLong,
+      onClickCapture: (e) => { if (this._tabLong) { e.stopPropagation(); e.preventDefault(); this._tabLong = false; } } };
+  }
+  // Measure the active iOS tab's content and size/slide the glass lens to hug
+  // it (auto-adapting to each label's width). No-op unless the iOS bar is shown.
+  positionIosLens() {
+    const wrap = this._iosInnerEl, el = this._iosLensEl, active = this._iosActiveEl;
+    if (!el) return;
+    if (!wrap || !active) { el.style.opacity = "0"; return; }
+    const w = wrap.getBoundingClientRect(), a = active.getBoundingClientRect();
+    if (!a.width) { el.style.opacity = "0"; return; }
+    // Inset the active item's cell equally on all four sides so the gray box
+    // sits with the same spacing above, below, left and right within the bar.
+    const pad = 4;
+    el.style.left = Math.round(a.left - w.left + pad) + "px";
+    el.style.width = Math.round(a.width - pad * 2) + "px";
+    el.style.top = Math.round(a.top - w.top + pad) + "px";
+    el.style.height = Math.round(a.height - pad * 2) + "px";
+    el.style.opacity = "1";
+  }
+  // The <nav> shell for the mobile tab bar, dispatched by platform style. Each
+  // variant owns its own hide-on-scroll transform (opts.dur + tabbarHidden).
+  renderPlatformTabbar(persona, bp, ctx, opts) {
+    const style = this.platformStyle();
+    if (style === "ios") return this.renderIosTabbar(persona, bp, ctx, opts);
+    if (style === "android") return this.renderAndroidTabbar(persona, bp, ctx, opts);
+    return this.renderCurrentTabbar(persona, bp, ctx, opts);
+  }
+  // ---- Current (default): edge-to-edge bar, hairline top divider ----------
+  renderCurrentTabbar(persona, bp, ctx, opts) {
+    const h = React.createElement;
+    return h("nav", { "aria-label": "Favorites", style: { position: "absolute", left: 0, right: 0, bottom: 0, height: opts.tabH, paddingBottom: "env(safe-area-inset-bottom)", background: "var(--color-bg)", borderTop: "0.5px solid var(--color-border-subtle)", transform: this.state.tabbarHidden ? "translateY(110%)" : "none", transition: "transform " + opts.dur + " var(--easing-out)", zIndex: 6 } },
+      opts.bar || this.renderMobileTabbar(persona, bp, ctx));
+  }
+  // ---- iOS 26: floating, translucent "liquid glass" bar --------------------
+  // The glass look is approximated with CSS backdrop-filter + layered gradients
+  // + an inset specular edge highlight. This APPROXIMATES iOS's real-time
+  // optical refraction; it is not true refraction (that needs an SVG
+  // feDisplacementMap), and we deliberately keep it lightweight.
+  renderIosTabbar(persona, bp, ctx, opts) {
+    const h = React.createElement; const { Icon } = this.C;
+    // Slack-style: the favorites live in one glass pill, and Search is a
+    // separate circular glass button to its right.
+    const mainItems = ctx.items.slice(0, 4);
+    const spring = this.reduceMotion() ? "0ms" : "420ms";
+    // Shared translucent glass surface (fill + specular top edge + float shadow).
+    const glass = {
+      background: "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface) 72%, transparent), color-mix(in srgb, var(--color-surface) 58%, transparent))",
+      backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      boxShadow: "0 10px 34px color-mix(in srgb, #000 34%, transparent), inset 0 1px 0 color-mix(in srgb, #fff 45%, transparent), inset 0 0 0 0.5px color-mix(in srgb, #fff 14%, transparent)" };
+    // Animated glass lens/pill that slides to, and HUGS, the active item. Its
+    // geometry is measured from the active item's content (see positionIosLens)
+    // so the pill auto-adapts to each label's width, like iOS.
+    this._iosActiveEl = null;
+    const tabActive = this.tabbarActiveId(ctx);
+    const lens = h("div", { "aria-hidden": "true", ref: (el) => { this._iosLensEl = el; }, style: {
+      position: "absolute", top: 0, height: 0, left: 0, width: 0, opacity: 0,
+      borderRadius: "var(--radius-full)",
+      // Resting: a subtle neutral gray box (Slack-style). The backdrop blur +
+      // faint highlight give it the glassy feel on top of the translucent bar.
+      background: "color-mix(in srgb, var(--color-text-primary) 10%, transparent)",
+      boxShadow: "inset 0 1px 0 color-mix(in srgb, #fff 32%, transparent)",
+      backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
+      transition: "left " + spring + " var(--easing-spring), width " + spring + " var(--easing-spring), top " + spring + " var(--easing-spring), height " + spring + " var(--easing-spring), opacity var(--duration-normal) var(--easing-out)",
+      zIndex: 0 } });
+    const cell = (it) => {
+      const active = tabActive === it.id;
+      return h("button", { key: it.id, type: "button", "aria-label": it.label, "aria-current": active ? "page" : undefined, onClick: () => ctx.onNavigate(it.id),
+        ref: active ? ((el) => { this._iosActiveEl = el; }) : null,
+        style: { position: "relative", zIndex: 1, flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: "pointer", padding: "4px 0", outline: "none", WebkitTapHighlightColor: "transparent" } },
+        h("span", {
+          style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, color: active ? "var(--color-text-primary)" : "var(--color-text-tertiary)" } },
+          h(Icon, { name: it.icon, size: "md" }),
+          h("span", { style: { fontFamily: "var(--font-body)", fontSize: "11px", fontWeight: "var(--weight-medium)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" } }, it.label)));
+    };
+    const inner = h("div", Object.assign({ ref: (el) => { this._iosInnerEl = el; }, style: { position: "relative", display: "flex", alignItems: "stretch", height: "100%", padding: "0", touchAction: "manipulation" } }, this.tabbarPointerHandlers()),
+      [lens].concat(mainItems.map(cell)));
+    const mainPill = h("div", { style: Object.assign({ position: "relative", flex: 1, minWidth: 0, height: "100%", borderRadius: "var(--radius-full)", overflow: "hidden" }, glass) }, inner);
+    // Separate circular Search button.
+    const searchActive = tabActive === "search";
+    const searchBtn = h("button", { type: "button", "aria-label": "Search", "aria-current": searchActive ? "page" : undefined, onClick: () => ctx.onNavigate("search"),
+      style: Object.assign({ flex: "none", width: 60, height: 60, borderRadius: "var(--radius-full)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, outline: "none", WebkitTapHighlightColor: "transparent", color: searchActive ? "var(--color-text-primary)" : "var(--color-text-tertiary)" }, glass) },
+      h("span", { style: { display: "flex", alignItems: "center", justifyContent: "center", width: 52, height: 52, borderRadius: "var(--radius-full)", background: searchActive ? "color-mix(in srgb, var(--color-text-primary) 10%, transparent)" : "transparent" } },
+        h(Icon, { name: "magnify", size: "md" })));
+    const hidden = this.state.tabbarHidden;
+    // iOS minimizes (rather than hides) on scroll: collapse to a single small
+    // glass icon in the bottom-left showing the active tab. Tap to expand.
+    if (hidden) {
+      const activeItem = this.tabbarItems(ctx).find((it) => it.id === tabActive);
+      const miniIcon = (activeItem && activeItem.icon) || "home";
+      return h("nav", { "aria-label": "Favorites", style: {
+        position: "absolute", left: 16, right: 16, bottom: "calc(env(safe-area-inset-bottom) + 14px)", zIndex: 6,
+        display: "flex", justifyContent: "space-between", pointerEvents: "none" } },
+        h("button", { type: "button", "aria-label": "Show tabs", onClick: () => this.setState({ tabbarHidden: false, fabHidden: false }),
+          style: Object.assign({ pointerEvents: "auto", width: 44, height: 44, borderRadius: "var(--radius-full)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, color: "var(--color-text-primary)" }, glass) },
+          h(Icon, { name: miniIcon, size: "md" })),
+        h("button", { type: "button", "aria-label": "Search", onClick: () => ctx.onNavigate("search"),
+          style: Object.assign({ pointerEvents: "auto", width: 44, height: 44, borderRadius: "var(--radius-full)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, color: "var(--color-text-tertiary)" }, glass) },
+          h(Icon, { name: "magnify", size: "md" })));
+    }
+    // Reposition the lens after this render commits (covers navigation, resize,
+    // theme and font-load reflows).
+    if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(() => this.positionIosLens());
+    return h("nav", { "aria-label": "Favorites", style: {
+      position: "absolute", left: 16, right: 16, bottom: "calc(env(safe-area-inset-bottom) + 14px)", height: 60,
+      display: "flex", alignItems: "stretch", gap: 10,
+      transform: hidden ? "translateY(calc(100% + 28px))" : "none",
+      transition: "transform " + opts.dur + " var(--easing-out)", zIndex: 6 } },
+      mainPill, searchBtn);
+  }
+  // ---- Android: Material 3 navigation bar ----------------------------------
+  // Full width, standard M3 elevation via a raised tonal surface + shadow, a
+  // pill indicator behind the active icon, and a label under every icon.
+  renderAndroidTabbar(persona, bp, ctx, opts) {
+    const h = React.createElement; const { Icon } = this.C;
+    const items = this.tabbarItems(ctx);
+    const dur = this.reduceMotion() ? "0ms" : "var(--duration-normal)";
+    const tabActive = this.tabbarActiveId(ctx);
+    const cell = (it) => {
+      const active = tabActive === it.id;
+      return h("button", { key: it.id, type: "button", "aria-label": it.label, "aria-current": active ? "page" : undefined, onClick: () => ctx.onNavigate(it.id),
+        style: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, border: "none", background: "transparent", cursor: "pointer", padding: "12px 0 16px", color: active ? "var(--color-text-primary)" : "var(--color-text-tertiary)", outline: "none", WebkitTapHighlightColor: "transparent" } },
+        h("span", { style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 64, height: 32, borderRadius: "var(--radius-full)", background: active ? "color-mix(in srgb, var(--color-accent) 22%, transparent)" : "transparent", color: active ? "var(--color-accent)" : "inherit", transition: "background-color " + dur + " var(--easing-out)" } },
+          h(Icon, { name: it.icon, size: "md" })),
+        h("span", { style: { fontFamily: "var(--font-body)", fontSize: "12px", fontWeight: active ? 600 : "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" } }, it.label));
+    };
+    const inner = h("div", Object.assign({ style: { display: "flex", alignItems: "stretch", height: "100%", padding: "0 var(--space-1)", touchAction: "manipulation" } }, this.tabbarPointerHandlers()), items.map(cell));
+    const hidden = this.state.tabbarHidden;
+    return h("nav", { "aria-label": "Favorites", style: {
+      position: "absolute", left: 0, right: 0, bottom: 0,
+      height: "calc(80px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)",
+      // Same background as the page; flat (no elevation shadow) per request.
+      background: "var(--color-bg)",
+      transform: hidden ? "translateY(110%)" : "none",
+      transition: "transform " + opts.dur + " var(--easing-out)", zIndex: 6 } }, inner);
   }
 
 
@@ -2109,7 +2358,7 @@ class Component extends DCLogic {
     const showMark = false;
     const mark = showMark
       ? h("button", { onClick: () => this.go("/home"), "aria-label": "Home", title: "Home", style: { display: "inline-flex", alignItems: "center", flex: "none", padding: 0, paddingLeft: "var(--space-5)", paddingRight: "var(--space-2)", background: "transparent", border: "none", cursor: "pointer" } },
-          h("img", { src: "ds/assets/ha-mark.svg", alt: "Home Assistant", width: 24, height: 24, style: { display: "block" } }))
+          h("img", { src: (window.__resources&&window.__resources.haMark)||"ds/assets/ha-mark.svg", alt: "Home Assistant", width: 24, height: 24, style: { display: "block" } }))
       : null;
     const sc = this.selectCtx();
     const selecting = !!(sc && sc.active);
@@ -2131,7 +2380,11 @@ class Component extends DCLogic {
     const selectBtn = sc && !selecting ? h(Button, { variant: "secondary", size: "sm", onClick: () => this.toggleSelectMode(sc.id) }, "Select") : null;
     const fyAddBtnMobile = (route === "/home" && this.state.fyEdit && bp === "mobile") ? h(Button, { variant: "secondary", size: "sm", icon: "plus", onClick: () => this.setState({ addWidgetOpen: true }) }, "Add widget") : null;
     const left = h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", minWidth: 0, flex: 1, paddingLeft: bp === "mobile" ? (showMark ? "var(--space-1)" : padX) : padX } },
-      this.navHamburgerBtn(bp), back, fyAddBtnMobile, (bp === "mobile" && (selecting || (route === "/home" && this.state.fyEdit))) ? null : h("span", { style: titleStyle }, titleText));
+      back ? null : this.navHamburgerBtn(bp), back, fyAddBtnMobile, bp === "mobile" ? null : h("span", { style: titleStyle }, titleText));
+    const androidTitle = this.platformStyle() === "android";
+    const centerTitle = (bp === "mobile" && !(selecting || (route === "/home" && this.state.fyEdit)))
+      ? h("span", { style: Object.assign({}, titleStyle, { position: "absolute", left: androidTitle ? 72 : 80, right: 80, top: 0, height: "100%", lineHeight: "64px", textAlign: androidTitle ? "left" : "center", display: "block", pointerEvents: "none" }) }, titleText)
+      : null;
     const doneBtn = selecting ? h("div", { style: { marginLeft: "var(--space-1)" } }, h(Button, { variant: "primary", size: "sm", onClick: () => this.toggleSelectMode(sc.id) }, "Done")) : null;
     const coll = this._collectionRail;
     const onColl = bp === "mobile" && coll && !selecting;
@@ -2174,9 +2427,18 @@ class Component extends DCLogic {
     // visible tabbar. The avatar hides on any drill-in (a deeper path), in a
     // transient mode (select / home fyEdit), and inside your own account area
     // (/my/*, My-account landing) where it would be redundant.
-    // The merged menu + account control now lives in the mobile tabbar, so the
-    // topbar no longer carries a redundant account avatar.
-    const avatarBtn = null;
+    // Mobile account avatar: top-right icon button on a top-level destination
+    // (single-segment route, outside the account area), not while selecting or
+    // editing home. Tapping opens My account.
+    const tbSegs = (route || "").split("/").filter(Boolean);
+    const isTopLevelDest = tbSegs.length === 1 && route.indexOf("/my") !== 0;
+    const showAvatar = bp === "mobile" && isTopLevelDest && !selecting && !(route === "/home" && this.state.fyEdit) && (this.props.mobileAccount ?? "topbar") === "topbar";
+    const avatarBtn = showAvatar
+      ? h("button", { type: "button", "aria-label": "My account", title: "My account", onClick: () => this.go("/my/settings"),
+          onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; }, onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; },
+          style: { flex: "none", width: 40, height: 40, marginLeft: "var(--space-1)", border: "none", background: "transparent", padding: 0, cursor: "pointer", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", outline: "none", WebkitTapHighlightColor: "transparent", transition: "background-color var(--duration-normal) var(--easing-out)" } },
+          h(ProfileAvatar, { name: persona.name, src: persona.avatar, size: "sm", style: { width: 32, height: 32, fontSize: 13, flex: "none", borderRadius: "50%" } }))
+      : null;
     const onOverview = route === "/home";
     const fyEditing = onOverview && this.state.fyEdit;
     const fyDoneBtn = fyEditing ? h("div", { style: { marginLeft: "var(--space-1)" } }, h(Button, { variant: "primary", size: "sm", onClick: () => this.setState({ fyEdit: false, addWidgetOpen: false }) }, "Done")) : null;
@@ -2197,8 +2459,8 @@ class Component extends DCLogic {
       avatarBtn);
     const routeTb = this.state.route || "";
     const tbTransparent = bp !== "mobile" && (routeTb === "/home" || routeTb.indexOf("/home/floor/") === 0 || routeTb.indexOf("/home/area/") === 0);
-    return h("div", { className: "cc-topbar", style: { flex: "none", height: 64, display: "flex", alignItems: "center", background: tbTransparent ? "transparent" : "var(--color-bg)", borderBottom: "1px solid transparent", transition: "border-color " + dur + " var(--easing-out)", position: "relative", zIndex: this.state.menu ? 950 : 20 } },
-      mark, left, actions);
+    return h("div", { className: "cc-topbar", style: { flex: "none", height: 64, display: "flex", alignItems: "center", background: tbTransparent ? "transparent" : "var(--color-bg)", borderBottom: this.state.scrolled ? "0.5px solid var(--color-border-subtle)" : "0.5px solid transparent", transition: "border-color " + dur + " var(--easing-out)", position: "relative", zIndex: this.state.menu ? 950 : 20 } },
+      mark, left, centerTitle, actions);
   }
 
   renderMenu(persona, up) {
@@ -2272,8 +2534,18 @@ class Component extends DCLogic {
     const menuEl = menuOpen ? (isAddSheet ? this.renderAddSheet(persona) : this.renderMenu(persona, true)) : null;
     const onClick = fab.onClick || (fab.menu ? () => this.toggleMenu(fab.menu) : undefined);
     const showClose = menuOpen && isAddSheet;
+    // The Android M3 bar is 80px tall and the iOS glass bar floats ~74px up;
+    // the FAB clears each, with a top gap that matches its right inset (space-5).
+    const _fabPlat = this.platformStyle();
+    const barOffset = this.hideTabbar() ? "0px" : (_fabPlat === "android" ? "80px" : _fabPlat === "ios" ? "74px" : "64px");
+    const fabGap = (_fabPlat === "android" || _fabPlat === "ios") ? "var(--space-5)" : "var(--space-4)";
+    // On iOS, right-align the FAB with the floating bar's right edge (16px inset).
+    const fabRight = _fabPlat === "ios" ? "16px" : "var(--space-5)";
+    // On iOS, match the search button's size (60px).
+    const fabSize = _fabPlat === "ios" ? 60 : 56;
+    const fabBottom = "calc(" + barOffset + " + " + fabGap + " + env(safe-area-inset-bottom))";
     const btn = h("button", { type: "button", "aria-label": fab.label, title: fab.label, onClick: onClick,
-      style: { position: "absolute", inset: 0, width: 56, height: 56, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "none",
+      style: { position: "absolute", inset: 0, width: fabSize, height: fabSize, borderRadius: "50%", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flex: "none",
         background: blue ? "var(--color-accent)" : "var(--color-surface-raised)",
         color: blue ? "#fff" : "var(--color-text-primary)",
         boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
@@ -2283,10 +2555,10 @@ class Component extends DCLogic {
         transformOrigin: "center",
         transition: "background-color " + dur + " var(--easing-out), opacity " + dur + " var(--easing-out), transform " + dur + " var(--easing-out)" } },
       h(Icon, { name: fab.icon, size: "lg" }));
-    const menuWrap = menuEl ? h("div", { key: "addsheet", style: { position: "fixed", left: "var(--space-4)", right: "var(--space-4)", bottom: "calc(64px + var(--space-4) + env(safe-area-inset-bottom))", zIndex: 1000 } }, menuEl) : null;
+    const menuWrap = menuEl ? h("div", { key: "addsheet", style: { position: "fixed", left: "var(--space-4)", right: "var(--space-4)", bottom: fabBottom, zIndex: 1000 } }, menuEl) : null;
     const scrim = showClose ? h("div", { key: "scrim", onClick: () => this.setState({ menu: null }),
       style: { position: "fixed", inset: 0, zIndex: 999, background: "transparent" } }) : null;
-    const container = h("div", { key: "fab", style: { position: "absolute", right: "var(--space-5)", bottom: "calc(64px + var(--space-4) + env(safe-area-inset-bottom))", width: 56, height: 56, zIndex: menuOpen ? 1000 : 60,
+    const container = h("div", { key: "fab", style: { position: "absolute", right: fabRight, bottom: fabBottom, width: fabSize, height: fabSize, zIndex: menuOpen ? 1000 : 60,
         opacity: hidden ? 0 : 1, pointerEvents: hidden ? "none" : "auto", transform: hidden ? "scale(0.5)" : "scale(1)", transformOrigin: "center",
         transition: "opacity " + dur + " var(--easing-out), transform " + dur + " var(--easing-spring)" } },
       btn);
@@ -7332,11 +7604,12 @@ class Component extends DCLogic {
     const surface = (children) => h("div", { style: { background: "var(--color-surface)", borderRadius: "var(--radius-xl)", overflow: "hidden" } }, children);
     const rowDivider = h("div", { style: { height: 1, background: "var(--color-border-subtle)", margin: "0 " + sp(5) } });
     const navRows = [this.landingSection(bp, scope)];
-    if (scope === "account") { navRows.push(rowDivider); navRows.push(this.bookmarksSection(bp)); }
+    const navHeading = h("div", { style: { paddingLeft: sp(6), fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Favorites bar");
     return h("div", { style: { maxWidth: 720, display: "flex", flexDirection: "column", gap: sp(6) } },
       card,
       themeCardEl,
       surface(navRows),
+      scope === "account" ? h("div", { style: { display: "flex", flexDirection: "column", gap: sp(2) } }, navHeading, surface([this.bookmarksSection(bp), rowDivider].concat(this.navVisibilitySection(bp)))) : null,
       scope === "account" ? surface([this.entityIdsSection(bp)]) : null);
   }
   // My account -> Appearance: per-user display preference. Titled section card.
@@ -7358,6 +7631,40 @@ class Component extends DCLogic {
     try { localStorage.setItem("cc-entity-ids-" + this.persona.id, v ? "1" : "0"); } catch (e) {}
     this.setState({ entityIdsPicker: v });
   }
+  // My account -> Appearance: sidebar (desktop) / favorites bar (mobile) visibility.
+  hideSidebar() {
+    if (this.state.hideSidebar != null) return this.state.hideSidebar;
+    try { return localStorage.getItem("cc-hide-sidebar-" + this.persona.id) === "1"; } catch (e) { return false; }
+  }
+  setHideSidebar(v) {
+    try { localStorage.setItem("cc-hide-sidebar-" + this.persona.id, v ? "1" : "0"); } catch (e) {}
+    this.setState({ hideSidebar: v });
+  }
+  hideTabbar() {
+    if (this.state.hideTabbar != null) return this.state.hideTabbar;
+    try { return localStorage.getItem("cc-hide-tabbar-" + this.persona.id) === "1"; } catch (e) { return false; }
+  }
+  setHideTabbar(v) {
+    try { localStorage.setItem("cc-hide-tabbar-" + this.persona.id, v ? "1" : "0"); } catch (e) {}
+    this.setState({ hideTabbar: v });
+  }
+  // Grouped visibility toggles: hide the desktop sidebar and/or the mobile
+  // favorites bar. Either way the menu drawer / hamburger stays reachable.
+  navVisibilitySection(bp) {
+    const h = React.createElement; const { Toggle } = this.C;
+    const sp = (n) => "var(--space-" + n + ")";
+    const row = (title, desc, on, onChange) => h("div", { style: { display: "flex", alignItems: "center", gap: sp(4), padding: sp(5) } },
+      h("div", { style: { flex: 1, minWidth: 0 } },
+        h("div", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)" } }, title),
+        h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, desc)),
+      h(Toggle, { checked: on, onChange: onChange, label: title }));
+    const divider = h("div", { style: { height: 1, background: "var(--color-border-subtle)", margin: "0 " + sp(5) } });
+    return [
+      row("Show on tablet and desktop", "Keep the sidebar visible on tablet and desktop.", !this.hideSidebar(), (v) => this.setHideSidebar(!v)),
+      divider,
+      row("Show on mobile", "Keep the bottom bar visible on mobile.", !this.hideTabbar(), (v) => this.setHideTabbar(!v)),
+    ];
+  }
   // My account -> Appearance: the personal bookmark set. Titled section card
   // (heading above surface). Add from the More page; here you reorder and remove.
   bookmarksSection(bp) {
@@ -7366,13 +7673,11 @@ class Component extends DCLogic {
     const items = this.bookmarkItems();
     const count = items.length;
     const isDefault = this.state.bmOrder == null;
-    const heading = h("div", { style: { paddingLeft: sp(6), fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Bookmarks");
-    const desc = bp === "mobile"
-      ? "Your shortcuts in the bottom bar"
-      : "Your shortcuts in the sidebar";
+    const heading = h("div", { style: { paddingLeft: sp(6), fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, "Favorites");
+    const desc = "Your personal shortcuts";
     return h("div", { style: { display: "flex", alignItems: "center", gap: sp(4), padding: sp(4) + " " + sp(5) } },
       h("span", { style: { flex: 1, minWidth: 0 } },
-        h("div", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)" } }, "Bookmarks"),
+        h("div", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)", color: "var(--color-text-primary)" } }, "My favorite pages"),
         h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, desc)),
       h("span", { style: { flex: "none" } }, h(Button, { variant: "secondary", size: "md", disabled: !count, onClick: () => this.openBmManage() }, "Manage")));
   }
@@ -7389,8 +7694,8 @@ class Component extends DCLogic {
   bmDraftRemove(id) { this.setBmDraft(this.bmDraftIds().filter((x) => x !== id)); }
   // Open Manage bookmarks. If the desktop menu panel is open, stash that it was
   // open and close it while the dialog is shown; restore it when the dialog closes.
-  openBmManage() { this.setState((s) => ({ bmManageOpen: true, navMenuWasOpen: s.navMenu, navMenu: false })); }
-  bmManageClose() { this.setState((s) => ({ bmManageOpen: false, bmDraft: null, bmSheetDrag: null, navMenu: s.navMenuWasOpen || false, navMenuWasOpen: false })); }
+  openBmManage() { this.setState({ bmManageOpen: true }); }
+  bmManageClose() { this.setState({ bmManageOpen: false, bmDraft: null, bmSheetDrag: null }); }
   bmManageResetDraft() { this.setBmDraft(this.bmDefaultIds()); }
   // Directory pages (and dashboards) this persona can reach that are not in the
   // current draft, offered under "Other" to add. Source of truth is the More
@@ -7431,43 +7736,43 @@ class Component extends DCLogic {
       const fixed = it.route === landingRoute;
       const dragProps = fixed ? {} : { onPointerDown: (e) => this.bmSheetDown(e, it, i), onPointerMove: (e) => this.bmSheetMove(e), onPointerUp: (e) => this.bmSheetUp(e), onPointerCancel: (e) => this.bmSheetUp(e) };
       return h("div", Object.assign({ key: it.id, ref: (el) => { this._bmSheetEls[i] = el; },
-        style: { display: "flex", alignItems: "center", gap: sp(3), padding: sp(2) + " " + sp(2), background: "var(--color-surface)", borderRadius: "var(--radius-md)", position: "relative", touchAction: "none", cursor: fixed ? "default" : "grab", transition: "transform 160ms var(--easing-out)" } }, dragProps),
+        style: { display: "flex", alignItems: "center", gap: sp(3), padding: sp(2) + " " + sp(2), background: "transparent", borderRadius: "var(--radius-md)", position: "relative", touchAction: "none", cursor: fixed ? "default" : "grab", transition: "transform 160ms var(--easing-out)" } }, dragProps),
         this.bmIconTile(it),
         h("span", { style: { flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: sp(2), fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden" } },
-          h("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, it.label),
-          fixed ? h("span", { style: { flex: "none", fontSize: "var(--text-xs)", fontWeight: "var(--weight-medium)", color: "var(--color-text-secondary)", background: "var(--color-surface-raised)", borderRadius: "var(--radius-sm)", padding: "2px " + sp(2) } }, "Home page") : null),
+          h("span", { style: { overflow: "hidden", textOverflow: "ellipsis" } }, it.label)),
+        fixed ? h(Button, { variant: "secondary", size: "sm", onClick: () => { this.bmManageClose(); this.go("/my/settings", "p-appearance"); } }, "Edit landing page") : null,
         fixed ? null : h("span", { "aria-hidden": "true", title: "Drag to reorder",
           style: { flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, color: "var(--color-text-tertiary)", cursor: "grab" } }, h(Icon, { name: "drag-horizontal", size: "md" })),
-        h("button", { type: "button", disabled: fixed, "aria-label": fixed ? it.label + " is your home page" : "Remove " + it.label, title: fixed ? "Home page can't be removed" : "Remove", onClick: fixed ? undefined : () => this.bmDraftRemove(it.id),
+        fixed ? null : h("button", { type: "button", disabled: fixed, "aria-label": fixed ? it.label + " is your home page" : "Remove " + it.label, title: fixed ? "Home page can't be removed" : "Remove", onClick: fixed ? undefined : () => this.bmDraftRemove(it.id),
           onMouseEnter: fixed ? undefined : (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; e.currentTarget.style.color = "var(--color-error)"; }, onMouseLeave: fixed ? undefined : (e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-tertiary)"; },
-          style: { flex: "none", width: 40, height: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: fixed ? "default" : "pointer", borderRadius: "var(--radius-md)", color: "var(--color-text-tertiary)", transition: "background 150ms ease-out, color 150ms ease-out" } }, h(Icon, { name: fixed ? "home-lock" : "close", size: "md" })));
+          style: { flex: "none", width: 40, height: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: fixed ? "default" : "pointer", borderRadius: "var(--radius-md)", color: "var(--color-text-tertiary)", transition: "background 150ms ease-out, color 150ms ease-out" } }, h(Icon, { name: fixed ? "home-lock" : "star", size: "md" })));
     });
     const otherRows = candidates.map((it) => h("div", { key: it.id,
       style: { display: "flex", alignItems: "center", gap: sp(3), padding: sp(2) + " " + sp(2), borderRadius: "var(--radius-md)" } },
       this.bmIconTile(it),
       h("span", { style: { flex: 1, minWidth: 0, fontWeight: "var(--weight-medium)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--color-text-secondary)" } }, it.label),
-      h("button", { type: "button", "aria-label": "Add " + it.label, title: "Add to bookmarks", onClick: () => this.bmDraftAdd(it.id),
+      h("button", { type: "button", "aria-label": "Add " + it.label, title: "Add to favorites", onClick: () => this.bmDraftAdd(it.id),
         onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; e.currentTarget.style.color = "var(--color-accent)"; }, onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-tertiary)"; },
-        style: { flex: "none", width: 40, height: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: "pointer", borderRadius: "var(--radius-md)", color: "var(--color-text-tertiary)", transition: "background 150ms ease-out, color 150ms ease-out" } }, h(Icon, { name: "bookmark-outline", size: "md" }))));
+        style: { flex: "none", width: 40, height: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: "pointer", borderRadius: "var(--radius-md)", color: "var(--color-text-tertiary)", transition: "background 150ms ease-out, color 150ms ease-out" } }, h(Icon, { name: "star-outline", size: "md" }))));
     const mobileCutMarker = h("div", { key: "mcut", style: { display: "flex", alignItems: "center", gap: sp(3), padding: sp(1) + " " + sp(2), margin: sp(1) + " 0" } },
-      h("span", { style: { flex: "none", fontSize: "var(--text-xs)", fontWeight: "var(--weight-medium)", color: "var(--color-text-tertiary)", whiteSpace: "nowrap" } }, "First 3 show on the mobile bottom bar"),
+      h("span", { style: { flex: "none", fontSize: "var(--text-xs)", fontWeight: "var(--weight-medium)", color: "var(--color-text-tertiary)", whiteSpace: "nowrap" } }, "First 4 show on the mobile bottom bar"),
       h("span", { style: { flex: 1, height: 1, background: "var(--color-border)" } }));
-    const favRowsMarked = (bp !== "mobile" && favRows.length > 3)
-      ? [...favRows.slice(0, 3), mobileCutMarker, ...favRows.slice(3)]
+    const favRowsMarked = (favRows.length > 4)
+      ? [...favRows.slice(0, 4), mobileCutMarker, ...favRows.slice(4)]
       : favRows;
     const favBlock = h("div", { key: "fav" },
       sectionLabel("Favorites"),
       items.length
         ? h("div", { style: { display: "flex", flexDirection: "column", gap: sp(1) } }, favRowsMarked)
-        : h("div", { style: { padding: sp(6) + " " + sp(2), color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)" } }, "No bookmarks yet. Add pages from Other below."));
+        : h("div", { style: { padding: sp(6) + " " + sp(2), color: "var(--color-text-tertiary)", fontSize: "var(--text-sm)" } }, "No favorites yet. Add pages from Other below."));
     const otherBlock = candidates.length ? h("div", { key: "other", style: { marginTop: sp(5) } },
       sectionLabel("Other"),
       h("div", { style: { display: "flex", flexDirection: "column", gap: sp(1) } }, otherRows)) : null;
     const footPad = bp === "mobile" ? "var(--space-5)" : "var(--space-6)";
-    const footer = h("div", { style: { position: "sticky", bottom: "calc(-1 * " + footPad + ")", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "flex-start", gap: sp(3), flexWrap: "wrap", marginTop: sp(5), marginLeft: "calc(-1 * " + footPad + ")", marginRight: "calc(-1 * " + footPad + ")", marginBottom: "calc(-1 * " + footPad + ")", padding: sp(4) + " " + footPad + " " + footPad, background: "var(--color-surface)", borderTop: "1px solid var(--color-border)" } },
+    const footer = h("div", { style: { position: "sticky", bottom: "calc(-1 * " + footPad + ")", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "flex-start", gap: sp(3), flexWrap: "wrap", marginTop: sp(5), marginLeft: "calc(-1 * " + footPad + ")", marginRight: "calc(-1 * " + footPad + ")", marginBottom: "calc(-1 * " + footPad + ")", padding: sp(4) + " " + footPad + " " + footPad, background: "var(--color-bg)", borderTop: "1px solid var(--color-border)" } },
       h(Button, { variant: "ghost", size: "sm", disabled: isDefault, onClick: () => this.bmManageResetDraft() }, "Reset to defaults"));
     const body = h("div", { style: { marginTop: sp(2) } }, favBlock, otherBlock, footer);
-    return this.overlayFrame("Manage bookmarks", body, { onClose: () => this.bmManageClose(), stickyHead: true, bp });
+    return this.overlayFrame("Manage favorites", body, { onClose: () => this.bmManageClose(), stickyHead: true, bg: "var(--color-bg)", bp });
   }
   bmSheetDown(e, it, i) {
     if (e.button != null && e.button !== 0) return;
@@ -10210,7 +10515,7 @@ class Component extends DCLogic {
   flowVersionActor(r) {
     const h = React.createElement; const { ProfileAvatar } = this.C;
     if (r.system) return h("span", { style: { width: 40, height: 40, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" } },
-      h("img", { src: "ds/assets/ha-mark.svg", alt: "Home Assistant", width: 28, height: 28, style: { display: "block" } }));
+      h("img", { src: (window.__resources&&window.__resources.haMark)||"ds/assets/ha-mark.svg", alt: "Home Assistant", width: 28, height: 28, style: { display: "block" } }));
     const p = Object.values(this.H.personas || {}).find((x) => x.name === r.by);
     return h(ProfileAvatar, { name: r.by, src: p && p.avatar, size: "lg" });
   }
@@ -11408,14 +11713,15 @@ class Component extends DCLogic {
     const bp = opts.bp || this.effBp(); const mobile = bp === "mobile";
     const footer = opts.primary ? h("div", { style: { display: "flex", justifyContent: mobile ? "stretch" : "flex-end", paddingTop: "var(--space-5)" } },
       h(Button, { variant: opts.danger ? "danger" : "primary", onClick: opts.onPrimary, style: mobile ? { width: "100%", minHeight: 48 } : {} }, opts.primary)) : null;
+    const bg = opts.bg || "var(--color-surface)";
     const headPad = mobile ? "var(--space-5)" : "var(--space-6)";
     const head = opts.stickyHead
-      ? h("div", { style: { position: "sticky", top: "calc(-1 * " + headPad + ")", zIndex: 2, background: "var(--color-surface)", marginLeft: "calc(-1 * " + headPad + ")", marginRight: "calc(-1 * " + headPad + ")", marginTop: "calc(-1 * " + headPad + ")", padding: headPad, borderBottom: "1px solid var(--color-border)" } },
+      ? h("div", { style: { position: "sticky", top: "calc(-1 * " + headPad + ")", zIndex: 2, background: bg, marginLeft: "calc(-1 * " + headPad + ")", marginRight: "calc(-1 * " + headPad + ")", marginTop: "calc(-1 * " + headPad + ")", padding: headPad, borderBottom: "1px solid var(--color-border)" } },
           h("div", { style: { marginBottom: "calc(-1 * var(--space-4))" } }, this.fyDialogHead(title, null, opts.onClose)))
       : this.fyDialogHead(title, null, opts.onClose);
     const inner = h("div", null, head, body, footer);
-    if (mobile) return this.renderSheet({ id: "overlayframe", backdrop: true, dismissible: true, overTabbar: true, noHeader: true, detents: [0.97], defaultDetent: 0, bg: "var(--color-surface)", bodyPad: "0 var(--space-5) calc(var(--space-5) + env(safe-area-inset-bottom))", rootBody: inner, onDismiss: opts.onClose }, bp);
-    const card = h("div", { onClick: (e) => e.stopPropagation(), style: { width: 520, maxWidth: "100%", maxHeight: "84vh", overflowY: "auto", background: "var(--color-surface)", borderRadius: "var(--radius-xl)", padding: "var(--space-6)" } }, inner);
+    if (mobile) return this.renderSheet({ id: "overlayframe", backdrop: true, dismissible: true, overTabbar: true, noHeader: true, detents: [0.97], defaultDetent: 0, bg: bg, bodyPad: "0 var(--space-5) calc(var(--space-5) + env(safe-area-inset-bottom))", rootBody: inner, onDismiss: opts.onClose }, bp);
+    const card = h("div", { onClick: (e) => e.stopPropagation(), style: { width: 520, maxWidth: "100%", maxHeight: "84vh", overflowY: "auto", background: bg, borderRadius: "var(--radius-xl)", padding: "var(--space-6)" } }, inner);
     return this.fyScrim(bp, card, opts.onClose);
   }
 
@@ -12477,7 +12783,7 @@ class Component extends DCLogic {
       ]),
       this.cloudFooter(signOut, h(Button, { variant: "primary" }, "Manage account")),
     ]);
-    const emblem = h("img", { src: "assets/nabucasa-logo.png", alt: "Nabu Casa", style: { height: "var(--text-2xl)", width: "auto", flex: "none", display: "block" } });
+    const emblem = h("img", { src: (window.__resources&&window.__resources.nabucasa)||"assets/nabucasa-logo.png", alt: "Nabu Casa", style: { height: "var(--text-2xl)", width: "auto", flex: "none", display: "block" } });
     const extrasCard = this.cloudCard([
       this.cloudPad([
         this.cloudHeadingRow("Extras by Nabu Casa", emblem),

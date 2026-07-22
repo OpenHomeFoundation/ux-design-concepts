@@ -10,7 +10,7 @@ export const household = {
   personas: {
     daan: {
       id: "daan", name: "Daan", role: "maintainer", initials: "Da",
-      avatar: "ds/assets/daan.png",
+      avatar: (window.__resources&&window.__resources.avatarDaan)||"ds/assets/daan.png",
       spaces: ["shared", "personal", "admin"],
       bookmarks: ["home", "devices", "automations", "energy", "developer-tools", "settings"],
       favorites: ["living_room_ceiling", "kitchen_ceiling", "main_bed_lamp", "hallway_ceiling", "garden_string", "garage_ceiling"],
@@ -485,10 +485,10 @@ export const household = {
 
   // ---- People & services ----------------------------------------------
   people: [
-    { id: "daan", name: "Daan", role: "Maintainer", presence: "home", initials: "Da", avatar: "ds/assets/daan.png" },
-    { id: "sofie", name: "Sofie", role: "Resident", presence: "home", initials: "So", avatar: "ds/assets/sofie.png" },
-    { id: "tess", name: "Tess", role: "Resident", presence: "away", initials: "Te", avatar: "ds/assets/tess.png" },
-    { id: "lars", name: "Lars", role: "Resident", presence: "home", initials: "La", avatar: "ds/assets/lars.png" },
+    { id: "daan", name: "Daan", role: "Maintainer", presence: "home", initials: "Da", avatar: (window.__resources&&window.__resources.avatarDaan)||"ds/assets/daan.png" },
+    { id: "sofie", name: "Sofie", role: "Resident", presence: "home", initials: "So", avatar: (window.__resources&&window.__resources.avatarSofie)||"ds/assets/sofie.png" },
+    { id: "tess", name: "Tess", role: "Resident", presence: "away", initials: "Te", avatar: (window.__resources&&window.__resources.avatarTess)||"ds/assets/tess.png" },
+    { id: "lars", name: "Lars", role: "Resident", presence: "home", initials: "La", avatar: (window.__resources&&window.__resources.avatarLars)||"ds/assets/lars.png" },
     { id: "greet", name: "Elizabeth", role: "Resident", presence: "home", initials: "El" },
     { id: "nour", name: "Nour", role: "Non-resident", presence: "away", initials: "No", scoped: true },
   ],
@@ -1289,11 +1289,11 @@ export const mapData = {
     ] },
   ],
   people: [
-    { id: "daan", name: "Daan", initials: "Da", avatar: "ds/assets/daan.png", presence: "away", at: "Utrecht city center", updated: "2 min ago", zone: null, lat: 52.09083, lon: 5.12142, visibility: "everyone" },
-    { id: "sofie", name: "Sofie", initials: "So", avatar: "ds/assets/sofie.png", presence: "away", at: "Sofie's work", updated: "6 min ago", zone: "zone-sofie-work", lat: 52.31460, lon: 4.95330, visibility: "everyone" },
-    { id: "lars", name: "Lars", initials: "La", avatar: "ds/assets/lars.png", presence: "home", at: "Abbey Road", updated: "11 min ago", zone: "zone-home", lat: 52.08456, lon: 5.14374, visibility: "everyone" },
+    { id: "daan", name: "Daan", initials: "Da", avatar: (window.__resources&&window.__resources.avatarDaan)||"ds/assets/daan.png", presence: "away", at: "Utrecht city center", updated: "2 min ago", zone: null, lat: 52.09083, lon: 5.12142, visibility: "everyone" },
+    { id: "sofie", name: "Sofie", initials: "So", avatar: (window.__resources&&window.__resources.avatarSofie)||"ds/assets/sofie.png", presence: "away", at: "Sofie's work", updated: "6 min ago", zone: "zone-sofie-work", lat: 52.31460, lon: 4.95330, visibility: "everyone" },
+    { id: "lars", name: "Lars", initials: "La", avatar: (window.__resources&&window.__resources.avatarLars)||"ds/assets/lars.png", presence: "home", at: "Abbey Road", updated: "11 min ago", zone: "zone-home", lat: 52.08456, lon: 5.14374, visibility: "everyone" },
     { id: "greet", name: "Elizabeth", initials: "El", presence: "home", at: "Abbey Road", updated: "3 min ago", zone: "zone-home", lat: 52.08435, lon: 5.14336, visibility: "everyone" },
-    { id: "tess", name: "Tess", initials: "Te", avatar: "ds/assets/tess.png", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
+    { id: "tess", name: "Tess", initials: "Te", avatar: (window.__resources&&window.__resources.avatarTess)||"ds/assets/tess.png", presence: "away", at: "School", updated: "24 min ago", zone: "zone-school", lat: 52.0982, lon: 5.1402, visibility: "zones" },
     { id: "nour", name: "Nour", initials: "No", presence: "away", at: "Away", updated: "1 hr ago", zone: null, lat: 52.0762, lon: 5.1012, visibility: "private" },
   ],
 };

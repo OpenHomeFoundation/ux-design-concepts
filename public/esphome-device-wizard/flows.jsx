@@ -174,7 +174,7 @@ const FLOWS = {
 
   /* 2 · EXTEND CONNECTIVITY (Connect Line: ZBT-2 / ZWA-2) ------------------- */
   connectivity: {
-    title: "Connect anywhere",
+    title: "Connect a Zigbee or Z-Wave adapter",
     accent: ACCENT.connectivity,
     icon: ICONS.accessPoint,
     initial: { network: "new" },

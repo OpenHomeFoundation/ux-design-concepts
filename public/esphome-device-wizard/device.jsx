@@ -201,15 +201,15 @@ function ProxyBanner({ statuses, onOpen, onDefer, deviceName }) {
   );
   const title = started
     ? `Continue setup for ${deviceName}`
-    : `Setup your Connect device`;
+    : `Set up your ESPHome proxy`;
   return (
     <div className="ha-card proxy-banner">
       <div className="proxy-banner__main">
         <h2 className="proxy-banner__title">{title}</h2>
         <p className="proxy-banner__lead">This adapter unlocks four simultaneous capabilities in Home Assistant. Set them up now, or come back to this checklist any time.</p>
         <div className="entry-hero__actions">
-          <Btn variant="filled" onClick={onOpen}>Configure</Btn>
-          <Btn variant="text" onClick={onDefer}>Review later</Btn>
+          <Btn variant="filled" onClick={onOpen}>Set up</Btn>
+          <Btn variant="text" onClick={onDefer}>Later</Btn>
         </div>
       </div>
       <div className="proxy-banner__pips">
@@ -221,18 +221,17 @@ function ProxyBanner({ statuses, onOpen, onDefer, deviceName }) {
 
 /* ---------------- deferred "finish setup" reminder strip ---------------- */
 function ReminderStrip({ statuses, deviceName, onOpen }) {
-  const done = ITEMS.filter((i) => statuses[i.key] === "completed").length;
+  const left = ITEMS.filter((i) => statuses[i.key] !== "completed").length;
+  const done = ITEMS.length - left;
   return (
     <Card
-      title="Setup your Connect device"
+      title={left === 0 ? "Everything is set up" : `Set up ${left} more ${left === 1 ? "capability" : "capabilities"}`}
       className="review-card"
       footer={
-        <a className="linkbtn" href="#" onClick={(e) => { e.preventDefault(); onOpen(); }}>Configure</a>
+        <a className="linkbtn" href="#" onClick={(e) => { e.preventDefault(); onOpen(); }}>Set up</a>
       }
     >
-      <div className="review-card__pips">
-        {ITEMS.map((i) => <CapabilityPip key={i.key} item={i} status={statuses[i.key]}></CapabilityPip>)}
-      </div>
+      <p className="review-card__lead">{left === 0 ? "All four simultaneous capabilities are configured." : "This adapter unlocks four simultaneous capabilities in Home Assistant."}</p>
     </Card>
   );
 }
@@ -357,7 +356,7 @@ function App() {
             <Masonry
               cards={cards}
               forceCols={constrained ? VP_COLS[vp] : undefined}
-              insertBefore={deferred ? { deviceInfo: <ReminderStrip statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)}></ReminderStrip> } : undefined}
+              insertBefore={deferred ? { controls: <ReminderStrip statuses={statuses} deviceName="Connect Proxy" onOpen={() => setOpen(true)}></ReminderStrip> } : undefined}
             ></Masonry>
           </div>
         </div>

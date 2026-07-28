@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <title>Vector map</title>
+  <script>
+    /* Pre-paint theme resolver: stamp data-theme before first paint so the
+       synced DS light/dark tokens apply with no flash. */
+    (function () {
+      try {
+        var resolved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", resolved);
+        var a = {}; try { a = JSON.parse(localStorage.getItem("cc-a11y-daan") || "{}") || {}; } catch (e) {}
+        if (a.contrast) document.documentElement.setAttribute("data-contrast", "high");
+      } catch (e) {}
+    })();
+  </script>
+  <meta name="description" content="Vector map for the whole-household Home Assistant concept: people and zones on a live basemap, with zone editing.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <!-- The map draws its own zone labels as .mdi glyphs, outside the design
+       system's React Icon (which injects this on first mount, too late for the
+       first paint of the map), so link the icon font up front. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="ds/design-tokens.css">
+  <link rel="stylesheet" href="ds/fonts.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="ds/fonts/inter-400-latin.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="ds/fonts/inter-500-latin.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="ds/fonts/inter-600-latin.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="ds/fonts/inter-tight-700-latin.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="ds/fonts/jetbrains-mono-400-latin.woff2">
+  <script type="module" src="./map-data.js"></script>
+  <script src="_ds/ha-concept-car-design-system-fababd17-1e21-468b-98a9-76cd37494ccc/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="./ha-map-styles.js"></script>
+  <script src="./ha-map.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: var(--color-bg); }
+    /* Accessibility: high-contrast layer (token-only, works in light and dark).
+       Hairlines step up to a visible grey, muted text lifts toward primary. */
+    [data-contrast="high"] {
+      --color-border: var(--color-text-tertiary);
+      --color-border-subtle: var(--color-text-tertiary);
+      --color-text-secondary: var(--color-text-primary);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    #cc-app { height: 100dvh; width: 100%; }
+    .cc-loading { height: 100dvh; display: flex; align-items: center; justify-content: center; color: var(--color-text-tertiary); font-family: 'Inter', system-ui, sans-serif; font-size: 15px; }
+    /* Input with a trailing unit suffix (e.g. "meters"): make room on the right. */
+    .ha-input.cc-input-suffix { padding-right: 68px !important; }
+    .ha-btn:not(.ha-btn--icon):has(> .mdi:first-child) { padding-left: var(--space-2) !important; }
+    /* Vector map preview (MapLibre + OpenFreeMap) */
+    ha-carto-map { display: block; width: 100%; height: 100%; }
+    ha-carto-map .maplibregl-canvas { outline: none; }
+    .cc-dot { width: 16px; height: 16px; border-radius: 50%; background: #1C6FD6; border: 3px solid #1C6FD6; box-shadow: 0 0 0 3px rgba(28,111,214,0.25); }
+    /* World map (interactive) */
+    ha-world-map { display: block; width: 100%; height: 100%; }
+    ha-world-map .maplibregl-canvas { outline: none; }
+    /* Native light/dark vector styles: no CSS invert/hue-rotate filter on tiles.
+       The basemap switches between two purpose-built styles. Only the control
+       chrome is themed in CSS. */
+    ha-carto-map .maplibregl-ctrl-attrib, ha-world-map .maplibregl-ctrl-attrib { display: none; }
+    /* Avoid the white flash before map tiles render: the element is the maplibregl
+       container (container: self), so set the dark surface on it directly. */
+    ha-carto-map, ha-world-map { background: var(--color-surface-raised); }
+    ha-carto-map .maplibregl-canvas-container, ha-world-map .maplibregl-canvas-container { background: var(--color-surface-raised); }
+    ha-world-map .maplibregl-ctrl-group { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+    ha-world-map .maplibregl-ctrl-group button { width: 36px; height: 36px; background: var(--color-surface); }
+    ha-world-map .maplibregl-ctrl-group button + button { border-top: 1px solid var(--color-border); }
+    ha-world-map .maplibregl-ctrl-group button:hover { background: var(--color-surface-raised); }
+    ha-world-map .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
+    ha-world-map .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon { filter: invert(0.7); }
+    ha-world-map .maplibregl-ctrl-bottom-right { margin: 0 var(--space-4) var(--space-4) 0; }
+    .cc-bp-mobile ha-world-map .maplibregl-ctrl-bottom-right { display: none; }
+    /* Zone shape editor */
+    ha-zone-editor { display: block; width: 100%; height: 100%; }
+    ha-zone-editor .maplibregl-canvas { outline: none; }
+    ha-zone-editor, ha-zone-editor .maplibregl-canvas-container { background: var(--color-surface-raised); }
+    ha-zone-editor .maplibregl-ctrl-attrib { display: none; }
+    ha-zone-editor .maplibregl-ctrl-group { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+    ha-zone-editor .maplibregl-ctrl-group button { width: 32px; height: 32px; background: var(--color-surface); }
+    ha-zone-editor .maplibregl-ctrl-group button + button { border-top: 1px solid var(--color-border); }
+    ha-zone-editor .maplibregl-ctrl-group button:hover { background: var(--color-surface-raised); }
+    ha-zone-editor .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon, ha-zone-editor .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon { filter: invert(0.7); }
+    /* Light mode: map control glyphs are dark already; drop the lighten-for-dark invert. */
+    [data-theme="light"] ha-world-map .maplibregl-ctrl-icon, [data-theme="light"] ha-zone-editor .maplibregl-ctrl-icon { filter: none; }
+    ha-zone-editor .maplibregl-ctrl-bottom-right { margin: 0 var(--space-3) var(--space-3) 0; }
+    .cc-zedit__handle { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 3px solid rgba(0,0,0,0.18); box-shadow: 0 2px 8px rgba(0,0,0,0.45); cursor: grab; }
+    .cc-zedit__handle:active { cursor: grabbing; }
+    .cc-zedit__vtx { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 4px solid rgba(0,0,0,0.22); box-shadow: 0 2px 6px rgba(0,0,0,0.45); cursor: grab; }
+    .cc-zedit__vtx:active { cursor: grabbing; }
+    .cc-zedit__mid { width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.92); border: 1.5px dashed rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #1a1a1a; font-size: 13px; cursor: pointer; }
+    .cc-zedit__mid:hover { background: #fff; }
+    .cc-zedit__center { cursor: grab; }
+    .cc-pin { background: none !important; border: none !important; }
+    .cc-pin .cc-pin__av { width: 40px; height: 40px; border-radius: 14px; overflow: hidden; border: 2px solid var(--color-bg); background: var(--color-overlay); color: var(--color-text-primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-body); font-weight: 600; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.28); transition: transform 150ms var(--easing-out), box-shadow 150ms var(--easing-out); }
+    .cc-pin .cc-pin__av img { width: 100%; height: 100%; object-fit: cover; }
+    .cc-pin .cc-pin__dot { position: absolute; right: -1px; bottom: -1px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-bg); }
+    .cc-pin .cc-pin__av { transition: transform 140ms ease, box-shadow 140ms ease; }
+    .cc-pin--active .cc-pin__av { transform: scale(1.45); box-shadow: 0 0 0 3px var(--color-accent), 0 6px 18px rgba(0,0,0,0.55); z-index: 5; }
+    .cc-zone .cc-zone__label { transition: transform 140ms ease, box-shadow 140ms ease; }
+    .cc-pin--active .cc-zone__label { transform: scale(1.35); box-shadow: 0 0 0 3px var(--color-accent), 0 6px 18px rgba(0,0,0,0.55); z-index: 5; }
+    .cc-cluster { background: none !important; border: none !important; }
+    .cc-cluster__wrap { position: absolute; transform: translate(-50%, calc(-100% - 22px)); display: flex; flex-direction: column; align-items: center; }
+    .cc-cluster__pill { display: flex; align-items: center; gap: 8px; padding: 7px; border-radius: 16px; background: var(--color-overlay); border: 1px solid var(--color-border); box-shadow: 0 3px 10px rgba(0,0,0,0.28); }
+    .cc-cluster__tail { width: 0; height: 0; margin-top: -1px; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid var(--color-overlay); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+    .cc-cl__av { position: relative; width: 34px; height: 34px; padding: 0; border: none; border-radius: 12px; overflow: visible; background: var(--color-surface-raised); color: var(--color-text-primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-body); font-weight: 600; font-size: 13px; cursor: pointer; transition: transform 150ms var(--easing-out); }
+    .cc-cl__av:hover { transform: scale(1.08); }
+    .cc-cl__av img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .cc-cl__av span { display: block; }
+    .cc-cl__dot { position: absolute; right: -2px; bottom: -2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--color-overlay); }
+    .cc-cl__more { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 8px; border-radius: 12px; background: var(--color-surface-raised); color: var(--color-text-secondary); font-family: var(--font-body); font-weight: 600; font-size: 13px; }
+    .cc-zone { background: none !important; border: none !important; }
+    .cc-zone .cc-zone__label { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; padding: 3px 10px; border-radius: var(--radius-full); background: var(--color-bg); color: var(--color-text-secondary); border: 1px solid var(--color-border); font-family: var(--font-body); font-size: 12px; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+    .cc-zone .cc-zone__ico { font-size: 14px; line-height: 1; color: var(--color-text-tertiary); }
+    .cc-zone .cc-zone__label--icon { padding: 4px; border-width: 2px; }
+    .cc-zone .cc-zone__label--icon .cc-zone__ico { font-size: 14px; color: inherit; }
+    .cc-zone .cc-zone__label--ghost { background: var(--color-bg) !important; opacity: 0.92; }
+    .cc-zone .cc-zone__label--ghost .cc-zone__ico { color: inherit; }
+    .cc-card--link { cursor: pointer; }
+    .cc-card--link:hover { background: var(--color-surface-raised) !important; }
+    .cc-list .ha-lrow:hover, .cc-list .ha-lrow:focus-within { background: var(--color-surface-raised) !important; }
+    .cc-list .ha-lrow:last-child { border-bottom: none !important; }
+    .cc-tl > div:last-child { border-bottom: none !important; }
+    .ha-input--noborder { border-color: transparent !important; }
+    /* Inputs read as a recessed well: fill with the page tone (--color-bg),
+       which is darker than the surrounding surface in dark mode and lighter in
+       light mode. The hairline border keeps them defined on any ground. */
+    .ha-input, textarea.ha-input, .ha-select { background: var(--color-bg) !important; }
+    .ha-input[disabled] { background: var(--color-surface-raised) !important; }
+    .cc-toolbar__view { display: inline-flex; gap: 2px; background: var(--color-surface); border-radius: var(--radius-md); padding: 2px; position: relative; }
+    /* Sliding indicator: a single pill that animates between the two segments
+       instead of the active button just swapping its background. */
+    .cc-toolbar__view::before { content: ""; position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc(50% - 2px); border-radius: calc(var(--radius-md) - 2px); background: var(--color-overlay); z-index: 0; transition: transform 220ms cubic-bezier(.2,.0,.2,1); pointer-events: none; }
+    .cc-toolbar__view:has(> button:last-child[aria-pressed="true"])::before { transform: translateX(calc(100% + 2px)); }
+    @media (prefers-reduced-motion: reduce) { .cc-toolbar__view::before { transition: none; } }
+    .cc-toolbar__vbtn { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; background: transparent; color: var(--color-text-secondary); border-radius: calc(var(--radius-md) - 2px); cursor: pointer; transition: background-color 200ms var(--easing-out), color 200ms var(--easing-out); }
+    .cc-toolbar .ha-select { height: 40px; font-size: var(--text-base); }
+    .cc-toolbar .ha-input { height: 40px; font-size: var(--text-base); }
+    @media (max-width: 1279px) { .cc-toolbar .ha-input, .cc-toolbar .ha-select { height: 44px; } .cc-tbtn { height: 44px; } .cc-tbtn--icon { width: 44px; } }
+    .cc-toolbar__vbtn[aria-pressed="true"] { background: transparent; color: var(--color-text-primary); }
+    .cc-toolbar__vbtn:not([aria-pressed="true"]):hover { color: var(--color-text-primary); }
+    @media (max-width: 767px) { .cc-toolbar__secondary { display: none; } }
+    /* Search clear (x): thin custom glyph, always visible while there is a value */
+    /* The native search clear button (::-webkit-search-cancel-button) is a
+       browser-controlled widget: it anchors to the text baseline, not the
+       field's vertical center, and clips custom masks, so it drifts to the
+       bottom-right on tall fields. Hide it everywhere and use our own,
+       reliably-centered clear button (.cc-search__clear) instead. */
+    .ha-input--search::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+    .cc-search { position: relative; width: 100%; }
+    .ha-input.cc-input-clear { padding-right: 38px !important; }
+    .cc-search__clear {
+      position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; padding: 0; border: none; cursor: pointer;
+      background: transparent; color: var(--color-text-tertiary);
+      border-radius: var(--radius-full);
+      transition: background-color 150ms ease-out, color 150ms ease-out;
+    }
+    .cc-search__clear:hover { color: var(--color-text-primary); }
+    .ha-btn--secondary { border-color: transparent !important; }
+    .cc-topbar .ha-btn--secondary { background: transparent !important; }
+    .cc-topbar .ha-btn--secondary:hover { background: var(--color-surface-raised) !important; }
+    .ha-btn--danger { background: transparent !important; color: var(--color-error) !important; border-color: transparent !important; }
+    .ha-btn--danger:hover:not([disabled]) { filter: none !important; background: var(--color-error) !important; color: #fff !important; }
+    .ha-btn--danger.cc-danger-soft { background: var(--color-surface-raised) !important; }
+    .ha-btn--danger.cc-danger-soft:hover:not([disabled]) { background: var(--color-error) !important; color: #fff !important; }
+    .ha-btn--danger.cc-danger-solid { background: var(--color-error) !important; color: #fff !important; border-color: transparent !important; }
+    .ha-btn--danger.cc-danger-solid:hover:not([disabled]) { background: var(--color-error) !important; color: #fff !important; filter: brightness(1.1) !important; }
+    /* Breakpoint-class driven control sizing. The tweak breakpoint override sets
+       the logical bp via JS while the real viewport stays wide, so @media can't
+       fire; keying off .cc-bp-* makes the 44px touch sizing track the chosen
+       breakpoint in the viewer AND in real responsive layout. Touch = mobile only; tablet matches desktop density. */
+    .cc-bp-mobile .ha-btn { --_h: var(--button-height-touch, 44px); }
+    .cc-bp-mobile .ha-btn--sm { --_h: var(--button-height-touch, 44px); min-height: var(--button-height-touch, 44px); }
+    .cc-bp-desktop .ha-btn, .cc-bp-tablet .ha-btn { --_h: var(--touch-target-desktop, 32px); }
+    .cc-bp-desktop .ha-btn--sm, .cc-bp-tablet .ha-btn--sm { --_h: 28px; min-height: 28px; }
+    .cc-bp-mobile .ha-iconbtn { width: var(--button-height-touch, 44px); height: var(--button-height-touch, 44px); }
+    .cc-bp-desktop .ha-iconbtn, .cc-bp-tablet .ha-iconbtn { width: 40px; height: 40px; }
+    .cc-bp-mobile .ha-input, .cc-bp-mobile .ha-select { height: var(--button-height-touch, 44px); }
+    .cc-bp-desktop .ha-input, .cc-bp-desktop .ha-select, .cc-bp-tablet .ha-input, .cc-bp-tablet .ha-select { height: 36px; }
+    @keyframes cc-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cc-scrim-out { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes cc-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes cc-flow-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+    @keyframes cc-flow-dash { to { stroke-dashoffset: -24; } }
+    @keyframes cc-fab-pop { from { opacity: 0; transform: translateY(24px) scale(0.5); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    /* Centered dialog entrance: fade + scale from .96. Pairs with cc-scrim-in. */
+    @keyframes cc-dialog-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+    @keyframes cc-dialog-out { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.96); } }
+    /* Map bottom sheet: CSS-owned detent heights (dvh, viewport-relative so it
+       never overflows). JS only tracks the live drag (transient inline height)
+       and picks which detent to snap to; the rest is CSS. */
+    .cc-sheet[data-detent] { transition: height 240ms cubic-bezier(.2,.0,.2,1); }
+    .cc-sheet[data-detent="sm"] { height: 40%; }
+    .cc-sheet[data-detent="md"] { height: 70%; }
+    .cc-sheet[data-detent="lg"] { height: calc(100% - 24px); }
+    @media (prefers-reduced-motion: reduce) { .cc-scrim, .cc-sheet { animation: none !important; } .cc-sheet[data-detent] { transition: none; } }
+    @keyframes cc-fy-in { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform:none;} }
+    @keyframes cc-fy-out { from { opacity:1; transform:none;} to { opacity:0; transform: translateY(-10px);} }
+    /* Section-header link styles, always present even when the DS SectionHeader
+       component never mounts to inject them (home overview no longer uses it). */
+    .ha-sechead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3,12px); padding: var(--space-2,8px) 0; }
+    .ha-sechead__label { font-size: var(--text-sm,13px); font-weight: var(--weight-medium,500); color: var(--color-text-secondary); }
+    .ha-sechead__link { display: inline-flex; align-items: center; gap: 2px; border: none; background: transparent; cursor: pointer; padding: 0; color: var(--color-text-secondary); font-family: var(--font-body); font-size: var(--text-sm,13px); font-weight: var(--weight-medium,500); text-decoration: none; transition: color var(--duration-normal,200ms) var(--easing-out,ease-out); }
+    .ha-sechead__link, .ha-sechead__link:hover, .ha-sechead__link:focus, .ha-sechead__link:focus-visible, .ha-sechead__link > * { text-decoration: none !important; }
+    .ha-sechead__link > span:not(.mdi) { display: inline-block; }
+    .ha-sechead__link .mdi-chevron-right { transition: transform var(--duration-normal,200ms) var(--easing-out,ease-out); }
+    .ha-sechead__link:hover .mdi-chevron-right { transform: translateX(4px); }
+  </style>
+</helmet>
+<div id="cc-app">{{ app }}</div>
+
+<template id="__bundler_thumbnail">
+  <style>
+    #__bundler_loading { display: none !important; }
+    #__bundler_thumbnail { background: #18181a !important; padding: 0 !important; display: block !important; }
+    .ccsk { position: absolute; inset: 0; background: #2c2c32; }
+    .ccsk__pin { position: absolute; left: 50%; top: 46%; width: 30%; height: 30%; transform: translate(-50%, -50%); border-radius: 30% 30% 30% 30% / 34% 34% 26% 26%; background: #1C6FD6; }
+    .ccsk__pin::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34%; height: 34%; transform: translate(-50%, -50%); border-radius: 50%; background: #18181a; }
+  </style>
+  <div class="ccsk"><div class="ccsk__pin"></div></div>
+</template>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:414,&quot;height&quot;:896},&quot;breakpoint&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;mobile&quot;,&quot;tablet&quot;,&quot;desktop&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;mapTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;label&quot;:&quot;Theme&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    if (typeof window !== "undefined" && !window.React) window.React = React;
+    const pid = "daan";
+    this.state = {
+      personaId: pid,
+      ready: false,
+      bp: "mobile",
+      // map
+      mapTab: "people",
+      mapFocus: null, mapDetail: null, mapDetent: 0, mapNotifs: {},
+      mapActivityFull: null, mapVersionsFull: null,
+      notifyForm: null, notifyMenu: null,
+      // zones
+      zoneEdit: null, zoneColors: {}, zoneNames: {}, zoneIcons: {}, zoneShapes: {},
+      zoneNotifyForm: null, zoneNotifyDraft: null, zoneAddrQ: "",
+      // sheet / panel chrome
+      sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "", sheetClosing: false, mapSheetClosed: false,
+      toolbarMenu: null, confirm: null, toast: null,
+      // location sharing (drives who is visible on the map)
+      presenceCfg: { share: true, source: "iphone", automations: "precise", people: "everyone" },
+      home: { name: "Abbey Road", units: "metric", tz: "Europe/Amsterdam", country: "NL" },
+      // Nothing in the map writes a theme preference, so it follows the OS
+      // unless the Theme tweak pins it.
+      theme: { inst: "system", user: "default" },
+      a11y: (() => { let v = {}; try { v = JSON.parse(localStorage.getItem("cc-a11y-" + pid) || "{}") || {}; } catch (e) {} return v; })(),
+      osDark: (() => { try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); } catch (e) { return true; } })(),
+    };
+  }
+
+  // ---- accessors ----
+  get C() { return window.HAConceptCarDesignSystem_fababd || {}; }
+  get H() { return this.mod.household; }
+  get persona() { return this.mod.getPersona(this.state.personaId); }
+
+  // Prefer the window global (set by the map-data.js module script); a single-file
+  // bundle can't resolve a dynamic relative import, so poll for the global first.
+  async loadData() {
+    if (window.__HH_MOD) return window.__HH_MOD;
+    for (let i = 0; i < 150; i++) {
+      if (window.__HH_MOD) return window.__HH_MOD;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    try { return await import("./map-data.js"); } catch (e) { return null; }
+  }
+
+  async componentDidMount() {
+    if (!window.React) window.React = React;
+    this.mod = await this.loadData();
+    if (!this.mod) this.loadErr = "map data unavailable";
+    await this.loadBundle();
+    this.updateBp();
+    this._onResize = () => this.updateBp();
+    window.addEventListener("resize", this._onResize);
+    this.applyAppearance();
+    this._mqDark = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)")) || null;
+    this._onScheme = (e) => { this.setState({ osDark: !!e.matches }, () => this.applyAppearance()); };
+    if (this._mqDark) { if (this._mqDark.addEventListener) this._mqDark.addEventListener("change", this._onScheme); else if (this._mqDark.addListener) this._mqDark.addListener(this._onScheme); }
+    this._onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (this.state.confirm) { this.setState({ confirm: null }); return; }
+      if (this.state.toolbarMenu) { this.setState({ toolbarMenu: null }); return; }
+      if (this.state.zoneNotifyForm) { this.setState({ zoneNotifyForm: null, zoneNotifyDraft: null }); return; }
+      if (this.state.zoneEdit) { this.setState({ zoneEdit: null }); return; }
+      if (this.state.mapDetail) { this.closeMapDetail(); return; }
+      if (this.state.mapFocus) { this.setState({ mapFocus: null }); return; }
+    };
+    window.addEventListener("keydown", this._onKey);
+    // Reveal in one shot, once tokens are applied and the visible fonts are
+    // parsed, so the map never flashes unstyled.
+    const isReady = !!(this.mod && window.HAConceptCarDesignSystem_fababd);
+    const reveal = () => this.setState({ ready: isReady });
+    if (!isReady) { reveal(); return; }
+    const tokensApplied = () => getComputedStyle(document.documentElement).getPropertyValue("--color-bg").trim() !== "";
+    const waitTokens = () => new Promise((res) => { let n = 0; const tick = () => { if (tokensApplied() || n++ > 180) res(); else requestAnimationFrame(tick); }; tick(); });
+    const fontSpecs = ['400 16px "Inter"', '500 16px "Inter"', '600 16px "Inter"', '700 32px "Inter Tight"', '400 14px "JetBrains Mono"', '400 24px "Material Design Icons"'];
+    const loadFonts = () => (document.fonts && document.fonts.load) ? Promise.all(fontSpecs.map((s) => document.fonts.load(s).catch(() => {}))) : Promise.resolve();
+    let done = false;
+    const finish = () => { if (done) return; done = true; reveal(); };
+    Promise.all([waitTokens(), loadFonts()]).then(finish);
+    setTimeout(finish, 1500);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("keydown", this._onKey);
+    clearTimeout(this._toastT);
+    clearTimeout(this._sheetCloseT);
+  }
+
+  componentDidUpdate(prev) {
+    if (prev && prev.mapTheme !== this.props.mapTheme) this.applyAppearance();
+  }
+
+  // The map is the whole app: full-bleed canvas plus its own panel / sheet.
+  buildApp() {
+    if (!this.state.ready || !this.mod || !window.HAConceptCarDesignSystem_fababd) {
+      return React.createElement("div", { className: "cc-loading" }, this.loadErr ? "Could not load: " + this.loadErr : "Loading the map\u2026");
+    }
+    const h = React.createElement;
+    const bp = this.effBp();
+    const forced = (this.props.breakpoint && this.props.breakpoint !== "auto") ? this.props.breakpoint : null;
+    const root = h("div", { className: "cc-bp-" + bp, style: { height: forced ? "100%" : "100dvh", width: "100%", background: "var(--color-bg)", color: "var(--color-text-primary)", fontFamily: "var(--font-body)", fontSize: this.persona.calibrated === "accessibility" ? "18px" : undefined } },
+      this.mapBody(this.persona, bp),
+      this.renderConfirm(bp),
+      this.renderToast(bp));
+    if (!forced) return root;
+    // Breakpoint viewer: frame the app at a representative device width and let
+    // its own responsive layout react to that width.
+    const FW = { mobile: 414, tablet: 1024, desktop: 1440 }[forced] || 1024;
+    const FH = { mobile: 896, tablet: 768 }[forced] || null;
+    const inset = forced === "desktop" ? 0 : 24;
+    return h("div", { style: { height: "100vh", width: "100%", display: "flex", justifyContent: "center", alignItems: "center", background: "var(--color-bg)", overflow: "hidden", padding: inset + "px 0", boxSizing: "border-box" } },
+      h("div", { style: { position: "relative", transform: "translateZ(0)", flex: "none", width: FW, maxWidth: "100%", height: FH ? FH : "100%", maxHeight: "100%", overflow: "hidden", background: "var(--color-bg)", borderRadius: inset ? 16 : 0, boxShadow: "0 0 0 1px var(--color-border)" } }, root));
+  }
+
+  loadBundle() {
+    return new Promise((res) => {
+      if (window.HAConceptCarDesignSystem_fababd) return res();
+      const s = document.createElement("script");
+      s.src = "ds/_ds_bundle.js";
+      s.onload = () => res();
+      s.onerror = () => res();
+      document.head.appendChild(s);
+    });
+  }
+
+  updateBp() {
+    let w = 0;
+    try { w = window.innerWidth; } catch (e) {}
+    const bp = w >= 1280 ? "desktop" : w >= 768 ? "tablet" : "mobile";
+    if (bp !== this.state.bp) this.setState({ bp });
+  }
+
+  effBp() {
+    const fb = this.props.breakpoint;
+    return fb && fb !== "auto" ? fb : this.state.bp;
+  }
+
+  personName(id) { const p = (this.H.people || []).find((x) => x.id === id); return p ? p.name : "Someone"; }
+
+  hexToRgba(hex, a) { const m = hex.replace("#", ""); const r = parseInt(m.slice(0, 2), 16), g = parseInt(m.slice(2, 4), 16), b = parseInt(m.slice(4, 6), 16); return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")"; }
+
+  cols(d, t, m, bp) { return bp === "desktop" ? d : bp === "tablet" ? t : m; }
+
+  col(gap) { return { display: "flex", flexDirection: "column", gap: gap || "var(--space-8)" }; }
+
+  notice(text, icon) {
+    const { Icon } = this.C;
+    return React.createElement("div", { style: { display: "flex", gap: "var(--space-2)", alignItems: "center", background: "var(--color-surface-raised)", borderRadius: "var(--radius-md)", padding: "var(--space-3) var(--space-4)", color: "var(--color-text-secondary)", fontSize: "var(--text-sm)" } },
+      React.createElement(Icon, { name: icon || "information-outline", size: "md" }), React.createElement("span", null, text));
+  }
+
+  // ---- topbar ----
+  reduceMotion() { return this.a11yEff().reduceMotion; }
+
+  // ---- appearance / accessibility controller ----
+  osDark() { try { return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); } catch (e) { return true; } }
+
+  osReduceMotion() { try { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) { return false; } }
+
+  // Effective theme mode: user override wins, else the instance default.
+  themeMode() { const t = this.state.theme || { inst: "system", user: "default" }; return t.user === "default" ? t.inst : t.user; }
+
+  // Resolved to a concrete palette ("light" | "dark"), resolving "system" via the OS.
+  resolvedTheme() {
+    // A pinned theme tweak wins, so the panel chrome and the basemap always agree.
+    const p = this.props.mapTheme;
+    if (p === "light" || p === "dark") return p;
+    const m = this.themeMode();
+    return (m === "light" || m === "dark") ? m : (this.state.osDark ? "dark" : "light");
+  }
+
+  mapTheme() { return this.resolvedTheme(); }
+
+  a11yEff() { const a = this.state.a11y || {}; return { contrast: !!a.contrast, reduceMotion: a.reduceMotion == null ? this.osReduceMotion() : !!a.reduceMotion }; }
+
+  applyAppearance() {
+    try {
+      const el = document.documentElement;
+      el.setAttribute("data-theme", this.resolvedTheme());
+      if (this.a11yEff().contrast) el.setAttribute("data-contrast", "high"); else el.removeAttribute("data-contrast");
+    } catch (e) {}
+    if (this._engine3d) this._engine3d.setTheme(this.resolvedTheme());
+  }
+
+  backChevron() {
+    return React.createElement("svg", { width: 22, height: 22, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true }, React.createElement("path", { d: "M15 18l-6-6 6-6" }));
+  }
+
+  iconBtn(child, label, onClick) {
+    const h = React.createElement; const { IconButton } = this.C;
+    if (IconButton) return h(IconButton, { label, onClick }, child);
+    // The DS ships no IconButton, so topbar icon buttons render here. Shape
+    // follows the breakpoint like the DS controls do: 44px circle on mobile,
+    // 40px rounded-square on desktop/tablet.
+    const mob = this.effBp() === "mobile";
+    const d = mob ? 44 : 40;
+    return h("button", { type: "button", "aria-label": label, title: label, onClick,
+      style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: d, height: d, flex: "none", border: "none", background: "transparent", cursor: "pointer", borderRadius: mob ? "50%" : "var(--radius-md)", color: "var(--color-text-secondary)", transition: "background-color var(--duration-normal) var(--easing-out), color var(--duration-normal) var(--easing-out)" },
+      onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; e.currentTarget.style.color = "var(--color-text-primary)"; },
+      onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-secondary)"; } }, child);
+  }
+
+  topAction(name, label, onClick) { const { Icon } = this.C; return this.iconBtn(React.createElement(Icon, { name, size: "md" }), label, onClick); }
+
+  // Search field with a reliably-centered custom clear (X) button. Replaces
+  // reliance on the native ::-webkit-search-cancel-button (which mis-positions
+  // on tall fields). Pass the same props you would give the DS search Input
+  // (value, placeholder, onChange, aria-label, autoFocus, className). Clearing
+  // calls onChange with an empty-value synthetic event.
+  ccSearch(p) {
+    const h = React.createElement; const { Input, Icon } = this.C;
+    p = p || {};
+    const val = p.value || "";
+    const has = val.length > 0;
+    const onChange = p.onChange;
+    const mic = !!p.mic;
+    const rest = Object.assign({}, p); delete rest.mic;
+    const inputProps = Object.assign({}, rest, {
+      variant: "search",
+      className: (p.className ? p.className + " " : "") + ((has || mic) ? "cc-input-clear" : ""),
+    });
+    // Trailing affordance: a clear button once there's text, otherwise the
+    // voice-search mic (when this field is an "ask the home" search).
+    const trailing = has
+      ? h("button", { type: "button", className: "cc-search__clear", "aria-label": "Clear search",
+          onMouseDown: (e) => e.preventDefault(),
+          onClick: () => { if (onChange) onChange({ target: { value: "" } }); } },
+          h(Icon, { name: "close", size: "sm" }))
+      : (mic
+          ? h("button", { type: "button", className: "cc-search__clear", "aria-label": "Ask by voice", title: "Ask by voice",
+              onMouseDown: (e) => e.preventDefault(),
+              onClick: () => this.showToast("Assist is a placeholder in this prototype.") },
+              h(Icon, { name: "microphone", size: "sm" }))
+          : null);
+    return h("div", { className: "cc-search" },
+      h(Input, inputProps),
+      trailing);
+  }
+
+  ccOverlaySelect(menuKey, value, options, onChange, o) {
+    o = o || {};
+    const h = React.createElement; const { Icon } = this.C;
+    const open = this.state.toolbarMenu === menuKey;
+    const cur = options.find((x) => x.value === value) || options[0] || {};
+    const fullWidth = o.fullWidth;
+    const align = o.align || "left";
+    // Anchor the open menu to the viewport (position: fixed) using the button's
+    // measured rect, so it is never clipped by an ancestor's overflow (dialogs,
+    // scrollable cards). Flip above the button when there isn't room below.
+    let menuStyle = null;
+    if (open) {
+      const r = this._selRect || { top: 0, bottom: 0, left: 0, right: 0, width: 0 };
+      const below = window.innerHeight - r.bottom;
+      const flipUp = below < 260 && r.top > below;
+      const cap = Math.max(120, Math.min(320, (flipUp ? r.top : below) - 12));
+      menuStyle = { position: "fixed", zIndex: 4001, minWidth: fullWidth ? r.width : 220, background: "var(--color-overlay)", border: "1px solid var(--color-border)", borderRadius: "var(--radius-md)", padding: "var(--space-1)", maxHeight: cap, overflowY: "auto", boxSizing: "border-box" };
+      if (align === "right") menuStyle.right = window.innerWidth - r.right; else menuStyle.left = r.left;
+      if (flipUp) menuStyle.bottom = window.innerHeight - r.top + 4; else menuStyle.top = r.bottom + 4;
+    }
+    return h("div", { style: { position: "relative", width: fullWidth ? "100%" : undefined, flex: fullWidth ? undefined : "none" } },
+      h("button", { type: "button", "aria-haspopup": "listbox", "aria-expanded": open, "aria-label": o.label,
+        onClick: (e) => { const b = e.currentTarget.getBoundingClientRect(); this._selRect = { top: b.top, bottom: b.bottom, left: b.left, right: b.right, width: b.width }; this.setState({ toolbarMenu: open ? null : menuKey }); },
+        style: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--space-2)", width: fullWidth ? "100%" : undefined, minHeight: 36, boxSizing: "border-box", padding: "var(--space-2) var(--space-3)", background: "var(--color-bg)", border: "1px solid " + (open ? "var(--color-accent)" : "var(--color-border)"), borderRadius: "var(--radius-md)", color: "var(--color-text-primary)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-base)" } },
+        h("span", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", minWidth: 0 } },
+          (cur.icon || o.icon) ? h(Icon, { name: cur.icon || o.icon, size: "sm", style: { flex: "none", color: "var(--color-text-secondary)" } }) : null,
+          h("span", { style: { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, cur.label)),
+        h(Icon, { name: "chevron-down", size: "sm", style: { flex: "none", color: "var(--color-text-secondary)" } })),
+      open ? window.ReactDOM.createPortal(h("div", null,
+        h("div", { onClick: () => this.setState({ toolbarMenu: null }), style: { position: "fixed", inset: 0, zIndex: 4000 } }),
+        h("div", { role: "listbox", style: menuStyle },
+          options.map((opt) => {
+            const active = opt.value === value;
+            return h("button", { key: opt.value, type: "button", role: "option", "aria-selected": active, onClick: () => { onChange(opt.value); this.setState({ toolbarMenu: null }); },
+              style: { display: "flex", alignItems: "center", gap: "var(--space-2)", width: "100%", textAlign: "left", border: "none", background: "transparent", color: active ? "var(--color-text-primary)" : "var(--color-text-secondary)", cursor: "pointer", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", padding: "var(--space-2) var(--space-3)", borderRadius: "var(--radius-sm)", whiteSpace: "nowrap" },
+              onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; },
+              onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; } },
+              h("span", { style: { width: 18, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#fff" } }, active ? h(Icon, { name: "check", size: "sm" }) : null),
+              opt.icon ? h(Icon, { name: opt.icon, size: "sm", style: { flex: "none", color: active ? "var(--color-text-primary)" : "var(--color-text-secondary)" } }) : null,
+              h("span", { style: { flex: 1 } }, opt.label));
+          }))), document.body) : null);
+  }
+
+  _hash(str) { let h = 2166136261 >>> 0; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h; }
+
+  _months() { return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; }
+
+  _fmtDate(h, yMin, ySpan) {
+    const m = this._months();
+    const year = yMin + (h % ySpan);
+    const month = (h >>> 4) % 12;
+    const day = 1 + ((h >>> 8) % 28);
+    return day + " " + m[month] + " " + year;
+  }
+
+  addedOf(e) { return this._fmtDate(this._hash(e.id + "add"), 2022, 3); }
+
+  modifiedOf(e) { return this._fmtDate(this._hash(e.id + "mod"), 2025, 2); }
+
+  addedByOf(e) { return this._hash(e.id + "by") % 10 < 7 ? "Daan" : "Sofie"; }
+
+  personName(id) { const p = (this.H.people || []).find((x) => x.id === id); return p ? p.name : "Someone"; }
+
+  // Actor mark for a version: the Home Assistant logo for automatic changes,
+  // otherwise the avatar of the person who saved it.
+  flowVersionActor(r) {
+    const h = React.createElement; const { ProfileAvatar } = this.C;
+    if (r.system) return h("span", { style: { width: 40, height: 40, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" } },
+      h("img", { src: "ds/assets/ha-mark.svg", alt: "Home Assistant", width: 28, height: 28, style: { display: "block" } }));
+    const p = Object.values(this.H.personas || {}).find((x) => x.name === r.by);
+    return h(ProfileAvatar, { name: r.by, src: p && p.avatar, size: "lg" });
+  }
+
+  // Shared change-history renderer (who changed a record, what, and when).
+  // Rows: { current?, system?, when, by, change }. Reused by the automation
+  // edit-history card, zones and devices. Transparency / anti-gaslighting: it is
+  // read-only, everyone can see it, and no one can rewrite it.
+  changeHistoryList(rows) {
+    const h = React.createElement;
+    return h("div", { style: { display: "flex", flexDirection: "column" } },
+      (rows || []).map((r, i) => h("div", { key: i, style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) 0", borderTop: i ? "1px solid var(--color-border)" : "none" } },
+        this.flowVersionActor(r),
+        h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+          h("span", { style: { fontWeight: "var(--weight-medium)", fontSize: "var(--text-sm)" } }, r.change),
+          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, h("span", { style: { fontFamily: "var(--font-mono)" } }, r.when), " \u00b7 " + r.by)),
+        r.current ? h("span", { style: { flex: "none", fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--color-text-tertiary)", padding: "2px 8px", borderRadius: "var(--radius-full)", background: "var(--color-surface)" } }, "Current") : null)));
+  }
+
+  // Zone / device change history. Prefers a real `history` array on the record,
+  // falls back to a synthesized, stable set for the prototype.
+  zoneChangeRows(zone) {
+    if (Array.isArray(zone.history) && zone.history.length) return zone.history;
+    const primary = this.addedByOf(zone);
+    const other = primary === "Daan" ? "Sofie" : "Daan";
+    const isHome = zone.id === "zone-home";
+    return [
+      { current: true, when: this.modifiedOf(zone), by: primary, change: isHome ? "Adjusted the home radius" : "Moved the zone and changed the radius" },
+      { when: this._fmtDate(this._hash(zone.id + "z2"), 2024, 1), by: other, change: "Renamed and changed the icon" },
+      { when: this.addedOf(zone), by: primary, change: "Created this zone" },
+    ];
+  }
+
+  // ====================================================================
+  //  BOTTOM SHEET (shared: map + filters; drag-resize, drag-dismiss, esc)
+  // ====================================================================
+  sheetRefH(spec) {
+    const win = (typeof window !== "undefined" ? window.innerHeight : 720) || 720;
+    if (spec.id === "map") return this._mapWrapH || win;
+    if (spec.backdrop) return win;
+    // Map sheet measures against the full screen so its detents are true % of
+    // the screen height (overflow on the map wrapper clips any small excess).
+    return win;
+  }
+
+  sheetDefaultPx(spec) {
+    const idx = spec.defaultDetent != null ? spec.defaultDetent : 0;
+    return Math.round(this.sheetRefH(spec) * spec.detents[idx]);
+  }
+
+  curSheetPx(spec) {
+    if (this.state.sheetDrag != null) return this.state.sheetDrag;
+    if (spec.id === "map") {
+      const ref = this._mapWrapH || (typeof window !== "undefined" ? window.innerHeight : 720) || 720;
+      const fr = spec.detents[this.state.mapDetent || 0];
+      return Math.round(ref * fr);
+    }
+    if (this.state.sheetPx != null) return this.state.sheetPx;
+    return this.sheetDefaultPx(spec);
+  }
+
+  _evY(e) { return e.clientY != null ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0); }
+
+  // Detent index per sheet (CSS-owned heights, same model as the map sheet).
+  // Map keeps its existing mapDetent state key; every other sheet uses det_<id>.
+  curDetent(spec) {
+    const def = spec.defaultDetent != null ? spec.defaultDetent : 0;
+    if (spec.id === "map") return this.state.mapDetent != null ? this.state.mapDetent : def;
+    const v = this.state["det_" + spec.id];
+    return v != null ? v : def;
+  }
+
+  setDetent(spec, i) {
+    if (spec.id === "map") this.setState({ mapDetent: i, sheetDrag: null });
+    else this.setState({ ["det_" + spec.id]: i, sheetDrag: null });
+  }
+
+  onSheetDown(e, spec) {
+    if (e.target.closest && e.target.closest("input, select, textarea, [type='range'], [role='switch'], .cc-toolbar__view, ha-zone-editor")) return;
+    this._sheetDrag = { startY: this._evY(e), startH: (e.currentTarget && e.currentTarget.offsetHeight) || this.curSheetPx(spec), ref: this.sheetRefH(spec), moved: false, pid: e.pointerId, el: e.currentTarget };
+  }
+
+  onSheetMove(e, spec) {
+    const d = this._sheetDrag; if (!d) return;
+    const dy = d.startY - this._evY(e);
+    if (!d.moved) {
+      if (Math.abs(dy) <= 5) return;
+      const body = this._sheetBodyEl;
+      const movingDown = dy < 0;
+      // At full height, defer to native content scroll unless the user is at the
+      // top of the content and pulling down: then take over to shrink the sheet.
+      if (this._sheetAtMax && body && (body.scrollTop > 0 || !movingDown)) { this._sheetDrag = null; return; }
+      d.moved = true; try { d.el.setPointerCapture(d.pid); } catch (err) {}
+    }
+    let max = d.ref * (spec.backdrop ? 0.94 : Math.max.apply(null, spec.detents));
+    this.setState({ sheetDrag: Math.max(40, Math.min(max, d.startH + dy)) });
+  }
+
+  onSheetUp(e, spec) {
+    const d = this._sheetDrag; if (!d) return; this._sheetDrag = null;
+    if (!d.moved) return;
+    this._suppressClick = true; clearTimeout(this._suppressClickT); this._suppressClickT = setTimeout(() => { this._suppressClick = false; }, 60);
+    const hgt = this.state.sheetDrag != null ? this.state.sheetDrag : d.startH;
+    // Unified: every sheet snaps to the nearest detent (CSS owns the height).
+    const ref = spec.id === "map" ? (this._mapWrapH || (typeof window !== "undefined" ? window.innerHeight : 720) || 720) : d.ref;
+    const det = spec.detents.map((f) => f * ref);
+    const minDet = Math.min.apply(null, det);
+    // Drag well below the smallest detent: close (only if this sheet allows it).
+    // Non-closable sheets (map) just snap to the smallest detent: smaller, not gone.
+    if (spec.dismissible && hgt < minDet * 0.55) { this.closeSheet(spec); return; }
+    // Directional snap: a deliberate drag commits one detent in the drag
+    // direction, instead of springing back to whichever detent is nearest. So
+    // dragging up from the smallest reliably reaches the next detent up (on a
+    // two-detent sheet, the biggest), and dragging down steps one lower.
+    const order = det.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]);
+    let startRank = 0;
+    order.forEach((o, r) => { if (Math.abs(o[0] - d.startH) < Math.abs(order[startRank][0] - d.startH)) startRank = r; });
+    const delta = hgt - d.startH;
+    const TH = Math.max(24, ref * 0.05);
+    let rank = startRank;
+    if (delta > TH) rank = Math.min(order.length - 1, startRank + 1);
+    else if (delta < -TH) rank = Math.max(0, startRank - 1);
+    this.setDetent(spec, order[rank][1]);
+  }
+
+  dismissSheet(spec) {
+    if (spec.onDismiss) { this.setState({ sheetPx: null, sheetDrag: null }); spec.onDismiss(); return; }
+    if (spec.id === "map") this.setState({ mapSheetClosed: true, sheetPx: null, sheetDrag: null });
+    else if (spec.id === "flownode") this.setState({ flowSel: null, sheetPx: null, sheetDrag: null });
+    else if (spec.id === "addwidget") this.setState({ addWidgetOpen: false, sheetPx: null, sheetDrag: null, sheetSub: null, sheetSearch: "" });
+    else if (spec.id === "widgetcfg") this.setState({ widgetConfig: null, sheetPx: null, sheetDrag: null });
+    else this.setState({ filtersSheet: null, customizeId: null, sheetSub: null, sheetSearch: "" });
+  }
+
+  // Animated close (86c99aa4 pattern): slide the panel down + fade the scrim,
+  // then unmount. No-op for sheets that don't allow closing.
+  closeSheet(spec) {
+    if (!spec.dismissible) return;
+    this._sheetDrag = null;
+    if (this.reduceMotion()) { this.setState({ sheetDrag: null }); this.dismissSheet(spec); return; }
+    this.setState({ sheetClosing: true });
+    clearTimeout(this._sheetCloseT);
+    this._sheetCloseT = setTimeout(() => { this.setState({ sheetClosing: false, sheetDrag: null }); this.dismissSheet(spec); }, 200);
+  }
+
+  renderSheet(spec, bp) {
+    const h = React.createElement; const { Icon, Input } = this.C;
+    const noAnim = this.reduceMotion();
+    let heightPx = this.curSheetPx(spec);
+    const dragging = this._sheetDrag != null;
+    const closing = this.state.sheetClosing;
+    const sub = spec.twoLevel ? this.state.sheetSub : null;
+    const dim = sub ? spec.dimensions.find((d) => d.id === sub) : null;
+
+    const iconBtn = (name, label, onClick) => h("button", { type: "button", "aria-label": label, onClick,
+      onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; e.currentTarget.style.color = "var(--color-text-primary)"; },
+      onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-secondary)"; },
+      style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", transition: "background 150ms ease-out, color 150ms ease-out" } }, h(Icon, { name, size: "md" }));
+
+    const titleText = dim ? dim.label : spec.title;
+    const header = spec.noHeader ? null : h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "0 var(--space-4) var(--space-4)", flex: "none" } },
+      dim
+        ? iconBtn("chevron-left", "Back to filters", () => this.setState({ sheetSub: null, sheetSearch: "" }))
+        : ((spec.dismissible && !spec.hideClose) ? iconBtn("close", "Close", () => this.closeSheet(spec)) : null),
+      h("span", { style: { fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--color-text-primary)", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, titleText),
+      (!dim && spec.onClear && spec.hasActiveFilters) ? h("button", { type: "button", onClick: spec.onClear, style: { background: "none", border: "none", color: "var(--color-accent)", fontSize: bp === "desktop" ? "var(--text-sm)" : "var(--text-base)", fontFamily: "var(--font-body)", cursor: "pointer", padding: "6px 4px", flex: "none" } }, "Clear all") : null);
+
+    const searchRow = (dim && dim.searchable) ? h("div", { onPointerDown: (e) => e.stopPropagation(), style: { padding: "0 var(--space-4) var(--space-2)", flex: "none" } },
+      this.ccSearch({ value: this.state.sheetSearch, placeholder: "Search " + dim.label.toLowerCase(), "aria-label": "Search " + dim.label.toLowerCase(), onChange: (e) => this.setState({ sheetSearch: e.target.value }) })) : null;
+
+    const body = dim ? dim.render(this.state.sheetSearch) : spec.rootBody;
+    const footer = (!dim && spec.footer) ? spec.footer : null;
+
+    // Entry: slide-up 220ms cubic-bezier(.2,.0,.2,1). Close: translateY(100%) over
+    // the same curve, then unmount (matches project 86c99aa4).
+    const panelTransform = closing ? "translateY(100%)" : undefined;
+    // Unified CSS-detent sheet (same model as the map sheet): height is owned by
+    // CSS via data-detent; JS only sets a transient inline height while dragging.
+    const di = this.curDetent(spec);
+    // Detent CSS class is chosen by detent VALUE (not index) so a single-detent
+    // sheet (e.g. [0.97]) still renders at the biggest height.
+    const detVal = spec.detents[Math.min(di, spec.detents.length - 1)] || 0;
+    const detClass = detVal >= 0.9 ? "lg" : (detVal >= 0.6 ? "md" : "sm");
+    const dragLive = this._sheetDrag != null && this.state.sheetDrag != null;
+    // Body scrolls only at the tallest detent; below that, drags grow the sheet.
+    const atMax = di >= spec.detents.length - 1;
+    this._sheetAtMax = atMax;
+    const panel = h("div", { className: "cc-sheet",
+      onPointerDown: (e) => this.onSheetDown(e, spec), onPointerMove: (e) => this.onSheetMove(e, spec), onPointerUp: (e) => this.onSheetUp(e, spec), onPointerCancel: (e) => this.onSheetUp(e, spec),
+      onClick: (e) => e.stopPropagation(),
+      onClickCapture: (e) => { if (this._suppressClick) { e.stopPropagation(); e.preventDefault(); this._suppressClick = false; } },
+      "data-detent": detClass,
+      style: { position: spec.backdrop ? "relative" : "absolute", left: spec.backdrop ? undefined : 0, right: spec.backdrop ? undefined : 0, bottom: spec.backdrop ? undefined : 0, width: "100%", height: dragLive ? this.state.sheetDrag : undefined, display: "flex", flexDirection: "column", overflow: "hidden", background: spec.bg || "var(--color-surface)", borderTopLeftRadius: 24, borderTopRightRadius: 24, boxShadow: "0 -8px 24px rgba(0,0,0,0.35)", zIndex: 1001, touchAction: "none", transform: panelTransform, animation: (noAnim || closing) ? "none" : "cc-sheet-up 220ms cubic-bezier(.2,.0,.2,1)", transition: dragLive ? "none" : (closing ? "transform 200ms cubic-bezier(.2,.0,.2,1)" : undefined) } },
+      spec.dismissible
+        ? h("div", { style: { height: "var(--space-4)", flex: "none" } })
+        : h("div", { style: { display: "flex", justifyContent: "center", padding: "10px 0 4px", flex: "none", cursor: "grab" } },
+            h("div", { style: { width: 36, height: 4, borderRadius: 999, background: "var(--color-border)" } })),
+      header,
+      searchRow,
+      h("div", { ref: (el) => { this._sheetBodyEl = el; }, style: { flex: "1 1 auto", minHeight: 0, overflowY: atMax ? "auto" : "hidden", touchAction: atMax ? "pan-y" : "none", padding: dim ? "0 var(--space-5) var(--space-4)" : (spec.bodyPad || "0 var(--space-2) var(--space-4)") } }, body),
+      footer);
+
+    if (spec.backdrop) {
+      // Keep the mobile bottom tab bar visible above the sheet: stop the scrim
+      // (and therefore the sheet) above the 64px bar instead of covering it.
+      const barGap = bp === "mobile" ? "calc(64px + env(safe-area-inset-bottom))" : 0;
+      return h("div", { className: "cc-scrim", onClick: () => this.closeSheet(spec),
+        style: { position: "fixed", top: 0, left: 0, right: 0, bottom: barGap, zIndex: 1000, background: "var(--color-scrim)", display: "flex", alignItems: "flex-end", overflow: "hidden", animation: noAnim ? "none" : (closing ? "cc-scrim-out 200ms ease forwards" : "cc-scrim-in 180ms ease") } }, panel);
+    }
+    if (spec.scrimAtMax) {
+      // Map sheet: no scrim normally (the map stays live), but once dragged to the
+      // biggest detent a scrim fades in behind the panel; tapping it collapses the sheet.
+      const showScrim = atMax;
+      return h(React.Fragment, null,
+        h("div", { "aria-hidden": true, onClick: () => this.setDetent(spec, 0),
+          style: { position: "absolute", inset: 0, background: "var(--color-scrim)", opacity: showScrim ? 1 : 0, pointerEvents: showScrim ? "auto" : "none", transition: "opacity " + (noAnim ? "0ms" : "200ms") + " ease", zIndex: 1000 } }),
+        panel);
+    }
+    return panel;
+  }
+
+  // ====================================================================
+  //  SHARED CONTEXTUAL PANEL  (Map / Automation / Dashboard)
+  // ====================================================================
+  // One primitive behind every anchored detail panel. Desktop = a floating
+  // 380px surface card (top-right by default); mobile = a bottom sheet routed
+  // through renderSheet. Distinct from centered dialogs (fyScrim) and
+  // confirmations (renderConfirm).
+  //
+  //   spec = {
+  //     id,                       // sheet-state id (mobile)
+  //     title, subtitle,          // subtitle: string | { text, color, strong }
+  //     segments,                 // { items:[{id,label}], active, onChange, label }
+  //     onClose,                  // X handler (leading, dropped in a sub-step)
+  //     onBack,                   // sub-step: shows chevron, drops X + segments
+  //     body, footer, headerTrailing,
+  //     // desktop
+  //     desktopPos, desktopBodyPad, width,
+  //     // mobile sheet passthrough
+  //     detents, defaultDetent, persistent, scrimAtMax, backdrop, bg, bodyPad,
+  //     onDismiss,
+  //   }
+  // The sub-step contract (onBack drops the X *and* the segments, shows the
+  // back chevron) is enforced once here so all three pages behave identically.
+  panelIconBtn(name, label, onClick) {
+    const h = React.createElement; const { Icon } = this.C;
+    return h("button", { type: "button", "aria-label": label, onClick,
+      onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; e.currentTarget.style.color = "var(--color-text-primary)"; },
+      onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-text-secondary)"; },
+      style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, flex: "none", marginLeft: -6, border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-secondary)", cursor: "pointer", transition: "background 150ms ease-out, color 150ms ease-out" } },
+      h(Icon, { name, size: "md" }));
+  }
+
+  panelHeader(spec, bp) {
+    bp = bp || this.state.bp;
+    const h = React.createElement;
+    const lead = spec.onBack ? this.panelIconBtn("chevron-left", "Back", spec.onBack)
+      : (spec.onClose ? this.panelIconBtn("close", "Close", spec.onClose) : null);
+    if (!lead && !spec.title && !spec.headerTrailing) return null;
+    const sub = spec.subtitle;
+    const subEl = !sub ? null : (typeof sub === "string"
+      ? h("span", { style: { fontSize: "var(--text-sm)", lineHeight: 1.35, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, sub)
+      : h("span", { style: { fontSize: "var(--text-sm)", lineHeight: 1.35, color: sub.color || "var(--color-text-secondary)", fontWeight: sub.strong ? "var(--weight-medium)" : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, sub.text));
+    // Title truncates in the MIDDLE (keep the distinctive tail visible) with a
+    // hover tooltip revealing the full text. Only splits when long enough.
+    const titleFont = { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.25 };
+    let titleEl = null;
+    if (spec.title) {
+      if (typeof spec.title === "string" && spec.title.length > 14) {
+        const tail = spec.title.slice(-7);
+        const head = spec.title.slice(0, -7);
+        titleEl = h("span", { title: spec.title, style: Object.assign({ display: "flex", minWidth: 0, maxWidth: "100%" }, titleFont) },
+          h("span", { style: { minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, head),
+          h("span", { style: { flex: "none", whiteSpace: "pre" } }, tail));
+      } else {
+        titleEl = h("span", { title: typeof spec.title === "string" ? spec.title : undefined, style: Object.assign({ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, titleFont) }, spec.title);
+      }
+    }
+    return h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: bp === "mobile" ? "var(--space-3) 0 var(--space-2)" : "var(--space-3) var(--space-4) var(--space-2)", flex: "none" } },
+      lead,
+      h("div", { style: { flex: 1, minWidth: 0, height: "calc(var(--text-lg) * 1.25 + var(--text-sm) * 1.35 + 2px)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 1 } },
+        titleEl,
+        subEl),
+      spec.headerTrailing || null);
+  }
+
+  panelSegments(spec, bp) {
+    // Chrome slot, directly under the header. Hidden in a sub-step (onBack).
+    // The sliding-pill CSS (.cc-toolbar__view::before) supports two segments.
+    if (!spec.segments || spec.onBack) return null;
+    bp = bp || this.state.bp;
+    const h = React.createElement;
+    const sg = spec.segments;
+    const seg = (it) => h("button", { key: it.id, type: "button", className: "cc-toolbar__vbtn", "aria-pressed": sg.active === it.id, onClick: () => sg.onChange(it.id),
+      style: { flex: 1, width: "auto", gap: "var(--space-2)", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } },
+      h("span", null, it.label));
+    return h("div", { style: { padding: bp === "mobile" ? "var(--space-4) 0 var(--space-2)" : "var(--space-4) var(--space-4) var(--space-2)", flex: "none" } },
+      h("div", { className: "cc-toolbar__view", role: "group", "aria-label": sg.label || "View", style: { display: "flex", width: "100%", background: "var(--color-bg)" } },
+        (sg.items || []).map(seg)));
+  }
+
+  ccPanel(spec, bp) {
+    const h = React.createElement;
+    const header = this.panelHeader(spec, bp);
+    const segments = this.panelSegments(spec, bp);
+    if (bp === "mobile") {
+      const rootBody = h("div", null, header, segments, spec.body);
+      return this.renderSheet({
+        id: spec.id, noHeader: true,
+        backdrop: spec.backdrop != null ? spec.backdrop : true,
+        dismissible: spec.persistent ? false : true,
+        scrimAtMax: !!spec.scrimAtMax,
+        detents: spec.detents || [0.94], defaultDetent: spec.defaultDetent || 0,
+        bg: spec.bg || "var(--color-surface)",
+        bodyPad: spec.bodyPad || "0 var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom))",
+        rootBody: rootBody, footer: spec.footer || null,
+        onDismiss: spec.onDismiss || spec.onClose || null,
+      }, bp);
+    }
+    const pos = spec.desktopPos || { position: "absolute", top: "var(--space-4)", right: "var(--space-4)", maxHeight: "calc(100% - var(--space-8))" };
+    const bodyPad = spec.desktopBodyPad || ((header || segments) ? "var(--space-2) var(--space-5) var(--space-5)" : "0 var(--space-5) var(--space-5)");
+    return h("div", { onClick: (e) => e.stopPropagation(),
+      style: Object.assign({ width: spec.width || 380, display: "flex", flexDirection: "column", background: "var(--color-surface)", borderRadius: "var(--radius-lg)", boxShadow: "0 8px 28px rgba(0,0,0,0.28)", zIndex: 1001, overflow: "hidden" }, pos) },
+      header, segments,
+      h("div", { style: { flex: "1 1 auto", overflowY: "auto", minHeight: 0, padding: bodyPad } }, spec.body),
+      spec.footer || null);
+  }
+
+  showToast(msg) { this.setState({ toast: msg }); clearTimeout(this._toastT); this._toastT = setTimeout(() => this.setState({ toast: null }), 2800); }
+
+  renderToast(bp) {
+    if (!this.state.toast) return null;
+    const h = React.createElement; const { Icon } = this.C;
+    return h("div", { style: { position: "fixed", left: "50%", transform: "translateX(-50%)", bottom: bp === "mobile" ? 92 : "var(--space-6)", zIndex: 4500, display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) var(--space-5)", background: "var(--color-overlay)", color: "var(--color-text-primary)", borderRadius: "var(--radius-full)", boxShadow: "0 12px 32px rgba(0,0,0,0.5)", fontSize: "var(--text-base)", maxWidth: "min(92vw, 460px)" } },
+      h(Icon, { name: "check-circle-outline", size: "md", style: { color: "var(--color-success, #2e9e5b)", flex: "none" } }),
+      h("span", null, this.state.toast));
+  }
+
+  focusMapItem(id) { this.setState((s) => ({ mapFocus: s.mapFocus === id ? null : id })); }
+
+  mapRowTap(item, bp) {
+    const patch = { mapFocus: item.id, mapDetail: item.id, mapActivityFull: null, notifyMenu: null, notifyForm: null, zoneEdit: null, zoneNotifyForm: null, zoneNotifyDraft: null };
+    if (bp === "mobile") {
+      patch.mapDetent = 0;
+    }
+    this.setState(patch);
+  }
+
+  closeMapDetail() { this.setState({ mapDetail: null, mapFocus: null, mapActivityFull: null, notifyForm: null, notifyMenu: null, zoneEdit: null, zoneNotifyForm: null, zoneNotifyDraft: null, reviewDecline: false, reviewNote: "", mapDetent: 0, sheetDrag: null }); }
+
+  mapDetailView(bp) {
+    const h = React.createElement; const { ProfileAvatar, Icon, Button, Toggle } = this.C;
+    const zoneMatch = (this.mod.mapData.zones || []).find((x) => x.id === this.state.mapDetail);
+    if (zoneMatch) {
+      if (this.state.zoneNotifyForm === zoneMatch.id) return this.zoneNotifyForm(zoneMatch, bp);
+      return this.state.zoneEdit === zoneMatch.id ? this.zoneEditView(zoneMatch, bp) : this.zoneDetailView(zoneMatch, bp);
+    }
+    const p = (this.mod.mapData.people || []).find((x) => x.id === this.state.mapDetail);
+    if (!p) return null;
+    const rec = (this.H.people || []).find((x) => x.id === p.id) || {};
+    const isMe = p.id === this.persona.id;
+    const home = p.presence === "home";
+    const zone = (this.mod.mapData.zones || []).find((z) => z.id === p.zone);
+    const header = this.ccSubHead(() => this.closeMapDetail(), isMe ? "Me" : p.name, (zone ? zone.name : p.at) + " · " + p.updated, bp);
+    const placeName = zone ? zone.name : p.at;
+    const placeIcon = zone ? (zone.icon || "map-marker-radius") : "map-marker";
+    const rows = h("div", { style: { padding: "0 var(--space-1)" } },
+      h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3)" } },
+        h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface-raised)", color: "var(--color-text-secondary)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: placeIcon, size: "md" })),
+        h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+          h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: "var(--weight-semibold)", lineHeight: 1.2 } }, placeName),
+          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, "Last updated " + p.updated))));
+    const navigate = () => { try { window.open("https://www.google.com/maps/dir/?api=1&destination=" + p.lat + "," + p.lon, "_blank", "noopener"); } catch (e) {} };
+    const actions = h("div", { style: { display: "flex", gap: "var(--space-2)", padding: bp === "mobile" ? "var(--space-2) 0 0" : "var(--space-2) var(--space-3) 0" } },
+      isMe ? null : h(Button, { variant: "primary", icon: "directions", onClick: navigate, style: { flex: 1, minHeight: 44 } }, "Navigate"));
+    const notifs = (this.state.mapNotifs || {})[p.id] || [];
+    const cap = (s2) => s2.charAt(0).toUpperCase() + s2.slice(1);
+    const phrase = (n) => {
+      const subj = n.mode === "me" ? (isMe ? "you" : p.name) : "you";
+      const v = isMe || n.mode === "them";
+      const whenTxt = n.when === "arrives" ? (v ? "arrive at" : "arrives at") : n.when === "leaves" ? (v ? "leave" : "leaves") : (v ? "are not at" : "is not at");
+      const locTxt = n.location === "me" ? "your location" : (isMe ? "this location" : p.name + "'s location");
+      return cap(subj) + " " + whenTxt + " " + locTxt;
+    };
+    const removeNotif = (i) => this.setState((s) => { const all = Object.assign({}, s.mapNotifs); const arr = (all[p.id] || []).slice(); arr.splice(i, 1); all[p.id] = arr; return { mapNotifs: all }; });
+    const notifItems = notifs.map((n, i) => h("div", { key: i, style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) 0" } },
+      h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "bell-ring-outline", size: "md" })),
+      h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+        h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, n.mode === "me" ? "Notify me" : "Notify " + (isMe ? "the other person" : p.name)),
+        h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 1 } }, phrase(n) + " · " + (n.freq === "once" ? "only once" : "every time"))),
+      h("button", { type: "button", "aria-label": "Remove notification", onClick: () => removeNotif(i), style: { flex: "none", width: 32, height: 32, border: "none", background: "transparent", color: "var(--color-text-tertiary)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "close", size: "sm" }))));
+    const menuOpen = this.state.notifyMenu === p.id;
+    const openForm = (mode) => this.setState({ notifyMenu: null, notifyForm: { id: p.id, mode, when: "leaves", location: mode === "me" ? "person" : "me", freq: "once" } });
+    const closeMenu = () => this.setState({ notifyMenu: null });
+    const dlgItem = (icon, label, desc, onClick, isLast) => h("button", { type: "button", key: label, onClick,
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", borderBottom: isLast ? "none" : "1px solid var(--color-border-subtle)", background: "transparent", color: "var(--color-text-primary)", font: "inherit", padding: "var(--space-3) 0", cursor: "pointer" },
+      onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface)"; }, onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; } },
+      h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: icon, size: "md" })),
+      h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+        h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, label),
+        h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 1 } }, desc)));
+    const addMenu = menuOpen ? h("div", { onClick: closeMenu,
+      style: { position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,0.5)", opacity: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-6)" } },
+      h("div", { onClick: (e) => e.stopPropagation(), style: { width: "min(380px, 100%)", background: "var(--color-overlay)", borderRadius: "var(--radius-xl)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" } },
+        h("div", { style: { padding: "var(--space-5) var(--space-5) var(--space-3)", fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700 } }, "Add notification"),
+        h("div", { style: { display: "flex", flexDirection: "column" } },
+          dlgItem("account-arrow-right-outline", "Notify me", "When " + (isMe ? "this person" : p.name) + " arrives or leaves", () => openForm("me"), false),
+          dlgItem("bell-plus-outline", "Notify " + (isMe ? "the other person" : p.name), "Let them know when you arrive or leave", () => openForm("them"), true)),
+        h("div", { style: { display: "flex", justifyContent: "flex-end", padding: "var(--space-3) var(--space-4) var(--space-4)" } },
+          h(Button, { variant: "secondary", onClick: closeMenu }, "Cancel")))) : null;
+    const addLink = this.cardLink("Add notification", () => openForm("me"));
+    const cardDivider = () => h("div", { style: { height: 1, background: "var(--color-border)", margin: "var(--space-3) 0" } });
+    const notifications = h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+      h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4) var(--space-4) var(--space-3)", display: "flex", flexDirection: "column" } },
+        h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-error, #d6492f)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "bell", size: "sm" })),
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", marginTop: "var(--space-3)" } }, "Notifications"),
+        cardDivider(),
+        notifItems.length ? h("div", { style: { display: "flex", flexDirection: "column" } }, notifItems) : null,
+        addLink));
+    // History + Activity (inspired by the Home Assistant person detail): a
+    // presence timeline bar and a recent detection log. Sample data.
+    const sectionHead = (icon, label, onMore) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", padding: "0 var(--space-3) var(--space-2)", color: "var(--color-text-secondary)" } },
+      h(Icon, { name: icon, size: "sm" }),
+      h("span", { style: { fontSize: "var(--text-sm)", flex: 1 } }, label),
+      onMore ? h("button", { type: "button", onClick: onMore, style: { border: "none", background: "transparent", color: "var(--color-accent)", font: "inherit", fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", cursor: "pointer", padding: 0 } }, "Show more") : null);
+    const co = this.state.zoneColors || {}, no = this.state.zoneNames || {};
+    const zById = {};
+    (this.mod.mapData.zones || []).forEach((z) => { zById[z.id] = { color: co[z.id] || z.color, name: no[z.id] || z.name }; });
+    const zColor = (zid) => (zid && zById[zid]) ? zById[zid].color : "var(--color-text-tertiary)";
+    const zName = (zid) => (zid && zById[zid]) ? zById[zid].name : "Away";
+    const events = (home
+      ? [{ z: p.zone, t: "1:13 PM", r: "32 minutes ago" }, { z: null, t: "12:48 PM", r: "1 hour ago" }, { z: "zone-work", t: "9:02 AM", r: "4 hours ago" }, { z: null, t: "8:30 AM", r: "5 hours ago" }, { z: p.zone, t: "7:15 AM", r: "6 hours ago" }]
+      : [{ z: p.zone, t: "12:40 PM", r: "44 minutes ago" }, { z: null, t: "8:30 AM", r: "5 hours ago" }, { z: "zone-home", t: "7:50 AM", r: "5 hours ago" }]);
+    const lastIdx = events.length - 1;
+    const historySection = h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+      h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4) var(--space-4) var(--space-3)", display: "flex", flexDirection: "column" } },
+        h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-accent)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "history", size: "sm" })),
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", marginTop: "var(--space-3)", marginBottom: "var(--space-4)" } }, "Activity"),
+        events.map((e, i) => h("div", { key: i, style: { display: "flex", gap: "var(--space-3)", alignItems: "stretch" } },
+          h("span", { style: { display: "flex", flexDirection: "column", alignItems: "center", width: 12, flex: "none" } },
+            h("span", { style: { width: 12, height: 12, flex: "none", borderRadius: "50%", background: zColor(e.z), border: "2px solid var(--color-surface-raised)" } }),
+            i < lastIdx ? h("span", { style: { flex: 1, width: 3, minHeight: 20, marginTop: 2, borderRadius: 1.5, background: zColor(e.z) } }) : null),
+          h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column", paddingBottom: i < lastIdx ? "var(--space-4)" : 0 } },
+            h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, zName(e.z)),
+            h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, e.t + " · " + e.r)))),
+        cardDivider(),
+        this.cardLink("Show more", () => this.setState({ mapActivityFull: p.id }))));
+    const mapSubBack = (onBack, title) => this.ccSubHead(onBack, title, null, bp);
+    if (this.state.mapActivityFull === p.id) {
+      return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)", paddingTop: "var(--space-1)" } }, mapSubBack(() => this.setState({ mapActivityFull: null }), "Activity"),
+        h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+          h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4)", display: "flex", flexDirection: "column" } },
+            events.map((e, i) => h("div", { key: i, style: { display: "flex", gap: "var(--space-3)", alignItems: "stretch" } },
+              h("span", { style: { display: "flex", flexDirection: "column", alignItems: "center", width: 12, flex: "none" } },
+                h("span", { style: { width: 12, height: 12, flex: "none", borderRadius: "50%", background: zColor(e.z), border: "2px solid var(--color-surface-raised)" } }),
+                i < lastIdx ? h("span", { style: { flex: 1, width: 3, minHeight: 20, marginTop: 2, borderRadius: 1.5, background: "var(--color-border)" } }) : null),
+              h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column", paddingBottom: i < lastIdx ? "var(--space-4)" : 0 } },
+                h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, zName(e.z)),
+                h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, e.t + " \u00b7 " + e.r)))))));
+    }
+    if (this.state.notifyMenu === p.id) {
+      return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)", paddingTop: "var(--space-1)" } }, mapSubBack(() => this.setState({ notifyMenu: null }), "Add notification"),
+        h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+          h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "0 var(--space-4)", display: "flex", flexDirection: "column" } },
+            dlgItem("account-arrow-right-outline", "Notify me", "When " + (isMe ? "this person" : p.name) + " arrives or leaves", () => openForm("me"), true))));
+    }
+    if (this.state.notifyForm) return this.mapNotifyForm(p, bp);
+    const meDevices = [{ value: "iphone", label: this.persona.name + "\u2019s iPhone" }, { value: "ipad", label: this.persona.name + "\u2019s iPad" }, { value: "watch", label: "Apple Watch" }];
+    const cfg = this.state.presenceCfg;
+    const setCfg = (patch) => this.setState((s) => ({ presenceCfg: Object.assign({}, s.presenceCfg, patch) }));
+    const shareLoc = cfg.share;
+    const meRow = (title, control, first) => h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-3) 0", borderTop: first ? "none" : "1px solid var(--color-border)" } },
+      h("span", { style: { minWidth: 0, flex: 1, fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, title),
+      control);
+    const meLocationCard = h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+      h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4) var(--space-4) var(--space-3)", display: "flex", flexDirection: "column" } },
+        h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-accent)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "crosshairs-gps", size: "sm" })),
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", marginTop: "var(--space-3)", marginBottom: "var(--space-2)" } }, "My location"),
+        meRow("Visible to people", this.ccOverlaySelect("me-people", cfg.people, [{ value: "everyone", label: "Precise location" }, { value: "zones", label: "Zones only" }, { value: "homeaway", label: "Home only" }, { value: "private", label: "Only you" }], (v) => setCfg({ people: v }), { align: "right", label: "Visible to people" }), true),
+        ));
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-4)", paddingTop: "var(--space-1)" } }, header, isMe ? meLocationCard : null, historySection, isMe ? null : notifications, actions);
+  }
+
+  // Merge a zone's stored data with the live edits (name / icon / color and the
+  // shape geometry the editor produces). Polygon zones expose a centroid as
+  // lat/lon so focus, fit, and labels keep working.
+  mergedZone(z) {
+    const co = this.state.zoneColors || {}, no = this.state.zoneNames || {}, io = this.state.zoneIcons || {};
+    const sh = (this.state.zoneShapes || {})[z.id];
+    const baseName = (z.id === "zone-home" && this.state.home && this.state.home.name) ? this.state.home.name : z.name;
+    const out = Object.assign({}, z, { color: co[z.id] || z.color, name: no[z.id] != null ? no[z.id] : baseName, icon: io[z.id] || z.icon });
+    if (sh) {
+      if (sh.mode === "polygon" && sh.polygon && sh.polygon.length) {
+        out.polygon = sh.polygon; out.radius = null;
+        let la = 0, lo = 0; sh.polygon.forEach((p) => { la += p[0]; lo += p[1]; });
+        out.lat = la / sh.polygon.length; out.lon = lo / sh.polygon.length;
+      } else { out.polygon = null; out.lat = sh.lat; out.lon = sh.lon; out.radius = sh.radius; }
+    }
+    return out;
+  }
+
+  enterZoneEdit(zone, bp) {
+    this.setState((s) => {
+      const shapes = Object.assign({}, s.zoneShapes);
+      if (!shapes[zone.id]) {
+        shapes[zone.id] = (zone.polygon && zone.polygon.length)
+          ? { mode: "polygon", polygon: zone.polygon.map((p) => p.slice()), lat: zone.lat, lon: zone.lon, radius: zone.radius || 80 }
+          : { mode: "circle", lat: zone.lat, lon: zone.lon, radius: zone.radius || 80, polygon: null };
+      }
+      const patch = { zoneShapes: shapes, zoneEdit: zone.id, zoneAddrQ: null };
+      if (bp === "mobile") patch.mapDetent = 0;
+      return patch;
+    });
+  }
+
+  // A new zone starts as a circle at the map centre; the editor is the naming
+  // and placement step, so it opens immediately.
+  addZone(bp) {
+    const d = this.mod.mapData;
+    const c = this._worldMapEl && this._worldMapEl.getCenter ? this._worldMapEl.getCenter() : null;
+    const zone = { id: "zone-" + Date.now().toString(36), kind: "zone", name: "New zone", icon: "map-marker-radius", color: "#1C6FD6",
+      lat: (c && c.lat) != null ? c.lat : d.center[1], lon: (c && c.lon) != null ? c.lon : d.center[0], radius: 90, polygon: null };
+    d.zones = d.zones.concat([zone]);
+    // Select it as the panel detail too: the panel routes on mapDetail, so
+    // without this the map enters edit mode while the panel stays on the list.
+    this.setState({ mapDetail: zone.id, mapFocus: zone.id });
+    this.enterZoneEdit(zone, bp);
+  }
+
+  exitZoneEdit() { this.setState({ zoneEdit: null, zoneAddrQ: null }); }
+
+  deleteZone(zone) {
+    const name = this.mergedZone(zone).name || zone.name || "this zone";
+    this.askConfirm({
+      title: "Delete " + name + "?",
+      body: "This removes the zone for everyone in the home. Presence and automations that use it will stop responding to it. It cannot be undone.",
+      confirmLabel: "Delete", danger: true,
+      onConfirm: () => {
+        const arr = this.mod.mapData.zones || [];
+        const i = arr.findIndex((z) => z.id === zone.id);
+        if (i >= 0) arr.splice(i, 1);
+        this.setState({ zoneEdit: null, zoneAddrQ: null, mapDetail: null });
+      },
+    });
+  }
+
+  zoneFg(hex) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#fff"; const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? "#1a1a1a" : "#ffffff"; }
+
+  // Shared card / footer text link: content-width, left-aligned, brightens on
+  // hover (no underline). Used for "Show more", "Add notification", "My location
+  // settings", the presence links, and "Sign out".
+  cardLink(label, onClick) {
+    const bp = this.state.bp;
+    return React.createElement("button", { type: "button", onClick,
+      onMouseEnter: (e) => { e.currentTarget.style.color = "var(--color-accent-hover, #4d92ec)"; },
+      onMouseLeave: (e) => { e.currentTarget.style.color = "var(--color-accent)"; },
+      style: { display: "inline-flex", alignItems: "center", alignSelf: "flex-start", textAlign: "left", maxWidth: "100%", border: "none", background: "transparent", color: "var(--color-accent)", font: "inherit", fontSize: bp === "desktop" ? "var(--text-sm)" : "var(--text-base)", fontWeight: "var(--weight-medium)", cursor: "pointer", padding: "var(--space-1) 0", transition: "color var(--duration-normal) var(--easing-out)" } }, label);
+  }
+
+  zoneBack(onClick) {
+    return React.createElement("button", { type: "button", "aria-label": "Back", onClick,
+      style: { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, flex: "none", border: "none", borderRadius: "var(--radius-md)", background: "transparent", color: "var(--color-text-primary)", cursor: "pointer", marginLeft: -8 } },
+      this.backChevron());
+  }
+
+  // Shared sub-step header rendered INSIDE a panel body (Map + Automation deep
+  // sub-steps). Matches the shared panelHeader exactly (36px chevron, display
+  // title, optional subtitle). Sticky so it pins while the panel body scrolls.
+  ccSubHead(onBack, title, subtitle, bp, bleedX) {
+    bp = bp || this.state.bp;
+    const h = React.createElement;
+    // Full-bleed to the panel card edge so the back chevron lands in the exact
+    // same spot (and at the same height) as the base panel's close X: negate the
+    // body's horizontal padding, then re-pad to the shared header padding.
+    if (bleedX == null) bleedX = bp === "mobile" ? "var(--space-4)" : "var(--space-2)";
+    const bleed = (bleedX && bleedX !== "0") ? ("calc(-1 * " + bleedX + ")") : "0px";
+    const sub = !subtitle ? null : h("span", { style: { fontSize: "var(--text-sm)", lineHeight: 1.35, color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, subtitle);
+    return h("div", { style: { display: "flex", alignItems: "center", gap: "var(--space-2)", margin: "0 " + bleed, padding: "var(--space-3) var(--space-4) var(--space-2)", position: "sticky", top: 0, zIndex: 5, background: "var(--color-surface)" } },
+      this.panelIconBtn("chevron-left", "Back", onBack),
+      h("div", { style: { flex: 1, minWidth: 0, height: "calc(var(--text-lg) * 1.25 + var(--text-sm) * 1.35 + 2px)", display: "flex", flexDirection: "column", justifyContent: "center", gap: 1 } },
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, title),
+        sub));
+  }
+
+  // ---- ZONE: read-mode detail (mirrors the person detail) ----
+  zoneDetailView(zone, bp) {
+    const h = React.createElement; const { Icon, Button, ProfileAvatar } = this.C;
+    const mz = this.mergedZone(zone);
+    const color = mz.color || "#1C6FD6";
+    const name = mz.name || "Zone";
+    const icon = mz.icon || "map-marker-radius";
+    const fg = this.zoneFg(color);
+    const admin = this.persona.spaces.includes("admin");
+    const here = (this.mod.mapData.people || []).filter((p) => p.zone === zone.id);
+    const count = here.length;
+    const isPoly = !!(mz.polygon && mz.polygon.length);
+    const shapeText = isPoly ? ("Custom shape, " + mz.polygon.length + " points") : ("Circle, " + (mz.radius || 80) + " m radius");
+    const header = this.ccSubHead(() => this.closeMapDetail(), name, count === 1 ? "1 person" : count + " people", bp);
+    const navigate = () => { try { window.open("https://www.google.com/maps/search/?api=1&query=" + mz.lat + "," + mz.lon, "_blank", "noopener"); } catch (e) {} };
+    const actions = h("div", { style: { display: "flex", gap: "var(--space-2)", padding: bp === "mobile" ? "var(--space-2) 0 0" : "var(--space-2) var(--space-3) 0" } },
+      admin ? h(Button, { variant: "primary", icon: "pencil", onClick: () => this.enterZoneEdit(zone, bp), style: { flex: 1, minHeight: 44 } }, "Edit") : null,
+      h(Button, { variant: admin ? "secondary" : "primary", icon: "directions", onClick: navigate, style: { flex: 1, minHeight: 44 } }, "Navigate"));
+    const cardShell = (icoName, icoBg, title, body) => h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+      h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4) var(--space-4) var(--space-3)", display: "flex", flexDirection: "column" } },
+        h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", background: icoBg, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: icoName, size: "sm" })),
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", marginTop: "var(--space-3)", marginBottom: "var(--space-4)" } }, title),
+        body));
+    const cardDivider = () => h("div", { style: { height: 1, background: "var(--color-border)", margin: "var(--space-3) 0" } });
+    const arrivals = here.map((p) => ({ name: p.id === this.persona.id ? "You" : p.name, kind: "arrived", t: p.updated || "just now", color }));
+    const others = (this.mod.mapData.people || []).filter((p) => p.zone !== zone.id && p.id !== this.persona.id);
+    const departures = others.slice(0, 2).map((p, i) => ({ name: p.name, kind: "left", t: i === 0 ? "1 hour ago" : "earlier today", color: "var(--color-text-tertiary)" }));
+    const events = arrivals.concat(departures);
+    const lastIdx = events.length - 1;
+    const timeline = events.length
+      ? h("div", { style: { display: "flex", flexDirection: "column" } },
+          events.map((e, i) => h("div", { key: i, style: { display: "flex", gap: "var(--space-3)", alignItems: "stretch" } },
+            h("span", { style: { display: "flex", flexDirection: "column", alignItems: "center", width: 12, flex: "none" } },
+              h("span", { style: { width: 12, height: 12, flex: "none", borderRadius: "50%", background: e.color, border: "2px solid var(--color-surface-raised)" } }),
+              i < lastIdx ? h("span", { style: { flex: 1, width: 3, minHeight: 20, marginTop: 2, borderRadius: 1.5, background: "var(--color-border)" } }) : null),
+            h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column", paddingBottom: i < lastIdx ? "var(--space-4)" : 0 } },
+              h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, e.name + (e.kind === "arrived" ? " arrived" : " left")),
+              h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 2 } }, e.t)))))
+      : h("span", { style: { fontSize: "var(--text-base)", color: "var(--color-text-secondary)" } }, "No recent activity in this zone.");
+    if (this.state.mapActivityFull === zone.id) {
+      return h("div", null,
+        this.ccSubHead(() => this.setState({ mapActivityFull: null }), "Activity", null, bp),
+        h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } }, timeline));
+    }
+    if (this.state.mapVersionsFull === zone.id) {
+      return h("div", null,
+        this.ccSubHead(() => this.setState({ mapVersionsFull: null }), "Edit history", null, bp),
+        h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } }, this.changeHistoryList(this.zoneChangeRows(zone))));
+    }
+    const activityBody = h("div", { style: { display: "flex", flexDirection: "column" } },
+      timeline,
+      cardDivider(),
+      this.cardLink("Show more", () => this.setState({ mapActivityFull: zone.id })));
+    const activityCard = cardShell("history", "var(--color-accent)", "Activity", activityBody);
+    // Notifications: get alerted when someone arrives at or leaves this zone.
+    const notifs = (this.state.mapNotifs || {})[zone.id] || [];
+    const peopleById = {}; (this.mod.mapData.people || []).forEach((p) => { peopleById[p.id] = p; });
+    const whoLabel = (n) => n.who === "anyone" ? "anyone" : (n.who === this.persona.id ? "you" : (peopleById[n.who] ? peopleById[n.who].name : "someone"));
+    const notifPhrase = (n) => "When " + whoLabel(n) + (n.when === "arrives" ? " arrives at " : " leaves ") + (name || "this zone");
+    const removeNotif = (i) => this.setState((s) => { const all = Object.assign({}, s.mapNotifs); const arr = (all[zone.id] || []).slice(); arr.splice(i, 1); all[zone.id] = arr; return { mapNotifs: all }; });
+    const notifItems = notifs.map((n, i) => h("div", { key: i, style: { display: "flex", alignItems: "center", gap: "var(--space-3)", padding: "var(--space-2) 0" } },
+      h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-surface)", color: "var(--color-accent)", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "bell-ring-outline", size: "md" })),
+      h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+        h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, "Notify me"),
+        h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", marginTop: 1 } }, notifPhrase(n) + " · " + (n.freq === "once" ? "only once" : "every time"))),
+      h("button", { type: "button", "aria-label": "Remove notification", onClick: () => removeNotif(i), style: { flex: "none", width: 32, height: 32, border: "none", background: "transparent", color: "var(--color-text-tertiary)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "close", size: "sm" }))));
+    const addNotifLink = this.cardLink("Add notification", () => this.setState((s) => { const patch = { zoneNotifyForm: zone.id, zoneNotifyDraft: null }; if (bp === "mobile") patch.mapDetent = 2; return patch; }));
+    const notifCard = h("div", { style: { padding: bp === "mobile" ? "0" : "0 var(--space-3)" } },
+      h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-xl)", padding: "var(--space-4) var(--space-4) var(--space-3)", display: "flex", flexDirection: "column" } },
+        h("span", { style: { width: 30, height: 30, flex: "none", borderRadius: "var(--radius-md)", background: "var(--color-error, #d6492f)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: "bell", size: "sm" })),
+        h("span", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", marginTop: "var(--space-3)" } }, "Notifications"),
+        cardDivider(),
+        notifItems.length ? h("div", { style: { display: "flex", flexDirection: "column" } }, notifItems) : null,
+        addNotifLink));
+    // Edit history: who changed this zone and when. Read-only, everyone sees it.
+    // Preview the newest change with "Show more" opening the full sub-step
+    // (mirrors Activity and the automation edit-history card).
+    const verRows = this.zoneChangeRows(zone);
+    const verTop = verRows[0];
+    const historyBody = h("div", { style: { display: "flex", flexDirection: "column" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: 2 } },
+        h("span", { style: { fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, verTop.change),
+        h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)" } }, h("span", { style: { fontFamily: "var(--font-mono)" } }, verTop.when), " \u00b7 " + verTop.by)),
+      cardDivider(),
+      this.cardLink("Show more", () => this.setState({ mapVersionsFull: zone.id })));
+    const historyCard = cardShell("file-document-edit-outline", "var(--color-text-secondary)", "Edit history", historyBody);
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-3)", paddingTop: bp === "mobile" ? 0 : "var(--space-1)" } },
+      header, activityCard, notifCard, historyCard, actions);
+  }
+
+  // ---- ZONE: add-notification form ----
+  zoneNotifyForm(zone, bp) {
+    const h = React.createElement; const { Icon, Button } = this.C;
+    const mz = this.mergedZone(zone); const zname = mz.name || "this zone";
+    const f = this.state.zoneNotifyDraft || { who: "anyone", when: "arrives", freq: "once" };
+    const set = (patch) => this.setState((s) => ({ zoneNotifyDraft: Object.assign({ who: "anyone", when: "arrives", freq: "once" }, s.zoneNotifyDraft, patch) }));
+    const close = () => this.setState({ zoneNotifyForm: null, zoneNotifyDraft: null });
+    const head = this.ccSubHead(close, "Notify me", null, bp);
+    const people = (this.mod.mapData.people || []);
+    const whoOpts = [["anyone", "Anyone"]].concat(people.map((p) => [p.id, p.id === this.persona.id ? "You" : p.name]));
+    const whenOpts = [["arrives", "Arrives at " + zname], ["leaves", "Leaves " + zname]];
+    const freqOpts = [["once", "Only once"], ["every", "Every time"]];
+    const choiceRow = (label, selected, onClick, isLast) => h("button", { type: "button", key: label, onClick,
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", borderBottom: isLast ? "none" : "1px solid var(--color-border-subtle)", background: "transparent", color: "var(--color-text-primary)", font: "inherit", fontSize: "var(--text-base)", padding: "var(--space-3) var(--space-4)", cursor: "pointer" } },
+      h("span", { style: { width: 20, height: 20, flex: "none", borderRadius: "50%", border: "2px solid " + (selected ? "var(--color-accent)" : "var(--color-border)"), display: "inline-flex", alignItems: "center", justifyContent: "center" } }, selected ? h("span", { style: { width: 10, height: 10, borderRadius: "50%", background: "var(--color-accent)" } }) : null),
+      h("span", { style: { flex: 1, minWidth: 0 } }, label));
+    const group = (rows2) => h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", overflow: "hidden" } }, rows2);
+    const section = (label, child) => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)", padding: "0 var(--space-2) var(--space-4)" } },
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", padding: "0 var(--space-2)" } }, label), child);
+    const whoGroup = group(whoOpts.map((o, i) => choiceRow(o[1], f.who === o[0], () => set({ who: o[0] }), i === whoOpts.length - 1)));
+    const whenGroup = group(whenOpts.map((o, i) => choiceRow(o[1], f.when === o[0], () => set({ when: o[0] }), i === whenOpts.length - 1)));
+    const freqGroup = group(freqOpts.map((o, i) => choiceRow(o[1], f.freq === o[0], () => set({ freq: o[0] }), i === freqOpts.length - 1)));
+    const save = () => this.setState((s) => { const all = Object.assign({}, s.mapNotifs); const arr = (all[zone.id] || []).slice(); arr.push({ who: f.who, when: f.when, freq: f.freq }); all[zone.id] = arr; return { mapNotifs: all, zoneNotifyForm: null, zoneNotifyDraft: null }; });
+    const footer = h("div", { style: { display: "flex", justifyContent: "flex-end", padding: bp === "mobile" ? "var(--space-1) 0" : "var(--space-1) var(--space-3)" } },
+      h(Button, { variant: "primary", onClick: save }, "Add"));
+    return h("div", { style: { display: "flex", flexDirection: "column", paddingTop: "var(--space-1)" } },
+      head, section("Who", whoGroup), section("When", whenGroup), section("Frequency", freqGroup), footer);
+  }
+
+  // ---- ZONE: edit mode (map editor + name / icon / color) ----
+  // Shared zone edit controls (address search, shape toggle, icon, color).
+  // `ctl.setMode(mode)` and `ctl.moveTo(lat, lon)` drive whichever map is doing
+  // the editing (the big world map on the map page, or the embedded editor on
+  // the Home information settings page). `opts.hint` toggles the on-map hint.
+  zoneEditControls(zoneId, bp, ctl, opts) {
+    const h = React.createElement; const { Icon, Input } = this.C;
+    opts = opts || {};
+    let zone = (this.mod.mapData.zones || []).find((z) => z.id === zoneId);
+    zone = zone || {};
+    const sh = (this.state.zoneShapes || {})[zoneId] || {};
+    const mode = sh.mode || (zone.polygon && zone.polygon.length ? "polygon" : "circle");
+    const co = this.state.zoneColors || {}, io = this.state.zoneIcons || {};
+    const color = co[zoneId] || zone.color || "#1C6FD6";
+    const icon = io[zoneId] || zone.icon || "map-marker-radius";
+    const fg = this.zoneFg(color);
+    const setIcon = (v) => this.setState((s) => { const n = Object.assign({}, s.zoneIcons); n[zoneId] = v; return { zoneIcons: n }; });
+    const setColor = (v) => this.setState((s) => { const n = Object.assign({}, s.zoneColors); n[zoneId] = v; return { zoneColors: n }; });
+    const PALETTE = ["#1C6FD6", "#2e9e5b", "#1f6e42", "#a855f7", "#e0a32e", "#d6492f", "#2aa6b3"];
+    const ICONS = ["home-variant", "office-building", "school", "dumbbell", "cart", "silverware-fork-knife", "coffee", "hospital-box", "tree", "car", "heart", "star", "map-marker-radius", "bag-personal", "paw", "airplane"];
+    const segBtn = (id, label) => h("button", { key: id, type: "button", className: "cc-toolbar__vbtn", "aria-pressed": mode === id,
+      onClick: () => { if (ctl.setMode) ctl.setMode(id); },
+      style: { flex: 1, width: "auto", gap: "var(--space-2)", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } }, h("span", null, label));
+    const shapeToggle = h("div", { className: "cc-toolbar__view", role: "group", "aria-label": "Zone shape", style: { display: "flex", width: "100%", background: "var(--color-bg)" } }, segBtn("circle", "Circle"), segBtn("polygon", "Custom shape"));
+    const hint = mode === "polygon"
+      ? "Drag the center to move, drag a point to reshape. Tap a midpoint to add a point, tap a point to remove it."
+      : "Drag the center to move the zone, drag the white handle to change the radius.";
+    const hintEl = h("p", { style: { margin: 0, fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, hint);
+    // Address search: a sample geocoder over a few local places. Picking one
+    // recenters the zone (an alternative to dragging the center).
+    const PLACES = [
+      { label: "Frans Halsstraat 12, Utrecht", lat: 52.08445, lon: 5.14354 },
+      { label: "Domplein 29, Utrecht", lat: 52.0907, lon: 5.1214 },
+      { label: "Stationshal 16, Utrecht", lat: 52.0894, lon: 5.1100 },
+      { label: "Hugo de Grootstraat 4, Utrecht", lat: 52.0882, lon: 5.1404 },
+      { label: "Maliebaan 1, Utrecht", lat: 52.0920, lon: 5.1300 },
+      { label: "Kanaalstraat 100, Utrecht", lat: 52.0865, lon: 5.1010 },
+      { label: "Cartesiusweg 150, Utrecht", lat: 52.1042, lon: 5.0870 },
+      { label: "Stationsplein 9, Amsterdam", lat: 52.3791, lon: 4.9003 },
+    ];
+    const q = this.state.zoneAddrQ || "";
+    let curLat2, curLon2;
+    if (mode === "polygon" && sh.polygon && sh.polygon.length) { let la = 0, lo = 0; sh.polygon.forEach((p) => { la += p[0]; lo += p[1]; }); curLat2 = la / sh.polygon.length; curLon2 = lo / sh.polygon.length; }
+    else { curLat2 = sh.lat != null ? sh.lat : zone.lat; curLon2 = sh.lon != null ? sh.lon : zone.lon; }
+    let curLabel, bd = Infinity;
+    PLACES.forEach((p) => { const dy = (p.lat - curLat2) * 111000, dx = (p.lon - curLon2) * 111000 * Math.cos(curLat2 * Math.PI / 180); const d = Math.hypot(dx, dy); if (d < bd) { bd = d; curLabel = p.label; } });
+    const curAddr = (curLat2 == null) ? "" : curLabel;
+    const searching = this.state.zoneAddrQ != null;
+    const fieldVal = searching ? this.state.zoneAddrQ : curAddr;
+    const results = (searching && q.trim() && q.trim() !== curAddr) ? PLACES.filter((p) => p.label.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 6) : [];
+    const addrField = h(Input, { variant: "search", value: fieldVal, placeholder: "Search for an address",
+      onFocus: () => this.setState({ zoneAddrQ: curAddr }),
+      onBlur: () => { setTimeout(() => { this.setState({ zoneAddrQ: null }); }, 180); },
+      onChange: (e) => this.setState({ zoneAddrQ: e.target.value }),
+      style: { width: "100%" } });
+    const addrResults = (searching && results.length)
+      ? h("div", { style: { position: "absolute", top: "calc(100% + var(--space-1))", left: 0, right: 0, zIndex: 60, display: "flex", flexDirection: "column", background: "var(--color-overlay)", border: "1px solid var(--color-border-subtle)", borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "0 12px 32px rgba(0,0,0,0.45)" } },
+          results.map((p, i) => h("button", { key: p.label, type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => { if (ctl.moveTo) ctl.moveTo(p.lat, p.lon); this.setState({ zoneAddrQ: null }); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); },
+            style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", borderBottom: i === results.length - 1 ? "none" : "1px solid var(--color-border-subtle)", background: "transparent", color: "var(--color-text-primary)", font: "inherit", fontSize: "var(--text-base)", padding: "var(--space-3) var(--space-4)", cursor: "pointer" },
+            onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface)"; }, onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; } },
+            h(Icon, { name: "map-marker-outline", size: "md", style: { color: "var(--color-text-tertiary)", flex: "none" } }),
+            h("span", { style: { flex: 1, minWidth: 0 } }, p.label))))
+      : null;
+    const addr = h("div", { style: { position: "relative" } }, addrField, addrResults);
+    const iconGrid = h("div", { style: { display: "grid", gridTemplateColumns: opts.iconsFull ? "repeat(auto-fill, 40px)" : "repeat(8, 1fr)", justifyContent: opts.iconsFull ? "space-between" : undefined, gap: "var(--space-2)" } },
+      ICONS.map((ic) => { const sel = ic === icon; return h("button", { key: ic, type: "button", "aria-label": ic, "aria-pressed": sel, onClick: () => setIcon(ic),
+        style: { display: "flex", alignItems: "center", justifyContent: "center", aspectRatio: "1 / 1", borderRadius: "var(--radius-md)", cursor: "pointer", background: sel ? color : "var(--color-surface-raised)", color: sel ? fg : "var(--color-text-secondary)", border: sel ? "1px solid rgba(0,0,0,0.28)" : "1px solid var(--color-border)", boxSizing: "border-box" } },
+        h(Icon, { name: ic, size: "md" })); }));
+    const customSel = PALETTE.indexOf(color) === -1;
+    const colorRow = h("div", { style: { display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center" } },
+      PALETTE.map((c) => { const sel = c === color; return h("button", { key: c, type: "button", "aria-label": "Color", "aria-pressed": sel, onClick: () => setColor(c),
+        style: { width: 34, height: 34, flex: "none", padding: 0, borderRadius: "50%", cursor: "pointer", background: c, border: sel ? "2px solid var(--color-text-primary)" : "2px solid transparent", boxShadow: "0 0 0 1px rgba(0,0,0,0.25) inset" } }); }).concat([
+        h("label", { key: "custom", title: "Custom color", "aria-label": "Custom color",
+          style: { position: "relative", width: 34, height: 34, flex: "none", borderRadius: "50%", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box",
+            background: customSel ? color : "conic-gradient(from 90deg, #d6492f, #e0a32e, #2e9e5b, #2aa6b3, #1C6FD6, #a855f7, #d6492f)",
+            border: customSel ? "2px solid var(--color-text-primary)" : "2px solid transparent", boxShadow: "0 0 0 1px rgba(0,0,0,0.25) inset" } },
+          h(Icon, { name: customSel ? "pencil" : "plus", size: "sm", style: { color: customSel ? fg : "#fff", pointerEvents: "none", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.5))" } }),
+          h("input", { type: "color", value: /^#[0-9a-f]{6}$/i.test(color) ? color : "#1C6FD6", onChange: (e) => setColor(e.target.value),
+            style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: "none", padding: 0 } }))]));
+    return { mode, shapeToggle, hintEl, addrField, addrResults, addr, iconGrid, colorRow };
+  }
+
+  zoneEditView(zone, bp) {
+    const h = React.createElement;
+    const no = this.state.zoneNames || {};
+    const name = no[zone.id] != null ? no[zone.id] : (zone.name || "");
+    const setName = (v) => this.setState((s) => { const next = Object.assign({}, s.zoneNames); next[zone.id] = v; return { zoneNames: next }; });
+    const c = this.zoneEditControls(zone.id, bp, {
+      setMode: (m) => { if (this._worldMapEl) this._worldMapEl.setZoneMode(m); },
+      moveTo: (la, lo) => { if (this._worldMapEl) this._worldMapEl.moveZoneEditTo(la, lo); },
+    });
+    const header = this.ccSubHead(() => this.exitZoneEdit(), "Edit zone", null, bp);
+    const sectionLabel = (t) => h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", padding: bp === "mobile" ? "0 0 var(--space-2)" : "0 var(--space-2) var(--space-2)" } }, t);
+    const section = (label, child) => h("div", { style: { display: "flex", flexDirection: "column", padding: bp === "mobile" ? "0 0 var(--space-5)" : "0 var(--space-2) var(--space-5)" } }, sectionLabel(label), child);
+    const nameInput = h("input", { type: "text", className: "ha-input", value: name, placeholder: "Zone name", onChange: (e) => setName(e.target.value) });
+    const { Button } = this.C;
+    const deleteBtn = zone.id === "zone-home" ? null : h("div", { style: { padding: bp === "mobile" ? "var(--space-2) 0 var(--space-5)" : "var(--space-2) var(--space-2) var(--space-5)" } },
+      h(Button, { variant: "danger", className: "cc-danger-soft", onClick: () => this.deleteZone(zone), style: { width: "100%", justifyContent: "center", minHeight: 44 } }, "Delete zone"));
+    return h("div", { style: { display: "flex", flexDirection: "column", paddingTop: bp === "mobile" ? 0 : "var(--space-1)" } },
+      header,
+      section("Name", nameInput),
+      section("Location", c.addr),
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)", padding: bp === "mobile" ? "0 0 var(--space-5)" : "0 var(--space-2) var(--space-5)" } }, c.shapeToggle, c.hintEl),
+      section("Icon", c.iconGrid),
+      section("Color", c.colorRow),
+      deleteBtn);
+  }
+
+  mapNotifyForm(p, bp) {
+    bp = bp || this.state.bp;
+    const h = React.createElement; const { Icon, Button } = this.C;
+    const f = this.state.notifyForm; const isMe = p.id === this.persona.id;
+    const set = (patch) => this.setState((s) => ({ notifyForm: Object.assign({}, s.notifyForm, patch) }));
+    const title = f.mode === "me" ? "Notify me" : "Notify " + (isMe ? "the other person" : p.name);
+    const head = this.ccSubHead(() => this.setState({ notifyForm: null }), title, null, bp);
+    const who = isMe ? "this person" : p.name;
+    const whenOpts = f.mode === "me"
+      ? [["arrives", who + " arrives"], ["leaves", who + " leaves"], ["not_at", who + " is not at"]]
+      : [["arrives", "I arrive"], ["leaves", "I leave"]];
+    const locOpts = (this.mod.mapData.zones || []).map((z) => { const mz = this.mergedZone(z); return [z.id, mz.name || z.name]; });
+    const freqOpts = [["once", "Only once"], ["every", "Every time"]];
+    const choiceRow = (label, selected, onClick, isLast) => h("button", { type: "button", key: label, onClick,
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", border: "none", borderBottom: isLast ? "none" : "1px solid var(--color-border-subtle)", background: "transparent", color: "var(--color-text-primary)", font: "inherit", fontSize: "var(--text-base)", padding: "var(--space-3) var(--space-4)", cursor: "pointer" } },
+      h("span", { style: { width: 20, height: 20, flex: "none", borderRadius: "50%", border: "2px solid " + (selected ? "var(--color-accent)" : "var(--color-border)"), display: "inline-flex", alignItems: "center", justifyContent: "center" } }, selected ? h("span", { style: { width: 10, height: 10, borderRadius: "50%", background: "var(--color-accent)" } }) : null),
+      h("span", { style: { flex: 1, minWidth: 0 } }, label));
+    const group = (rows2) => h("div", { style: { background: "var(--color-surface-raised)", borderRadius: "var(--radius-lg)", overflow: "hidden" } }, rows2);
+    const section = (label, child) => h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)", padding: "0 var(--space-2) var(--space-4)" } },
+      h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", padding: "0 var(--space-2)" } }, label), child);
+    const whenGroup = group(whenOpts.map((o, i) => choiceRow(o[1], f.when === o[0], () => set({ when: o[0] }), i === whenOpts.length - 1)));
+    const locGroup = group(locOpts.map((o, i) => choiceRow(o[1], f.location === o[0], () => set({ location: o[0] }), i === locOpts.length - 1)));
+    const freqGroup = group(freqOpts.map((o, i) => choiceRow(o[1], f.freq === o[0], () => set({ freq: o[0] }), i === freqOpts.length - 1)));
+    const save = () => this.setState((s) => { const all = Object.assign({}, s.mapNotifs); const arr = (all[f.id] || []).slice(); arr.push({ mode: f.mode, when: f.when, location: f.location, freq: f.freq }); all[f.id] = arr; return { mapNotifs: all, notifyForm: null }; });
+    const footer = h("div", { style: { display: "flex", justifyContent: "flex-end", padding: "var(--space-2) var(--space-3) var(--space-2)" } },
+      h(Button, { variant: "primary", onClick: save }, "Add"));
+    return h("div", { style: { display: "flex", flexDirection: "column", paddingTop: "var(--space-1)" } },
+      head, section("When", whenGroup), section("Location", locGroup), section("Frequency", freqGroup), footer);
+  }
+
+  mapListRow(item, bp) {
+    const h = React.createElement; const { ProfileAvatar, Icon } = this.C;
+    const active = this.state.mapFocus === item.id;
+    const isZone = item.kind === "zone";
+    const hidden = !isZone && item._hidden;
+    const admin = this.persona.spaces.includes("admin");
+    const PALETTE = ["#1C6FD6", "#2e9e5b", "#1f6e42", "#a855f7", "#e0a32e", "#d6492f", "#2aa6b3"];
+    const zoneCol = item.color || "#1C6FD6";
+    const zoneFg = (function (hex) { const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#fff"; const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? "#1a1a1a" : "#ffffff"; })(zoneCol);
+    const lead = isZone
+      ? h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "50%", background: zoneCol, color: zoneFg, border: "1px solid rgba(0,0,0,0.28)", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" } }, h(Icon, { name: item.icon, size: "md" }))
+      : h("span", { style: { position: "relative", flex: "none", lineHeight: 0, opacity: hidden ? 0.55 : 1 } },
+          h(ProfileAvatar, { name: item.name, src: item.avatar, size: "lg" }),
+          hidden
+            ? null
+            : h("span", { style: { position: "absolute", right: -2, bottom: -2, width: 11, height: 11, borderRadius: "50%", border: "2px solid var(--color-surface)", background: item.presence === "home" ? "var(--color-success, #2e9e5b)" : "var(--color-text-tertiary)" } }));
+    const meta = isZone
+      ? (item.count != null ? (item.count === 1 ? "1 person" : item.count + " people") : "Zone")
+      : hidden ? "Location hidden" : (item.updated ? item.at + " · " + item.updated : item.at);
+    const swatches = null;
+    if (hidden) {
+      return h("div", { key: item.id,
+        style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", padding: "var(--space-3) var(--space-3)", borderRadius: "var(--radius-md)" } },
+        lead,
+        h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+          h("span", { style: { fontWeight: "var(--weight-medium)", fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, item.name),
+          h("span", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-tertiary)" } }, meta)));
+    }
+    return h("button", { key: item.id, type: "button", onClick: () => this.mapRowTap(item, bp),
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", padding: "var(--space-3) var(--space-3)", borderRadius: "var(--radius-md)", border: "none", cursor: "pointer", background: active ? "var(--color-accent-subtle)" : "transparent", color: "var(--color-text-primary)", font: "inherit", transition: "background-color var(--duration-normal) var(--easing-out)" },
+      onMouseEnter: (e) => { if (!active) e.currentTarget.style.background = "var(--color-surface-raised)"; },
+      onMouseLeave: (e) => { if (!active) e.currentTarget.style.background = "transparent"; } },
+      lead,
+      h("span", { style: { minWidth: 0, flex: 1, display: "flex", flexDirection: "column" } },
+        h("span", { style: { fontWeight: "var(--weight-medium)", fontSize: "var(--text-sm)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, (!isZone && item.id === this.persona.id) ? "Me" : item.name),
+        h("span", { style: { fontSize: "var(--text-sm)", color: active ? "var(--color-accent)" : "var(--color-text-secondary)" } }, meta)),
+      swatches);
+  }
+
+  mapList(bp) {
+    const h = React.createElement;
+    const d = this.mod.mapData;
+    const counts = {};
+    d.people.forEach((p) => { if (p.zone) counts[p.zone] = (counts[p.zone] || 0) + 1; });
+    const co = this.state.zoneColors || {}, no = this.state.zoneNames || {}, io = this.state.zoneIcons || {};
+    const zones = d.zones.map((z) => Object.assign(this.mergedZone(z), { count: counts[z.id] || 0 }));
+    // "Only you" (private) keeps the person in this list, but their row shows
+    // that they've hidden their location, and they have no marker on the map.
+    const cfgP = this.state.presenceCfg || {};
+    const visOf = (p) => p.id === this.persona.id ? (cfgP.share === false ? "off" : (cfgP.people || "everyone")) : (p.visibility || "everyone");
+    const visiblePeople = d.people.map((p) => {
+      const v = visOf(p);
+      if (p.id === this.persona.id) return p;
+      if (v === "private") return Object.assign({}, p, { _hidden: true });
+      if (v === "zones" && !p.zone) return Object.assign({}, p, { _hidden: true });
+      return p;
+    });
+    const tab = this.state.mapTab || "people";
+    const seg = (id, label) => h("button", { key: id, type: "button", className: "cc-toolbar__vbtn", "aria-pressed": tab === id, onClick: () => this.setState({ mapTab: id, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null }),
+      style: { flex: 1, width: "auto", gap: "var(--space-2)", fontFamily: "var(--font-body)", fontSize: "var(--text-base)", fontWeight: "var(--weight-medium)" } },
+      h("span", null, label));
+    const segs = h("div", { style: { padding: "var(--space-2) 0 var(--space-1)" } },
+      h("div", { className: "cc-toolbar__view", role: "group", "aria-label": "Show", style: { display: "flex", width: "100%", background: "var(--color-bg)" } },
+        seg("people", "People"), seg("zones", "Zones")));
+    const admin = this.persona.spaces.includes("admin");
+    const rows = tab === "zones" ? zones.map((z) => this.mapListRow(z, bp)) : visiblePeople.map((p) => this.mapListRow(p, bp));
+    // Last row of the zones list: adds a zone at the current map centre and drops
+    // straight into the shape editor, so naming and placement happen in one flow.
+    const addZoneBtn = (tab === "zones" && admin) ? h("button", { type: "button", onClick: () => this.addZone(bp),
+      style: { display: "flex", alignItems: "center", gap: "var(--space-3)", width: "100%", textAlign: "left", padding: "var(--space-3) var(--space-3)", borderRadius: "var(--radius-md)", border: "none", cursor: "pointer", background: "transparent", color: "var(--color-accent)", font: "inherit", transition: "background-color var(--duration-normal) var(--easing-out)" },
+      onMouseEnter: (e) => { e.currentTarget.style.background = "var(--color-surface-raised)"; },
+      onMouseLeave: (e) => { e.currentTarget.style.background = "transparent"; } },
+      h("span", { style: { width: 40, height: 40, flex: "none", borderRadius: "50%", border: "1px dashed var(--color-accent)", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" } }, h(this.C.Icon, { name: "plus", size: "md" })),
+      h("span", { style: { fontWeight: "var(--weight-medium)", fontSize: "var(--text-sm)" } }, "Add zone")) : null;
+    return h("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, h("div", { style: { display: "flex", flexDirection: "column", gap: 2 } }, rows), addZoneBtn);
+  }
+
+  // The map panel spec: list state carries the People / Zones segments in the
+  // shared chrome; any detail / sub-step drops the segments and renders its own
+  // sticky mapDetailHead inside the body. Routed through renderPanel like the
+  // Automation and Dashboard panels.
+  mapPanelSpec(bp) {
+    const base = {
+      id: "map", persistent: true, scrimAtMax: true, backdrop: false,
+      detents: [0.4, 0.7, 0.97], defaultDetent: 0,
+      bodyPad: "0 var(--space-4) var(--space-4)",
+      desktopPos: { position: "absolute", top: "var(--space-4)", right: "var(--space-4)", maxHeight: "calc(100% - var(--space-8))" },
+      desktopBodyPad: "0 var(--space-2) var(--space-3)",
+    };
+    if (this.state.mapDetail) {
+      const body = this.mapDetailView(bp);
+      if (body) return Object.assign(base, { body });
+    }
+    const tab = this.state.mapTab || "people";
+    return Object.assign(base, {
+      segments: { label: "Show", active: tab, items: [{ id: "people", label: "People" }, { id: "zones", label: "Zones" }],
+        onChange: (id) => this.setState({ mapTab: id, mapFocus: null, mapDetail: null, notifyForm: null, notifyMenu: null }) },
+      body: this.mapList(bp),
+    });
+  }
+
+  mapBody(persona, bp) {
+    const h = React.createElement;
+    const d = this.mod.mapData;
+    const co = this.state.zoneColors || {}, no = this.state.zoneNames || {}, io = this.state.zoneIcons || {};
+    const md = Object.assign({}, d, { zones: d.zones.map((z) => this.mergedZone(z)) });
+    // Per-person visibility governs the avatar on the map. The current persona's
+    // setting comes live from presenceCfg; everyone else uses their stored value.
+    //   everyone  -> always shown   homeaway -> shown only when home
+    //   zones     -> shown only when in a named zone
+    //   private   -> shown as a ghost (translucent)   (share off -> hidden)
+    const cfgP = this.state.presenceCfg || {};
+    const visOf = (p) => p.id === this.persona.id ? (cfgP.share === false ? "off" : (cfgP.people || "everyone")) : (p.visibility || "everyone");
+    md.people = (d.people || []).map((p) => {
+      const v = visOf(p);
+      const isSelf = p.id === this.persona.id;
+      if (v === "off") return null;
+      // For the current persona, their own visibility setting changes how THEY
+      // see themselves: when the condition isn't met they appear as a ghost
+      // (translucent) rather than vanishing. For everyone else the same setting
+      // hides them from this persona's map.
+      if (v === "homeaway" && p.presence !== "home") return isSelf ? Object.assign({}, p, { ghost: true }) : null;
+      if (v === "zones" && !p.zone) return isSelf ? Object.assign({}, p, { ghost: true }) : null;
+      // "Only you" (private): visible to the person themselves (as a ghost),
+      // hidden from everyone else.
+      if (v === "private") return isSelf ? Object.assign({}, p, { ghost: true }) : null;
+      return p;
+    }).filter(Boolean);
+    const markers = JSON.stringify(md);
+    let editZone = "";
+    if (this.state.zoneEdit) {
+      const ez = (d.zones || []).find((x) => x.id === this.state.zoneEdit);
+      if (ez) {
+        const m = this.mergedZone(ez); const sh = (this.state.zoneShapes || {})[ez.id] || {};
+        const mode = sh.mode || (m.polygon && m.polygon.length ? "polygon" : "circle");
+        editZone = JSON.stringify({ id: ez.id, mode, lat: m.lat, lon: m.lon, radius: m.radius || 80, polygon: (m.polygon && m.polygon.length) ? m.polygon : null, color: m.color, icon: m.icon });
+      }
+    }
+    let padBottom = 0;
+    if (bp === "mobile" && this.state.mapDetail) {
+      const detents = [0.4, 0.7, 0.97];
+      const di = this.state.mapDetent || 0;
+      padBottom = Math.round((this._mapWrapH || 0) * (detents[di] != null ? detents[di] : 0.4));
+    }
+    const mapEl = h("ha-world-map", {
+      key: "worldmap",
+      markers: markers,
+      "edit-zone": editZone,
+      "focus-id": this.state.mapFocus || "",
+      "focus-pad-bottom": padBottom,
+      "show-zones": (this.state.mapTab || "people") === "zones" ? "1" : "",
+      theme: this.mapTheme(),
+      ref: (el) => {
+        this._worldMapEl = el;
+        if (!el || el._wiredSelect) return;
+        el._wiredSelect = true;
+        el.addEventListener("marker-select", (e) => {
+          const id = e.detail.id;
+          const person = (this.mod.mapData.people || []).find((x) => x.id === id);
+          if (person) this.mapRowTap(person, bp);
+          else this.focusMapItem(id);
+        });
+        el.addEventListener("zone-change", (e) => {
+          const dd = e.detail;
+          this.setState((s) => { const next = Object.assign({}, s.zoneShapes); next[dd.id] = Object.assign({}, next[dd.id], { mode: dd.mode, lat: dd.lat, lon: dd.lon, radius: dd.radius, polygon: dd.polygon }); return { zoneShapes: next }; });
+        });
+      },
+      style: { position: "absolute", inset: 0, isolation: "isolate" },
+    });
+    const overlay = this.ccPanel(this.mapPanelSpec(bp), bp);
+    return h("div", { ref: (el) => { if (el) this._mapWrapH = el.clientHeight; }, style: { position: "relative", width: "100%", height: "100%", overflow: "hidden", background: "var(--color-surface-raised)" } }, mapEl, overlay);
+  }
+
+  // Confirmation dialog. Compact centered card on EVERY breakpoint (never a bottom
+  // sheet), no X — you confirm or cancel. For destructive choices scrim-tap is
+  // disabled so the decision is explicit. Open with askConfirm({...}).
+  askConfirm(opts) { this.setState({ confirm: Object.assign({ confirmLabel: "Confirm", danger: false }, opts) }); }
+
+  renderConfirm(bp) {
+    const c = this.state.confirm; if (!c) return null;
+    const h = React.createElement; const { Button } = this.C;
+    const noAnim = this.reduceMotion();
+    const cancel = () => this.setState({ confirm: null });
+    const go = () => { this.setState({ confirm: null }); if (c.onConfirm) c.onConfirm(); };
+    const card = h("div", { onClick: (e) => e.stopPropagation(), style: { width: bp === "mobile" ? "min(340px, 88vw)" : 360, maxWidth: "100%", background: "var(--color-overlay)", borderRadius: "var(--radius-xl)", padding: "var(--space-6)", display: "flex", flexDirection: "column", gap: "var(--space-4)", animation: noAnim ? "none" : "cc-dialog-in 200ms var(--easing-out)" } },
+      h("div", { style: { display: "flex", flexDirection: "column", gap: "var(--space-2)" } },
+        h("div", { style: { fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.01em", color: "var(--color-text-primary)" } }, c.title),
+        c.body ? h("div", { style: { fontSize: "var(--text-sm)", color: "var(--color-text-secondary)", lineHeight: 1.5 } }, c.body) : null),
+      h("div", { style: { display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "var(--space-2)" } },
+        c.discardLabel ? h(Button, { variant: c.discardVariant || "danger", onClick: () => { this.setState({ confirm: null }); if (c.onDiscard) c.onDiscard(); } }, c.discardLabel) : null,
+        c.discardLabel ? h("span", { style: { flex: 1 } }) : null,
+        c.noCancel ? null : h(Button, { variant: "ghost", onClick: cancel }, c.cancelLabel || "Cancel"),
+        h(Button, { variant: c.danger ? "danger" : "primary", onClick: go }, c.confirmLabel)));
+    // Destructive confirmations cannot be dismissed by tapping the scrim.
+    return h("div", { onClick: c.danger ? undefined : cancel, style: { position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "var(--space-6)", background: "var(--color-scrim)", animation: noAnim ? "none" : "cc-scrim-in 180ms ease" } }, card);
+  }
+
+  renderVals() {
+    return { app: this.buildApp() };
+  }
+}
+</script>
+</body>
+</html>

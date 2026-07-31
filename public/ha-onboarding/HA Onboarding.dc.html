@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/home-assistant-design-system-019e0388-8790-7529-96ef-8c7c64370966/colors_and_type.css">
+<link rel="stylesheet" href="_ds/home-assistant-design-system-019e0388-8790-7529-96ef-8c7c64370966/fonts.css">
+<script src="_ds/home-assistant-design-system-019e0388-8790-7529-96ef-8c7c64370966/_ds_bundle.js"></script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg"><rect width="240" height="240" fill="#101010"/><circle cx="120" cy="120" r="66" fill="#18bcf2"/><path d="M120 84l34 34v40h-24v-26h-20v26H86v-40z" fill="#101010"/></svg>
+</template>
+<style>
+html,body{margin:0;padding:0}
+body{background:#101010;font-family:var(--ha-font-family-body);color:var(--primary-text-color);-webkit-font-smoothing:antialiased}
+a{color:#29c1f7}a:hover{color:#5cd3ff}
+input,select,button{font-family:inherit}
+input::placeholder{color:#8f8f8f}
+</style>
+</helmet>
+<sc-if value="{{ isOnboarding }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;background:#101010;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px;box-sizing:border-box;position:relative;overflow:hidden">
+  <canvas ref="{{ cnvRef }}" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+  <img src="assets/ha-logomark.svg" alt="Home Assistant" style="width:56px;height:56px;margin:12px 0 32px;position:relative;z-index:1">
+  <div style="width:100%;max-width:560px;background:#212121;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.45);padding:32px;box-sizing:border-box;position:relative;z-index:1;color:#e1e1e1">
+
+    <sc-if value="{{ isPrep }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 20px;font-size:28px;font-weight:400;color:#f1f1f1">Preparing Home Assistant</h1>
+      <p style="margin:0 0 28px;font-size:14px;line-height:1.5;color:#b8b8b8">The latest version of Home Assistant is being downloaded. This may take 20 minutes or more.</p>
+      <div style="position:relative;height:18px;border-radius:999px;background:#3a3a3a;overflow:hidden">
+        <div style="{{ prepBarStyle }}"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#ffffff">{{ prepPct }}</div>
+      </div>
+      <div style="text-align:center;margin-top:20px"><a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:500;text-decoration:none">Show details</a></div>
+    </sc-if>
+
+    <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
+      <h1 style="margin:8px 0 12px;font-size:32px;font-weight:400;color:#f1f1f1">Welcome!</h1>
+      <p style="margin:0 0 28px;font-size:15px;line-height:1.5;color:#c4c4c4">Are you ready to awaken your home, reclaim your privacy and join a worldwide community of tinkerers?</p>
+      <button onClick="{{ goUser }}" style="width:100%;font-size:15px;font-weight:500;height:44px;border-radius:22px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Create my smart home</button>
+      <div style="display:flex;align-items:center;gap:12px;margin:26px 0 4px">
+        <div style="flex:1;height:1px;background:#3d3d3d"></div>
+        <span style="font-size:14px;color:#c4c4c4">Or restore</span>
+        <div style="flex:1;height:1px;background:#3d3d3d"></div>
+      </div>
+      <div onClick="{{ goBackup }}" style="display:flex;align-items:center;gap:12px;padding:16px 0;cursor:pointer" style-hover="background:rgba(255,255,255,.03)">
+        <div style="flex:1">
+          <div style="font-size:16px;color:#eaeaea">Upload backup</div>
+          <div style="font-size:13px;color:#9b9b9b;margin-top:2px">Upload and restore a Home Assistant backup to this system</div>
+        </div>
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#bdbdbd;flex:none"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+      </div>
+      <div onClick="{{ goCloud }}" style="display:flex;align-items:center;gap:12px;padding:16px 0 4px;cursor:pointer" style-hover="background:rgba(255,255,255,.03)">
+        <div style="flex:1">
+          <div style="font-size:16px;color:#eaeaea">Home Assistant Cloud</div>
+          <div style="font-size:13px;color:#9b9b9b;margin-top:2px">Restore from your Home Assistant Cloud backup.</div>
+        </div>
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#bdbdbd;flex:none"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isBackup }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ backWelcome }}" title="Back" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:-4px 0 20px -8px" style-hover="background:rgba(255,255,255,.08)">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#e1e1e1"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+      </button>
+      <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#f1f1f1">Upload backup</h1>
+      <p style="margin:0 0 24px;font-size:14px;color:#b8b8b8">Upload a backup file from your device</p>
+      <div style="border:1px dashed #5a5a5a;border-radius:6px;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px">
+        <button style="display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;height:34px;padding:0 18px;border-radius:17px;border:0;cursor:pointer;background:rgba(24,188,242,.18);color:#29c1f7" style-hover="background:rgba(24,188,242,.28)">
+          <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#29c1f7"><path d="M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6M14,17H12V13H9.5L13,9.5L16.5,13H14V17Z"></path></svg>
+          Select backup file
+        </button>
+        <div style="font-size:14px;color:#dcdcdc">Or drop your file here</div>
+        <div style="font-size:12px;color:#8f8f8f">Supports .tar files</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ backWelcome }}" title="Back" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:-4px 0 20px -8px" style-hover="background:rgba(255,255,255,.08)">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#e1e1e1"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+      </button>
+      <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#f1f1f1">Home Assistant Cloud</h1>
+      <p style="margin:0 0 24px;font-size:14px;line-height:1.5;color:#b8b8b8">Sign in to your Nabu Casa account and restore your Home Assistant Cloud backup.</p>
+      <div style="position:relative;margin-bottom:20px">
+        <span style="{{ fEmail.labelStyle }}">Email*</span>
+        <input value="{{ email }}" onChange="{{ onEmail }}" placeholder="Email*" style="{{ fEmail.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+      </div>
+      <div style="position:relative;margin-bottom:24px">
+        <span style="{{ fCloudPw.labelStyle }}">Password*</span>
+        <input type="{{ cloudPwType }}" value="{{ cloudPw }}" onChange="{{ onCloudPw }}" placeholder="Password*" style="{{ fCloudPw.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+        <svg onClick="{{ toggleCloudPw }}" viewBox="0 0 24 24" style="position:absolute;right:12px;top:14px;width:22px;height:22px;fill:#bdbdbd;cursor:pointer"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <a href="#" onClick="{{ noop }}" style="font-size:14px;font-weight:500;text-decoration:none">Forgot password?</a>
+        <button style="font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Sign in</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUser }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#f1f1f1">Create user</h1>
+      <p style="margin:0 0 28px;font-size:14px;color:#b8b8b8">Let's get started by creating a user account.</p>
+      <div style="position:relative;margin-bottom:28px">
+        <span style="{{ fName.labelStyle }}">Name</span>
+        <input value="{{ uName }}" onChange="{{ onUName }}" placeholder="Name*" style="{{ fName.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+      </div>
+      <div style="position:relative;margin-bottom:28px">
+        <span style="{{ fUser.labelStyle }}">Username</span>
+        <input value="{{ uUser }}" onChange="{{ onUUser }}" placeholder="Username*" style="{{ fUser.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+      </div>
+      <div style="position:relative;margin-bottom:4px">
+        <span style="{{ fPass.labelStyle }}">Password</span>
+        <input type="{{ pwType }}" value="{{ uPass }}" onChange="{{ onUPass }}" placeholder="Password*" style="{{ fPass.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+        <svg onClick="{{ togglePw }}" viewBox="0 0 24 24" style="position:absolute;right:12px;top:14px;width:22px;height:22px;fill:#bdbdbd;cursor:pointer"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>
+      </div>
+      <p style="margin:0 0 24px;font-size:12px;color:#9b9b9b;text-align:center">Choose a strong and unique password. Make sure to save it, so you don't forget it.</p>
+      <div style="position:relative;margin-bottom:32px">
+        <span style="{{ fConfirm.labelStyle }}">Confirm password</span>
+        <input type="{{ pw2Type }}" value="{{ uPass2 }}" onChange="{{ onUPass2 }}" placeholder="Confirm password*" style="{{ fConfirm.inputStyle }}" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:13px">
+        <svg onClick="{{ togglePw2 }}" viewBox="0 0 24 24" style="position:absolute;right:12px;top:14px;width:22px;height:22px;fill:#bdbdbd;cursor:pointer"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button onClick="{{ submitUser }}" disabled="{{ userInvalid }}" style="{{ createBtnStyle }}">Create account</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLocation }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#f1f1f1">Home location</h1>
+      <p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#b8b8b8">This data is stored on your Home Assistant system, though some cloud-based integrations may use this data to function.</p>
+      <div style="position:relative;z-index:3;margin-bottom:20px">
+        <svg viewBox="0 0 24 24" style="position:absolute;left:14px;top:15px;width:20px;height:20px;fill:#bdbdbd"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
+        <input value="{{ query }}" onChange="{{ onQuery }}" onFocus="{{ onQueryFocus }}" placeholder="Search address" style="width:100%;box-sizing:border-box;font-size:16px;color:#e6e6e6;background:#2b2b2b;border:0;border-bottom:1px solid #8a8a8a;border-radius:4px 4px 0 0;outline:none;padding:15px 48px 13px 46px" style-focus="border-bottom:2px solid #03a9f4;padding-bottom:12px">
+        <svg onClick="{{ locate }}" viewBox="0 0 24 24" style="position:absolute;right:14px;top:14px;width:22px;height:22px;fill:#bdbdbd;cursor:pointer"><path d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M3.05,13H1V11H3.05C3.5,6.83 6.83,3.5 11,3.05V1H13V3.05C17.17,3.5 20.5,6.83 20.95,11H23V13H20.95C20.5,17.17 17.17,20.5 13,20.95V23H11V20.95C6.83,20.5 3.5,17.17 3.05,13M12,5A7,7 0 0,0 5,12A7,7 0 0,0 12,19A7,7 0 0,0 19,12A7,7 0 0,0 12,5Z"></path></svg>
+        <sc-if value="{{ showSuggestions }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:100%;left:0;right:0;background:#2b2b2b;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,.5);overflow:hidden">
+            <sc-for list="{{ suggestions }}" as="sug" hint-placeholder-count="0">
+              <div onClick="{{ sug.pick }}" style="display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:14px;color:#e1e1e1;cursor:pointer" style-hover="background:rgba(255,255,255,.06)">
+                <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#9b9b9b;flex:none"><path d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"></path></svg>
+                <span>{{ sug.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <div ref="{{ mapRef }}" onPointerDown="{{ mapDown }}" onPointerMove="{{ mapMove }}" onPointerUp="{{ mapUp }}" style="position:relative;height:300px;border-radius:6px;overflow:hidden;cursor:crosshair;touch-action:none;user-select:none;background:#262626">
+        <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+          <g transform="{{ mapScale }}">
+            <rect x="-100" y="-100" width="800" height="600" fill="#2e2e2e"></rect>
+            <path d="M400,-100 C420,0 470,60 540,90 C580,107 620,115 700,120 L700,-100 Z" fill="#1b242c"></path>
+            <path d="M560,120 C570,200 555,300 575,420 L700,420 L700,100 Z" fill="#1b242c"></path>
+            <path d="M-50,420 C60,290 200,230 420,255" stroke="#1b242c" stroke-width="10" fill="none"></path>
+            <path d="M-50,470 C80,330 230,270 450,290" stroke="#1b242c" stroke-width="9" fill="none"></path>
+            <path d="M-60,370 C40,255 180,195 400,220" stroke="#1b242c" stroke-width="8" fill="none"></path>
+            <line x1="60" y1="-20" x2="180" y2="420" stroke="#212121" stroke-width="7"></line>
+            <line x1="150" y1="-20" x2="240" y2="420" stroke="#212121" stroke-width="6"></line>
+            <line x1="260" y1="-20" x2="300" y2="420" stroke="#212121" stroke-width="7"></line>
+            <line x1="380" y1="-20" x2="360" y2="420" stroke="#212121" stroke-width="6"></line>
+            <line x1="480" y1="120" x2="440" y2="420" stroke="#212121" stroke-width="6"></line>
+            <path d="M-40,150 C150,120 350,120 640,160" stroke="#212121" stroke-width="8" fill="none"></path>
+            <path d="M-40,60 C160,40 320,50 560,80" stroke="#212121" stroke-width="6" fill="none"></path>
+            <text x="345" y="62" font-size="11" font-style="italic" fill="#8a8a8a">Open Havenfront</text>
+            <text x="455" y="98" font-size="11" font-style="italic" fill="#8a8a8a">Open Havenfront</text>
+            <text x="440" y="290" font-size="11" font-style="italic" fill="#8a8a8a">Steenvoetsluis</text>
+            <text x="72" y="230" font-size="11" font-style="italic" fill="#8a8a8a" transform="rotate(72 72 230)">Nassaukade</text>
+            <text x="300" y="248" font-size="20" font-weight="500" letter-spacing="6" fill="#e8e8e8" text-anchor="middle">{{ cityLabel }}</text>
+          </g>
+        </svg>
+        <div style="{{ pinStyle }}">
+          <svg viewBox="0 0 24 24" style="width:40px;height:40px;fill:#38b6f1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))"><path d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"></path></svg>
+        </div>
+        <div style="position:absolute;top:10px;left:10px;display:flex;flex-direction:column;background:#ffffff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.4);z-index:2">
+          <button onClick="{{ zoomIn }}" style="width:30px;height:30px;border:0;background:transparent;font-size:18px;font-weight:700;color:#333333;cursor:pointer;border-bottom:1px solid #dddddd">+</button>
+          <button onClick="{{ zoomOut }}" style="width:30px;height:30px;border:0;background:transparent;font-size:20px;font-weight:700;color:#333333;cursor:pointer;line-height:1">−</button>
+        </div>
+        <div style="position:absolute;right:0;bottom:0;background:rgba(255,255,255,.85);color:#333333;font-size:10px;padding:2px 6px;border-radius:3px 0 0 0;z-index:2"><span style="color:#0078a8">Leaflet</span> | © <span style="color:#0078a8">OpenStreetMap</span>, © <span style="color:#0078a8">CARTO</span></div>
+      </div>
+      <p style="margin:8px 0 0;font-size:12px;color:#9b9b9b">Powered by <span style="text-decoration:underline">OpenStreetMap</span> (<span style="text-decoration:underline">Privacy policy</span>).</p>
+      <div style="display:flex;justify-content:flex-end;margin-top:24px">
+        <button onClick="{{ goCountry }}" style="font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Next</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCountry }}" hint-placeholder-val="{{ false }}">
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#dcdcdc">We would like to know the country your home is in, so we can use the correct units.</p>
+      <div style="position:relative;margin-bottom:24px">
+        <span style="position:absolute;top:7px;left:16px;font-size:11px;color:#9e9e9e;z-index:1">Country *</span>
+        <select value="{{ country }}" onChange="{{ onCountry }}" style="width:100%;box-sizing:border-box;font-size:16px;color:#e6e6e6;background:#2b2b2b;border:0;border-bottom:1px solid #8a8a8a;border-radius:4px 4px 0 0;outline:none;padding:24px 16px 8px;appearance:none;-webkit-appearance:none;cursor:pointer">
+          <sc-for list="{{ countries }}" as="c" hint-placeholder-count="1"><option value="{{ c.code }}">{{ c.name }}</option></sc-for>
+        </select>
+        <svg viewBox="0 0 24 24" style="position:absolute;right:12px;top:18px;width:22px;height:22px;fill:#bdbdbd;pointer-events:none"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"></path></svg>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button onClick="{{ goAnalytics }}" style="font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Next</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAnalytics }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 12px;font-size:28px;font-weight:400;color:#f1f1f1">Help us help you</h1>
+      <p style="margin:0 0 20px;font-size:14px;line-height:1.5;color:#b8b8b8">Share anonymized information from your installation to help make Home Assistant better and help us convince manufacturers to add local control and privacy-focused features.</p>
+      <a href="https://www.home-assistant.io/privacy/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:12px">Learn how we process your data
+        <svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:#29c1f7"><path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"></path></svg>
+      </a>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ anaRows }}" as="ar" hint-placeholder-count="4">
+          <div onClick="{{ ar.toggle }}" style="display:flex;align-items:center;gap:16px;padding:14px 0;cursor:pointer">
+            <div style="flex:1">
+              <div style="font-size:15px;color:#eaeaea">{{ ar.label }}</div>
+              <div style="font-size:13px;color:#9b9b9b;margin-top:2px">{{ ar.desc }}</div>
+            </div>
+            <div style="{{ ar.trackStyle }}"><div style="{{ ar.thumbStyle }}"></div></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px">
+        <button onClick="{{ goDone }}" style="font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Next</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;font-size:56px;line-height:1;margin:8px 0 24px">🎉</div>
+      <h1 style="margin:0 0 8px;font-size:28px;font-weight:400;color:#f1f1f1">All set!</h1>
+      <p style="margin:0 0 40px;font-size:14px;color:#b8b8b8">Let's start your private smart home adventure.</p>
+      <div style="display:flex;justify-content:flex-end">
+        <button onClick="{{ finish }}" style="font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff" style-hover="background:#0398dc">Finish</button>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <sc-if value="{{ showInfoCards }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;gap:16px;width:100%;max-width:560px;margin-top:16px;position:relative;z-index:1">
+      <a href="https://www.home-assistant.io/about/" target="_blank" style="flex:1;background:#212121;border-radius:12px;padding:22px 8px;display:flex;flex-direction:column;align-items:center;gap:14px;text-decoration:none" style-hover="background:#262626">
+        <div style="width:40px;height:40px;border-radius:50%;background:#18bcf2;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#ffffff"><path d="M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z"></path></svg>
+        </div>
+        <span style="font-size:14px;color:#dcdcdc">Read our vision</span>
+      </a>
+      <a href="https://community.home-assistant.io" target="_blank" style="flex:1;background:#212121;border-radius:12px;padding:22px 8px;display:flex;flex-direction:column;align-items:center;gap:14px;text-decoration:none" style-hover="background:#262626">
+        <div style="width:40px;height:40px;border-radius:50%;background:#43a047;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#ffffff"><path d="M12,5.5A3.5,3.5 0 0,1 15.5,9A3.5,3.5 0 0,1 12,12.5A3.5,3.5 0 0,1 8.5,9A3.5,3.5 0 0,1 12,5.5M5,8C5.56,8 6.08,8.15 6.53,8.42C6.38,9.85 6.8,11.27 7.66,12.38C7.16,13.34 6.16,14 5,14A3,3 0 0,1 2,11A3,3 0 0,1 5,8M19,8A3,3 0 0,1 22,11A3,3 0 0,1 19,14C17.84,14 16.84,13.34 16.34,12.38C17.2,11.27 17.62,9.85 17.47,8.42C17.92,8.15 18.44,8 19,8M5.5,18.25C5.5,16.18 8.41,14.5 12,14.5C15.59,14.5 18.5,16.18 18.5,18.25V20H5.5V18.25M0,20V18.5C0,17.11 1.89,15.94 4.45,15.6C3.86,16.28 3.5,17.22 3.5,18.25V20H0M24,20H20.5V18.25C20.5,17.22 20.14,16.28 19.55,15.6C22.11,15.94 24,17.11 24,18.5V20H24Z"></path></svg>
+        </div>
+        <span style="font-size:14px;color:#dcdcdc">Join our community</span>
+      </a>
+      <a href="https://companion.home-assistant.io" target="_blank" style="flex:1;background:#212121;border-radius:12px;padding:22px 8px;display:flex;flex-direction:column;align-items:center;gap:14px;text-decoration:none" style-hover="background:#262626">
+        <div style="width:40px;height:40px;border-radius:50%;background:#8956c9;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:#ffffff"><path d="M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3C19,1.89 18.1,1 17,1Z"></path></svg>
+        </div>
+        <span style="font-size:14px;color:#dcdcdc">Download our app</span>
+      </a>
+    </div>
+  </sc-if>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:560px;margin-top:16px;position:relative;z-index:1">
+    <div style="position:relative">
+      <select style="font-size:14px;color:#dcdcdc;background:#2b2b2b;border:0;border-bottom:1px solid #777777;border-radius:4px 4px 0 0;outline:none;padding:16px 44px 16px 16px;appearance:none;-webkit-appearance:none;cursor:pointer">
+        <option>English</option><option>Nederlands</option><option>Deutsch</option><option>Français</option><option>Español</option>
+      </select>
+      <svg viewBox="0 0 24 24" style="position:absolute;right:12px;top:15px;width:20px;height:20px;fill:#bdbdbd;pointer-events:none"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"></path></svg>
+    </div>
+    <a href="https://www.home-assistant.io/getting-started/onboarding/" target="_blank" style="font-size:14px;color:#c4c4c4;text-decoration:none">Help</a>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;min-height:100vh;background:#fafafa">
+  <sc-if value="{{ showRail }}" hint-placeholder-val="{{ false }}">
+    <nav style="{{ railStyle }}">
+      <button onClick="{{ toggleRail }}" title="Sidebar" style="width:40px;height:40px;border:0;background:transparent;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:8px 0 24px" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#454545"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"></path></svg>
+      </button>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;align-items:center">
+        <sc-for list="{{ railItems }}" as="ri" hint-placeholder-count="6">
+          <div onClick="{{ ri.click }}" title="{{ ri.label }}" style="{{ ri.style }}" style-hover="background:rgba(0,0,0,.06)">
+            <svg viewBox="0 0 24 24" style="{{ ri.iconStyle }}"><path d="{{ ri.icon }}"></path></svg>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;padding-bottom:12px">
+        <div title="Settings" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:rgba(0,0,0,.06)">
+          <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#616161"><path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"></path></svg>
+        </div>
+        <div title="Notifications" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:rgba(0,0,0,.06)">
+          <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#616161"><path d="M21,19V20H3V19L5,17V11C5,7.9 7.03,5.17 10,4.29C10,4.19 10,4.1 10,4A2,2 0 0,1 12,2A2,2 0 0,1 14,4C14,4.1 14,4.19 14,4.29C16.97,5.17 19,7.9 19,11V17L21,19M14,21A2,2 0 0,1 12,23A2,2 0 0,1 10,21Z"></path></svg>
+        </div>
+        <div title="Profile" style="width:36px;height:36px;border-radius:50%;background:#a8dcf3;color:#01579b;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer">{{ avatarLetter }}</div>
+      </div>
+    </nav>
+  </sc-if>
+  <sc-if value="{{ showScrim }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeRail }}" style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:15"></div>
+  </sc-if>
+  <main style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;height:56px;padding:0 12px;gap:4px;background:#ffffff;border-bottom:1px solid rgba(0,0,0,.08)">
+      <sc-if value="{{ hamburgerInHeader }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toggleRail }}" title="Menu" style="width:40px;height:40px;border:0;background:transparent;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+          <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#454545"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"></path></svg>
+        </button>
+      </sc-if>
+      <span style="font-size:20px;font-weight:500;color:#212121;padding-left:12px">Overview</span>
+      <div style="flex:1"></div>
+      <button title="Add" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#454545"><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"></path></svg>
+      </button>
+      <button title="Search" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#454545"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
+      </button>
+      <button title="Assist" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#454545"><path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10M7,9H9V11H7V9M11,9H13V11H11V9M15,9H17V11H15V9Z"></path></svg>
+      </button>
+      <button title="Edit dashboard" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#454545"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>
+      </button>
+      <button onClick="{{ restart }}" title="Restart onboarding" style="width:40px;height:40px;border:0;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center" style-hover="background:rgba(0,0,0,.06)">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:#9e9e9e"><path d="M12,4C14.1,4 16.1,4.8 17.6,6.3C20.7,9.4 20.7,14.5 17.6,17.6C15.8,19.5 13.3,20.2 10.9,19.9L11.4,17.9C13.1,18.1 14.9,17.5 16.2,16.2C18.5,13.9 18.5,10.1 16.2,7.7C15.1,6.6 13.5,6 12,6V10.6L7,5.6L12,0.6V4M6.3,17.6C3.7,15 3.3,11 5.1,7.9L6.6,9.4C5.5,11.6 5.9,14.4 7.8,16.2C8.3,16.7 8.9,17.1 9.6,17.4L9,19.4C8,19 7.1,18.4 6.3,17.6Z"></path></svg>
+      </button>
+    </div>
+    <div style="padding:24px 36px 40px">
+      <h1 style="margin:0 0 24px;font-size:20px;font-weight:700;color:#212121">{{ greeting }}</h1>
+      <div style="{{ dashGridStyle }}">
+        <div>
+          <div style="font-size:14px;color:#454545;margin-bottom:16px">Areas</div>
+          <div style="display:flex;flex-wrap:wrap;gap:16px">
+            <sc-for list="{{ areas }}" as="area" hint-placeholder-count="4">
+              <div style="width:132px;height:104px;background:#ffffff;border:1px solid rgba(0,0,0,.1);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer" style-hover="box-shadow:0 2px 6px rgba(0,0,0,.12)">
+                <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:#44739e"><path d="{{ area.icon }}"></path></svg>
+                <span style="font-size:14px;color:#212121">{{ area.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:14px;color:#454545;margin-bottom:16px">Summaries</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startAt&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;preparing&quot;,&quot;welcome&quot;,&quot;create_user&quot;,&quot;location&quot;,&quot;country&quot;,&quot;analytics&quot;,&quot;done&quot;,&quot;dashboard&quot;],&quot;default&quot;:&quot;preparing&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Behavior&quot;},&quot;prepSeconds&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0,&quot;max&quot;:10,&quot;step&quot;:0.5,&quot;default&quot;:4,&quot;unit&quot;:&quot;s&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+const COUNTRIES = [
+  ['US', 'United States'], ['AU', 'Australia'], ['AT', 'Austria'], ['BE', 'Belgium'], ['CA', 'Canada'],
+  ['DK', 'Denmark'], ['FR', 'France'], ['DE', 'Germany'], ['IT', 'Italy'], ['NL', 'Netherlands'],
+  ['NO', 'Norway'], ['PL', 'Poland'], ['ES', 'Spain'], ['SE', 'Sweden'], ['CH', 'Switzerland'], ['GB', 'United Kingdom']
+];
+const SUGG = [
+  { name: 'Amsterdam, North Holland, Netherlands', x: 50, y: 47, cc: 'NL', city: 'AMSTERDAM' },
+  { name: 'Berlin, Germany', x: 60, y: 38, cc: 'DE', city: 'BERLIN' },
+  { name: 'London, United Kingdom', x: 34, y: 32, cc: 'GB', city: 'LONDON' },
+  { name: 'Paris, France', x: 42, y: 58, cc: 'FR', city: 'PARIS' },
+  { name: 'New York, NY, United States', x: 24, y: 50, cc: 'US', city: 'NEW YORK' },
+  { name: 'Sydney, Australia', x: 68, y: 70, cc: 'AU', city: 'SYDNEY' },
+  { name: 'Stockholm, Sweden', x: 64, y: 24, cc: 'SE', city: 'STOCKHOLM' },
+  { name: 'Madrid, Spain', x: 32, y: 66, cc: 'ES', city: 'MADRID' }
+];
+const ANA = [
+  { key: 'base', label: 'Basic analytics', desc: 'This includes information about your system' },
+  { key: 'usage', label: 'Usage', desc: 'Details of what you use with Home Assistant' },
+  { key: 'stat', label: 'Statistical data', desc: 'Counts containing total number of datapoints' },
+  { key: 'diag', label: 'Diagnostics', desc: 'Share crash reports when unexpected errors occur' }
+];
+const RAIL = [
+  ['home', 'Overview', 'M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z'],
+  ['people', 'People', 'M6,17C6,15 10,13.9 12,13.9C14,13.9 18,15 18,17V18H6M15,9A3,3 0 0,1 12,12A3,3 0 0,1 9,9A3,3 0 0,1 12,6A3,3 0 0,1 15,9M3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3H5A2,2 0 0,0 3,5Z'],
+  ['energy', 'Energy', 'M11,15H6L13,1V9H18L11,23V15Z'],
+  ['logbook', 'Logbook', 'M7,5H21V7H7V5M7,13V11H21V13H7M4,4.5A1.5,1.5 0 0,1 5.5,6A1.5,1.5 0 0,1 4,7.5A1.5,1.5 0 0,1 2.5,6A1.5,1.5 0 0,1 4,4.5M4,10.5A1.5,1.5 0 0,1 5.5,12A1.5,1.5 0 0,1 4,13.5A1.5,1.5 0 0,1 2.5,12A1.5,1.5 0 0,1 4,10.5M7,19V17H21V19H7M4,16.5A1.5,1.5 0 0,1 5.5,18A1.5,1.5 0 0,1 4,19.5A1.5,1.5 0 0,1 2.5,18A1.5,1.5 0 0,1 4,16.5Z'],
+  ['history', 'History', 'M3,3H21V21H3V3M5,5V19H19V5H5M7,12H9V17H7V12M11,7H13V17H11V7M15,10H17V17H15V10Z'],
+  ['media', 'Media', 'M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M10,16V8L15,12L10,16Z'],
+  ['todo', 'To-do lists', 'M19,3H14.82C14.4,1.84 13.3,1 12,1C10.7,1 9.6,1.84 9.18,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M12,3A1,1 0 0,1 13,4A1,1 0 0,1 12,5A1,1 0 0,1 11,4A1,1 0 0,1 12,3M7,7H17V9H7V7M7,11H17V13H7V11M7,15H13V17H7V15Z']
+];
+const AREAS = [
+  { name: 'Living Room', icon: 'M21,9V7A2,2 0 0,0 19,5H15C14.2,5 13.5,5.4 13,6C12.5,5.4 11.8,5 11,5H7A2,2 0 0,0 5,7V9A3,3 0 0,0 2,12V17H4V19H6V17H18V19H20V17H22V12A3,3 0 0,0 21,9.17V9M20,15H4V12A1,1 0 0,1 5,11A1,1 0 0,1 6,12V13H18V12A1,1 0 0,1 19,11A1,1 0 0,1 20,12V15Z' },
+  { name: 'Kitchen', icon: 'M11,9H9V2H7V9H5V2H3V9C3,11.12 4.66,12.84 6.75,12.97V22H9.25V12.97C11.34,12.84 13,11.12 13,9V2H11V9M16,6V14H18.5V22H21V2C18.24,2 16,4.24 16,6Z' },
+  { name: 'Bedroom', icon: 'M19,7H11V14H3V5H1V20H3V17H21V20H23V11A4,4 0 0,0 19,7M7,13A3,3 0 0,0 10,10A3,3 0 0,0 7,7A3,3 0 0,0 4,10A3,3 0 0,0 7,13Z' },
+  { name: 'Devices', icon: 'M3,6H21V4H3C1.89,4 1,4.89 1,6V18A2,2 0 0,0 3,20H7V18H3V6M13,12H9V13.78C8.39,14.33 8,15.11 8,16C8,16.89 8.39,17.67 9,18.22V20H13V18.22C13.61,17.67 14,16.88 14,16C14,15.12 13.61,14.33 13,13.78V12M11,17.5A1.5,1.5 0 0,1 9.5,16A1.5,1.5 0 0,1 11,14.5A1.5,1.5 0 0,1 12.5,16A1.5,1.5 0 0,1 11,17.5M22,8H16A1,1 0 0,0 15,9V19A1,1 0 0,0 16,20H22A1,1 0 0,0 23,19V9A1,1 0 0,0 22,8M21,18H17V10H21V18Z' }
+];
+const FIELD_BASE = 'width:100%;box-sizing:border-box;font-size:16px;color:#e6e6e6;background:#2b2b2b;border:0;border-bottom:1px solid #8a8a8a;border-radius:4px 4px 0 0;outline:none;';
+const INITIAL = () => ({
+  step: 'preparing', prog: 0,
+  uName: '', uUser: '', uUserTouched: false, uPass: '', uPass2: '', showPw: false, showPw2: false,
+  email: '', cloudPw: '', showCloudPw: false,
+  query: '', showSug: false, pin: { x: 50, y: 47 }, cityLabel: 'AMSTERDAM', zoom: 1,
+  country: 'US',
+  ana: { base: false, usage: false, stat: false, diag: false },
+  panel: 'home', railOpen: true
+});
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = Object.assign(INITIAL(), { narrow: false });
+    this.mapRef = React.createRef();
+    this.cnvRef = React.createRef();
+    this._drag = false;
+  }
+  componentDidMount() {
+    this._onR = () => this.setState({ narrow: window.innerWidth < 880 });
+    this._onR();
+    window.addEventListener('resize', this._onR);
+    const map = { preparing: 'preparing', welcome: 'welcome', create_user: 'user', location: 'location', country: 'country', analytics: 'analytics', done: 'done', dashboard: 'dashboard' };
+    const s = map[this.props.startAt] || 'preparing';
+    if (s !== 'preparing') this.setState({ step: s }); else this._startPrep();
+    this._initParticles();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onR);
+    clearInterval(this._pt);
+    cancelAnimationFrame(this._raf);
+  }
+  _startPrep() {
+    clearInterval(this._pt);
+    const secs = this.props.prepSeconds == null ? 4 : this.props.prepSeconds;
+    if (secs <= 0) { this.setState({ step: 'welcome' }); return; }
+    const stepMs = 120;
+    this._pt = setInterval(() => {
+      this.setState(st => {
+        const p = st.prog + (100 / (secs * 1000 / stepMs)) * (0.5 + Math.random());
+        if (p >= 100) { clearInterval(this._pt); setTimeout(() => this.setState({ step: 'welcome', prog: 0 }), 350); return { prog: 100 }; }
+        return { prog: p };
+      });
+    }, stepMs);
+  }
+  _initParticles() {
+    const N = 70;
+    this._pts = Array.from({ length: N }, () => ({
+      x: Math.random(), y: Math.random(),
+      vx: (Math.random() - 0.5) * 0.0006, vy: (Math.random() - 0.5) * 0.0006
+    }));
+    const tick = () => {
+      this._raf = requestAnimationFrame(tick);
+      const cnv = this.cnvRef.current;
+      if (!cnv) return;
+      const w = cnv.clientWidth, h = cnv.clientHeight;
+      if (cnv.width !== w || cnv.height !== h) { cnv.width = w; cnv.height = h; }
+      const ctx = cnv.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      const pts = this._pts;
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > 1) p.vx *= -1;
+        if (p.y < 0 || p.y > 1) p.vy *= -1;
+      }
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = (pts[i].x - pts[j].x) * w, dy = (pts[i].y - pts[j].y) * h;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 110) {
+            ctx.strokeStyle = `rgba(24,188,242,${(1 - d / 110) * 0.35})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x * w, pts[i].y * h);
+            ctx.lineTo(pts[j].x * w, pts[j].y * h);
+            ctx.stroke();
+          }
+        }
+      }
+      for (const p of pts) {
+        ctx.fillStyle = 'rgba(170,190,200,.45)';
+        ctx.beginPath();
+        ctx.arc(p.x * w, p.y * h, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    };
+    tick();
+  }
+  _pinFromEvent(e) {
+    const el = this.mapRef.current; if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: Math.min(97, Math.max(3, ((e.clientX - r.left) / r.width) * 100)), y: Math.min(94, Math.max(6, ((e.clientY - r.top) / r.height) * 100)) };
+  }
+  _field(value) {
+    const has = value.length > 0;
+    return {
+      labelStyle: has ? 'position:absolute;top:6px;left:16px;font-size:11px;color:#9e9e9e;z-index:1' : 'display:none',
+      inputStyle: FIELD_BASE + (has ? 'padding:22px 44px 8px 16px' : 'padding:15px 44px 13px 16px')
+    };
+  }
+  _switch(on) {
+    return {
+      track: `width:36px;height:20px;border-radius:999px;position:relative;cursor:pointer;flex:none;transition:background .15s;background:${on ? '#03a9f4' : '#484848'}`,
+      thumb: `position:absolute;top:2px;left:${on ? '18px' : '2px'};width:16px;height:16px;border-radius:999px;background:${on ? '#fff' : '#9e9e9e'};box-shadow:0 1px 2px rgba(0,0,0,.4);transition:left .15s,background .15s`
+    };
+  }
+  renderVals() {
+    const st = this.state;
+    const set = o => this.setState(o);
+    const q = st.query.trim().toLowerCase();
+    const suggestions = (st.showSug && q.length > 0 ? SUGG.filter(s => s.name.toLowerCase().includes(q)) : []).slice(0, 4).map(s => ({
+      name: s.name,
+      pick: () => set({ query: s.name, showSug: false, pin: { x: s.x, y: s.y }, cityLabel: s.city, country: s.cc })
+    }));
+    const anaRows = ANA.map(a => {
+      const on = st.ana[a.key]; const sw = this._switch(on);
+      return { label: a.label, desc: a.desc, trackStyle: sw.track, thumbStyle: sw.thumb, toggle: () => set({ ana: Object.assign({}, st.ana, { [a.key]: !on }) }) };
+    });
+    const userValid = st.uName.trim() && st.uUser.trim() && st.uPass.length > 0 && st.uPass === st.uPass2;
+    const railItems = RAIL.map(([key, label, icon]) => {
+      const active = st.panel === key;
+      return {
+        label, icon,
+        style: `width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:${active ? '#d5ecf9' : 'transparent'}`,
+        iconStyle: `width:22px;height:22px;fill:${active ? '#0288d1' : '#616161'}`,
+        click: () => set({ panel: key, railOpen: st.narrow ? false : st.railOpen })
+      };
+    });
+    const railBase = 'width:56px;flex:none;background:#ffffff;border-right:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;box-sizing:border-box;padding:4px 0 0';
+    const zscale = `translate(300,200) scale(${st.zoom}) translate(-300,-200)`;
+    return {
+      isOnboarding: st.step !== 'dashboard',
+      isPrep: st.step === 'preparing', isWelcome: st.step === 'welcome',
+      isBackup: st.step === 'backup', isCloud: st.step === 'cloud',
+      isUser: st.step === 'user', isLocation: st.step === 'location',
+      isCountry: st.step === 'country', isAnalytics: st.step === 'analytics',
+      isDone: st.step === 'done', isDashboard: st.step === 'dashboard',
+      showInfoCards: st.step === 'preparing' || st.step === 'welcome',
+      cnvRef: this.cnvRef,
+      noop: e => e.preventDefault(),
+      prepPct: `${Math.round(st.prog)}%`,
+      prepBarStyle: `position:absolute;left:0;top:0;bottom:0;width:${st.prog}%;background:#03a9f4;border-radius:999px;transition:width .12s linear`,
+      goUser: () => set({ step: 'user' }),
+      goBackup: () => set({ step: 'backup' }),
+      goCloud: () => set({ step: 'cloud' }),
+      backWelcome: () => set({ step: 'welcome' }),
+      email: st.email, onEmail: e => set({ email: e.target.value }),
+      cloudPw: st.cloudPw, onCloudPw: e => set({ cloudPw: e.target.value }),
+      cloudPwType: st.showCloudPw ? 'text' : 'password',
+      toggleCloudPw: () => set({ showCloudPw: !st.showCloudPw }),
+      fEmail: this._field(st.email), fCloudPw: this._field(st.cloudPw),
+      uName: st.uName,
+      onUName: e => {
+        const v = e.target.value;
+        const next = { uName: v };
+        if (!st.uUserTouched) next.uUser = v.toLowerCase().replace(/\s+/g, '_');
+        set(next);
+      },
+      uUser: st.uUser, onUUser: e => set({ uUser: e.target.value, uUserTouched: true }),
+      uPass: st.uPass, onUPass: e => set({ uPass: e.target.value }),
+      uPass2: st.uPass2, onUPass2: e => set({ uPass2: e.target.value }),
+      pwType: st.showPw ? 'text' : 'password', pw2Type: st.showPw2 ? 'text' : 'password',
+      togglePw: () => set({ showPw: !st.showPw }), togglePw2: () => set({ showPw2: !st.showPw2 }),
+      fName: this._field(st.uName), fUser: this._field(st.uUser),
+      fPass: this._field(st.uPass), fConfirm: this._field(st.uPass2),
+      userInvalid: !userValid,
+      createBtnStyle: userValid
+        ? 'font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:pointer;background:#03a9f4;color:#ffffff'
+        : 'font-size:14px;font-weight:500;height:40px;padding:0 24px;border-radius:20px;border:0;cursor:not-allowed;background:#2e2e2e;color:#6f6f6f',
+      submitUser: () => { if (userValid) set({ step: 'location' }); },
+      query: st.query,
+      onQuery: e => set({ query: e.target.value, showSug: true }),
+      onQueryFocus: () => set({ showSug: true }),
+      showSuggestions: suggestions.length > 0, suggestions,
+      mapRef: this.mapRef,
+      mapDown: e => { this._drag = true; e.currentTarget.setPointerCapture(e.pointerId); const p = this._pinFromEvent(e); if (p) set({ pin: p, showSug: false }); },
+      mapMove: e => { if (!this._drag) return; const p = this._pinFromEvent(e); if (p) set({ pin: p }); },
+      mapUp: () => { this._drag = false; },
+      pinStyle: `position:absolute;left:${st.pin.x}%;top:${st.pin.y}%;transform:translate(-50%,-100%);pointer-events:none;z-index:2`,
+      cityLabel: st.cityLabel,
+      mapScale: zscale,
+      zoomIn: () => set({ zoom: Math.min(2.5, st.zoom + 0.25) }),
+      zoomOut: () => set({ zoom: Math.max(0.75, st.zoom - 0.25) }),
+      locate: () => set({ pin: { x: 50, y: 47 }, cityLabel: 'AMSTERDAM', country: 'US', query: '' }),
+      goCountry: () => set({ step: 'country' }),
+      country: st.country, onCountry: e => set({ country: e.target.value }),
+      countries: COUNTRIES.map(([code, name]) => ({ code, name })),
+      goAnalytics: () => set({ step: 'analytics' }),
+      anaRows,
+      goDone: () => set({ step: 'done' }),
+      finish: () => set({ step: 'dashboard', panel: 'home', railOpen: !st.narrow }),
+      greeting: `Welcome ${st.uName.trim()}`.trim(),
+      avatarLetter: (st.uUser || st.uName || 'a').trim().charAt(0).toLowerCase() || 'a',
+      areas: AREAS,
+      railItems,
+      showRail: st.railOpen,
+      showScrim: st.narrow && st.railOpen,
+      hamburgerInHeader: !st.railOpen,
+      railStyle: st.narrow ? railBase + ';position:fixed;top:0;left:0;bottom:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.25)' : railBase,
+      toggleRail: () => set({ railOpen: !st.railOpen }),
+      closeRail: () => set({ railOpen: false }),
+      dashGridStyle: st.narrow ? 'display:flex;flex-direction:column;gap:32px' : 'display:grid;grid-template-columns:1fr 1fr;gap:48px',
+      restart: () => set(Object.assign(INITIAL(), { narrow: st.narrow }, this._startPrepSoon()))
+    };
+  }
+  _startPrepSoon() { setTimeout(() => this._startPrep(), 0); return {}; }
+}
+</script>
+</body>
+</html>

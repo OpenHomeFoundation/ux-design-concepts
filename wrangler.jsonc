@@ -2,7 +2,7 @@
   "name": "ux-design-concepts",
   "compatibility_date": "2026-07-08",
   "build": {
-    "command": "node build.js"
+    "command": "pnpm build"
   },
   "assets": {
     "directory": "./public"

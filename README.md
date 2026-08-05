@@ -10,7 +10,7 @@ Public link is: [https://ux-design-concepts.openhomefoundation.org](https://ux-d
 
 **Update an existing design:** delete all the contents inside the folder first, then paste the whole export again. If you paste on top of the old files, files that were removed from the design will stay around and keep being deployed.
 
-**Regenerate the landing page:** run `pnpm build`. It scans the concept folders and rewrites `public/index.html`. Every deploy also runs it automatically (`wrangler.jsonc` declares `build.command: node build.js`, which `wrangler deploy` runs before uploading), so committing the concept folder is enough. Never edit `public/index.html` by hand.
+**Regenerate the landing page:** run `pnpm build`. It scans the concept folders and rewrites `public/index.html`. Every deploy also runs it automatically (`wrangler.jsonc` declares `build.command: pnpm build`, which `wrangler deploy` runs before uploading), so committing the concept folder is enough. Never edit `public/index.html` by hand.
 
 ## Search engines
 

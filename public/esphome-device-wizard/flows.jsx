@@ -105,69 +105,88 @@ const ACCENT = {
 };
 
 const FLOWS = {
-  /* 1 · AUDIO STREAMING ----------------------------------------------------- */
+  /* 1 · SENDSPIN AUDIO STREAMING ------------------------------------------- */
+  // One CTA opens this stepped flow. It first ensures Music Assistant is
+  // installed (Sendspin builds on it), enables the Sendspin entity, then offers
+  // guest mode. Enabling toggles the matching entities on the device page.
   audio: {
-    title: "Music Assistant",
+    title: "Sendspin",
     accent: ACCENT.audio,
     icon: ICONS.music,
     initial: {},
-    // Skip the info/upsell screen and go straight to installing when a speaker is connected.
-    startStep: (d) => (d.speaker === "none" ? 0 : 1),
+    // Install Music Assistant first when it isn't set up. Only jump straight to
+    // the PIN step when everything's already configured (MA installed + Sendspin on).
+    startStep: (d) => (d.speaker === "none" || !d.maSetup ? 0 : d.sendspin ? 3 : 2),
     steps: [
+      // 0 — Music Assistant explainer + install (skipped when already installed)
       {
-        body: (d, set) => {
-          // No speaker plugged into the Proxy's audio output — nothing to configure yet.
+        title: "Enhance your music experience",
+        body: (d) => {
           if (d.speaker === "none") {
             return (
               <FlowIntro accent={ACCENT.audio} icon={ICONS.music} title="Connect a speaker first">
-                <p>Plug a speaker or amplifier into your Proxy's audio output. Once it's connected, you can set up Music&nbsp;Assistant to stream to it.</p>
+                <p>Plug a speaker or amplifier into your Proxy's audio output. Once it's connected, you can enable Sendspin to stream to it.</p>
                 <p className="flow-copy--sm" style={{ color: "#727272" }}>No speaker detected yet. Connect one and it'll appear here.</p>
               </FlowIntro>
             );
           }
-          const features = [
-            { icon: ICONS.accessPoint, title: "Synchronized multi-room", desc: "Play one song across every speaker in your home, locked to the same beat." },
-            { icon: ICONS.music, title: "Lossless, high-resolution audio", desc: "Stream Spotify, your local library and dozens of other sources in full quality." },
-            { icon: ICONS.open, title: "Album art on every screen", desc: "Cover art and playback controls show up on your dashboards and displays." },
+          const benefits = [
+            "Synchronized multi-room playback",
+            "Lossless, high-resolution audio",
+            "Album art on every screen",
           ];
           return (
             <div className="flow-form">
-              <div className="flow-copy">
-                <p>Music&nbsp;Assistant is a free media library manager that turns the speakers on your Proxy into a synchronized, multi-room sound system inside Home&nbsp;Assistant.</p>
+              <div className="ma-flat__head">
+                <span className="audio-player__icon">
+                  <BrandIcon domain="music_assistant" size={32} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
+                </span>
+                <span className="ma-upsell__text">
+                  <span className="ma-upsell__name">Music Assistant</span>
+                  <span className="ma-upsell__by">By the Open Home Foundation</span>
+                </span>
               </div>
-              <div className="flow-feature-list">
-                {features.map((f) => (
-                  <div className="flow-feature" key={f.title}>
-                    <span className="flow-feature__icon" style={{ background: ACCENT.audio + "1f" }}>
-                      <Icon path={f.icon} size={20} color={ACCENT.audio}></Icon>
-                    </span>
-                    <span>
-                      <div className="flow-feature__title">{f.title}</div>
-                      <div className="flow-feature__desc">{f.desc}</div>
-                    </span>
+              <p className="flow-copy--sm" style={{ margin: 0, color: "#727272" }}>Music&nbsp;Assistant is a free media library manager that turns the speaker on your Proxy into a synchronized, multi-room player. Sendspin streams through it.</p>
+              <div className="ma-upsell__benefits">
+                {benefits.map((b) => (
+                  <div className="ma-benefit" key={b}>
+                    <Icon path={ICONS.check} size={16} color={ACCENT.audio}></Icon>
+                    <span>{b}</span>
                   </div>
                 ))}
-              </div>
-              <div className="flow-note">
-                <Icon path={ICONS.info} size={18} color="#5a5a5a"></Icon>
-                <span>Music Assistant installs as an add-on and integration. Your speaker keeps working with Home&nbsp;Assistant either way.</span>
               </div>
             </div>
           );
         },
-        primary: (d) => (d.maSetup ? "Reconnect" : "Install Music Assistant"),
+        primary: "Install Music Assistant",
         canContinue: (d) => d.speaker !== "none",
+        skip: (d) => (d.speaker === "none" ? null : { label: "Skip for now", to: 2 }),
       },
-      { auto: true, body: (d) => <Working accent={ACCENT.audio} label={d.maSetup ? "Connecting to Music Assistant" : "Installing Music Assistant"} /> },
+      // 1 — installing Music Assistant
+      { auto: true, body: () => <Working accent={ACCENT.audio} label="Installing Music Assistant" /> },
+      // 2 — enabling Sendspin (runs after Music Assistant is ready)
+      { auto: true, onEnter: (d, c) => c.setSendspin(true), body: () => <Working accent={ACCENT.audio} label="Enabling Sendspin" /> },
+      // 3 — access protection: require a PIN to play (final)
       {
-        body: (d) => (
-          <SuccessStep title={d.maSetup ? "Music Assistant is set up" : "Music Assistant installed"}>
-            <p>Your Proxy now plays in sync with every other Music&nbsp;Assistant player, lossless where it counts, album art on your displays. Add more rooms any time; they join automatically.</p>
-          </SuccessStep>
+        title: "Protect this speaker",
+        body: (d, set) => (
+          <div className="flow-form">
+            <FlowIntro accent={ACCENT.audio} icon={ICONS.shield} title="Require a PIN to play audio">
+              <p>Anyone on your network can stream to this speaker. Require a PIN so only people you share it with can play audio here.</p>
+            </FlowIntro>
+            <button className="flow-toggle" onClick={() => set({ pin: !d.pin })} role="switch" aria-checked={!!d.pin}>
+              <span className="flow-toggle__text">
+                <span className="flow-toggle__label">Require a PIN to play</span>
+                <span className="flow-toggle__meta">Guests enter a code before they can stream</span>
+              </span>
+              <span className={"ha-toggle" + (d.pin ? " is-on" : "")}><span className="ha-toggle__thumb"></span></span>
+            </button>
+          </div>
         ),
-        primary: "Done",
+        primary: "Finish",
+        // Requiring a PIN means guest mode (open access) is off.
+        onNext: (d, c) => { c.setGuest(!d.pin); },
         final: true,
-        secondary: { label: "Open Music Assistant", onClick: () => window.open("https://music-assistant.io/", "_blank") },
       },
     ],
   },

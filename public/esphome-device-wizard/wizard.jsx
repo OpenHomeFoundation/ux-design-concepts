@@ -25,8 +25,8 @@ const ITEMS = [
   icon: ICONS.music,
   accent: ACCENT.audio,
   title: "Stream audio via Sendspin",
-  short: "Multi-room sound, recommended with Music Assistant",
-  desc: "Stream audio from Home Assistant (including announcements, media, or radio); just note this audio will be unsynchronized with other players. For synchronized whole-home audio, use Music Assistant.",
+  short: "Synchronized multi-room sound with Music Assistant",
+  desc: "Turn the speaker on your Proxy into a synchronized, multi-room player with Music Assistant \u2014 a free media library manager built into Home Assistant. Stream your library, Spotify and dozens of other sources in sync across every room.",
   long: "Music Assistant is a free media library manager that turns the speaker on your Proxy into part of a synchronized, multi-room sound system inside Home Assistant, keeping built-in playback while adding lossless audio and rich controls.",
   features: [
   { icon: ICONS.accessPoint, title: "Synchronized multi-room", desc: "Play one song across every speaker in your home, locked to the same beat." },
@@ -75,9 +75,6 @@ function StatusBadge({ status, plain }) {
   if (status === "completed") {
     return <span className="done-check"><Icon path={ICONS.check} size={16} color="#fff"></Icon></span>;
   }
-  if (status === "active") {
-    return <span className="done-check done-check--warn"><Icon path={ICONS.check} size={16} color="#fff"></Icon></span>;
-  }
   const m = STATUS_META[status];
   if (!m) return null;
   if (plain) return <span className="status-text">{m.label}</span>;
@@ -87,9 +84,8 @@ function StatusBadge({ status, plain }) {
 /* ---------------- shared bits used by both the accordion and the detail page ---------------- */
 function ctaLabelFor(item, status, adapter) {
   if (item.key === "audio") {
-    if (status === "completed") return "Configure";
-    if (status === "active") return "Install Music Assistant";
-    return "Set up";
+    if (status === "completed") return "Manage Sendspin";
+    return "Enable stream audio";
   }
   if (status === "completed") return "Configure";
   if (status === "in-progress") return "Continue setup";
@@ -98,8 +94,28 @@ function ctaLabelFor(item, status, adapter) {
   return "Set up";
 }
 
-function AudioPlayers({ status, onAction, compact }) {
-  const installed = status === "completed";
+function Toggle({ on, disabled, onClick }) {
+  return (
+    <button className={"ha-toggle" + (on ? " is-on" : "")} onClick={onClick} disabled={disabled} role="switch" aria-checked={on}>
+      <span className="ha-toggle__thumb"></span>
+    </button>);
+
+}
+
+function SendspinRow({ name, meta, on, disabled, onToggle }) {
+  return (
+    <div className={"sendspin-row" + (disabled ? " is-disabled" : "")}>
+      <span className="sendspin-row__text">
+        <span className="sendspin-row__name">{name}</span>
+        <span className="sendspin-row__meta">{meta}</span>
+      </span>
+      <Toggle on={on} disabled={disabled} onClick={() => {if (!disabled) onToggle();}}></Toggle>
+    </div>);
+
+}
+
+function AudioPlayers({ status, maInstalled, sendspin, guest, onToggleSendspin, onToggleGuest, onAction, compact }) {
+  const installed = maInstalled || status === "completed";
   const benefits = [
   "Synchronized multi-room playback",
   "Lossless, high-resolution audio",
@@ -107,46 +123,42 @@ function AudioPlayers({ status, onAction, compact }) {
 
   return (
     <div className="audio-players">
-      <div className="audio-player">
-        <span className="audio-player__icon">
-          <img src="ds/assets/home-assistant-logomark-color-on-light.svg" width="28" height="28" alt="" style={{ display: "block" }}></img>
-        </span>
-        <span className="audio-player__text">
-          <span className="audio-player__name">Home Assistant</span>
-          <span className="audio-player__meta">Built-in playback</span>
-        </span>
-        <span className="audio-player__end">
-          <span className="chip chip--active">Active</span>
-        </span>
-      </div>
-
       {installed ?
-      <div className="audio-player audio-player--stack">
-          <div className="audio-player__row">
-            <span className="audio-player__icon">
-              <BrandIcon domain="music_assistant" size={28} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
-            </span>
-            <span className="audio-player__text">
-              <span className="audio-player__name">Music Assistant</span>
-              <span className="audio-player__meta">Synchronized multi-room audio</span>
-            </span>
-            <span className="audio-player__end">
-              <span className="chip chip--active">Active</span>
-            </span>
+      <React.Fragment>
+          <div className="audio-player audio-player--stack">
+            <div className="audio-player__row">
+              <span className="audio-player__icon">
+                <BrandIcon domain="music_assistant" size={28} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
+              </span>
+              <span className="audio-player__text">
+                <span className="audio-player__name">Music Assistant</span>
+                <span className="audio-player__meta">Installed</span>
+              </span>
+              <span className="done-check" style={{ marginLeft: "auto" }}><Icon path={ICONS.check} size={16} color="#fff"></Icon></span>
+            </div>
+            <Btn variant="outlined" onClick={() => onAction("open")}>Open Music Assistant</Btn>
           </div>
-          <Btn variant="outlined" onClick={() => onAction("open")}>Open Music Assistant</Btn>
-        </div> :
+          <div className="sendspin-list">
+            <SendspinRow
+            name="Sendspin"
+            meta="Stream synchronized audio to this speaker"
+            on={sendspin}
+            onToggle={onToggleSendspin}></SendspinRow>
+            <SendspinRow
+            name="Sendspin Guest mode"
+            meta={sendspin ? "Let guests cast to this speaker without your account" : "Turn on Sendspin first"}
+            on={guest}
+            disabled={!sendspin}
+            onToggle={onToggleGuest}></SendspinRow>
+          </div>
+        </React.Fragment> :
 
-      <div className="ma-upsell">
-          <div className="ma-upsell__head">
+      <div className="ma-flat">
+          <div className="ma-flat__head">
             <span className="audio-player__icon">
               <BrandIcon domain="music_assistant" size={28} fallbackPath={ICONS.music} tint={ACCENT.audio}></BrandIcon>
             </span>
-            <span className="ma-upsell__title-wrap">
-              <span className="ma-upsell__name">Music Assistant</span>
-              <span className="audio-player__meta">The better way to stream with a free app</span>
-            </span>
-            <span className="audio-player__end"><span className="chip chip--recommend">Recommended</span></span>
+            <span className="ma-upsell__name">Music Assistant</span>
           </div>
           {compact ? null :
         <div className="ma-upsell__benefits">
@@ -158,6 +170,7 @@ function AudioPlayers({ status, onAction, compact }) {
           )}
             </div>
         }
+          <p className="sendspin-hint">Install Music Assistant first — Sendspin builds on it.</p>
           <Btn variant="filled" onClick={() => onAction("flow")}>Install Music Assistant</Btn>
         </div>
       }
@@ -178,7 +191,7 @@ function ItemActions({ item, status, adapter, blocked, dismissed, onAction }) {
   }
   if (item.toggle) {
     return status === "completed" ?
-    <Btn variant="outlined" onClick={() => onAction("turnoff")}>Turn off</Btn> :
+    null :
     <Btn variant="filled" onClick={() => onAction("turnon")}>Turn on</Btn>;
   }
   return (
@@ -227,14 +240,11 @@ function ChecklistRow({ item, status, open, onToggle, onAction, adapter, blocked
       </button>
       <div className="checkitem__body" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
         <div className="checkitem__body-inner">
+          {item.key === "audio" ? <img className="checkitem__logo" src="ds/sendspin-lockup.svg" alt="Sendspin" /> : null}
           <p className="checkitem__desc">{item.desc}</p>
-          {item.key === "audio" && !blocked ?
-          <AudioPlayers status={status} onAction={onAction}></AudioPlayers> :
-
           <div className="checkitem__actions">
-              <ItemActions item={item} status={status} adapter={adapter} blocked={blocked} dismissed={dismissed} onAction={onAction}></ItemActions>
-            </div>
-          }
+            <ItemActions item={item} status={status} adapter={adapter} blocked={blocked} dismissed={dismissed} onAction={onAction}></ItemActions>
+          </div>
         </div>
       </div>
     </div>);
@@ -242,11 +252,19 @@ function ChecklistRow({ item, status, open, onToggle, onAction, adapter, blocked
 }
 
 /* ---------------- wizard dialog ---------------- */
-function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete, onDismiss, onUndismiss }) {
+function WizardDialog({ statuses, adapter, speaker, maSetup, sendspin: sendspinProp, guest: guestProp, onSetSendspin, onSetGuest, onClose, onComplete, onDismiss, onUndismiss }) {
   const [openKey, setOpenKey] = React.useState(null);
   const [flowKey, setFlowKey] = React.useState(null);
   const [stepIdx, setStepIdx] = React.useState(0);
   const [flowData, setFlowData] = React.useState({});
+  const [sendspinLocal, setSendspinLocal] = React.useState(false);
+  const [guestLocal, setGuestLocal] = React.useState(false);
+  const controlled = sendspinProp !== undefined;
+  const sendspin = controlled ? sendspinProp : sendspinLocal;
+  const guest = controlled ? guestProp : guestLocal;
+  const enableSendspin = onSetSendspin || ((v) => setSendspinLocal(v));
+  const setGuestState = onSetGuest || ((v) => setGuestLocal(v));
+  const flowCtx = { setSendspin: enableSendspin, setGuest: setGuestState };
 
   const flow = flowKey ? FLOWS[flowKey] : null;
   const step = flow ? flow.steps[stepIdx] : null;
@@ -264,6 +282,7 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
   }, [onClose]);
 
   React.useEffect(() => {
+    if (step && step.onEnter) step.onEnter(flowData, flowCtx);
     if (step && step.auto) {
       const t = setTimeout(() => setStepIdx((i) => i + 1), step.autoDelay || 1500);
       return () => clearTimeout(t);
@@ -273,7 +292,7 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
   function startFlow(key) {
     const init = { ...(FLOWS[key].initial || {}) };
     if (key === "connectivity") init.adapter = adapter;
-    if (key === "audio") {init.maSetup = maSetup;init.speaker = speaker;init.path = "ma";}
+    if (key === "audio") {const maReady = maSetup || statuses.audio === "completed";init.maSetup = maReady;init.speaker = speaker;init.sendspin = sendspin;init.guest = guest;init.pin = !guest;}
     setFlowData(init);
     setFlowKey(key);
     setStepIdx(FLOWS[key].startStep ? FLOWS[key].startStep(init) : 0);
@@ -281,6 +300,7 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
   function setData(patch) {setFlowData((d) => ({ ...d, ...patch }));}
   function exitFlow() {setFlowKey(null);setStepIdx(0);}
   function next() {
+    if (step.onNext) step.onNext(flowData, flowCtx);
     if (step.final) {
       if (!(step.skipComplete && step.skipComplete(flowData))) onComplete(flowKey);
       exitFlow();return;
@@ -335,11 +355,14 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
               <div className="checklist">
                 {ITEMS.map((item) => {
                 const { blocked, blockedHint } = blockInfo(item);
+                const rawStatus = statuses[item.key];
+                const maInstalled = maSetup || rawStatus === "completed";
+                const rowStatus = item.key === "audio" ? (maInstalled && sendspin ? "completed" : "not-started") : rawStatus;
                 return (
                   <ChecklistRow
                     key={item.key}
                     item={item}
-                    status={statuses[item.key]}
+                    status={rowStatus}
                     adapter={adapter}
                     blocked={blocked}
                     blockedHint={blockedHint}
@@ -357,6 +380,7 @@ function WizardDialog({ statuses, adapter, speaker, maSetup, onClose, onComplete
         {inFlow ?
         step.auto || (typeof step.hideFooter === "function" ? step.hideFooter(flowData) : step.hideFooter) ? null :
         <footer className="dialog__foot">
+              {(() => {const sk = typeof step.skip === "function" ? step.skip(flowData) : step.skip;return sk ? <div className="dialog__foot-secondary"><Btn variant="text" onClick={() => setStepIdx(sk.to)}>{sk.label}</Btn></div> : null;})()}
               {step.secondary ?
               <div className="dialog__foot-secondary"><Btn variant="text" onClick={step.secondary.onClick}>{step.secondary.label}</Btn></div> : null}
               <Btn variant="filled" onClick={next} disabled={step.canContinue ? !step.canContinue(flowData) : false}>
@@ -405,7 +429,7 @@ function EntryCard({ statuses, onOpen }) {
 }
 
 /* ---------------- shared status state hook ---------------- */
-const audioBase = (speaker, maSetup) => speaker === "none" ? "not-started" : maSetup ? "completed" : "active";
+const audioBase = (speaker, maSetup) => maSetup ? "completed" : "not-started";
 const connBase = (adapter) => adapter === "none" ? "not-started" : "detected";
 
 function useProxyWizard({ detection, speaker, maSetup }) {

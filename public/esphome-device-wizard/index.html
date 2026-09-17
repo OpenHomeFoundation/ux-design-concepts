@@ -299,6 +299,7 @@
   .checkitem__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .22s cubic-bezier(.4,0,.2,1); }
   .checkitem__body-inner { overflow: hidden; min-height: 0; }
   .checkitem__desc { margin: 0; padding: 0 14px 0 68px; font-size: 14px; line-height: 1.45; color: var(--secondary-text-color); }
+  .checkitem__logo { display: block; height: 26px; width: auto; margin: 0 14px 10px 68px; }
   .checkitem__hint { display: flex; gap: 10px; align-items: flex-start; margin: 12px 14px 0 68px; padding: 10px 12px; background: var(--ha-color-surface-2); border-radius: 8px; font-size: 13px; line-height: 1.4; color: var(--secondary-text-color); }
   .checkitem__hint svg { flex: none; margin-top: 1px; }
   .checkitem__actions { display: flex; align-items: center; gap: 6px; padding: 14px 14px 16px 68px; }
@@ -342,15 +343,28 @@
   .audio-player__name { font-size: 14px; font-weight: 500; color: var(--primary-text-color); }
   .audio-player__meta { font-size: 12.5px; color: var(--secondary-text-color); }
   .audio-player__end { margin-left: auto; flex: none; display: flex; align-items: center; gap: 10px; }
+  .sendspin-hint { margin: 0; font-size: 12.5px; color: var(--secondary-text-color); }
+  .sendspin-list { display: flex; flex-direction: column; }
+  .sendspin-row { display: flex; align-items: center; gap: 16px; min-height: 52px; padding: 6px 4px; }
+  .sendspin-row + .sendspin-row { border-top: 1px solid var(--divider-color); }
+  .sendspin-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sendspin-row__name { font-size: 14px; font-weight: 500; color: var(--primary-text-color); }
+  .sendspin-row__meta { font-size: 12.5px; color: var(--secondary-text-color); }
+  .sendspin-row.is-disabled .sendspin-row__name, .sendspin-row.is-disabled .sendspin-row__meta { opacity: .55; }
+  .sendspin-row.is-disabled .ha-toggle { opacity: .45; cursor: not-allowed; }
 
   /* "recommended" accent pill (distinct from the success-green done check) */
   .chip--recommend { background: rgba(83,194,43,.16); color: #2f7d12; }
 
   /* Music Assistant upsell card — the "there's a better option" hero inside the audio item */
   .ma-upsell { padding: 16px; border: 1px solid var(--divider-color); border-radius: 12px; background: var(--card-background-color); display: flex; flex-direction: column; gap: 14px; }
+  .ma-flat { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 14px 16px; border: 1px solid var(--divider-color); border-radius: 12px; background: var(--card-background-color); }
+  .ma-flat__head { display: flex; align-items: center; gap: 12px; }
   .ma-upsell__head { display: flex; align-items: flex-start; gap: 12px; }
   .ma-upsell__title-wrap { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
   .ma-upsell__name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: var(--primary-text-color); }
+  .ma-upsell__text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ma-upsell__by { font-size: 12.5px; color: var(--secondary-text-color); }
   .ma-upsell__benefits { display: flex; flex-direction: column; gap: 9px; }
   .ma-benefit { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--primary-text-color); }
   .ma-upsell .ha-btn { align-self: flex-start; }
@@ -378,6 +392,11 @@
   .flow-config-head { display: flex; align-items: center; gap: 14px; }
 
   .radio-list { display: flex; flex-direction: column; gap: 8px; }
+  .flow-toggle { display: flex; align-items: center; gap: 16px; width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--divider-color); background: var(--card-background-color); cursor: pointer; text-align: left; }
+  .flow-toggle:hover { background: rgba(0,0,0,.025); }
+  .flow-toggle__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .flow-toggle__label { font-size: 15px; font-weight: 500; color: var(--primary-text-color); }
+  .flow-toggle__meta { font-size: 13px; color: var(--secondary-text-color); }
   .radio-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--divider-color); background: var(--card-background-color); cursor: pointer; font-family: inherit; text-align: left; transition: border-color .15s, background .15s; }
   .radio-item:hover:not(.is-disabled) { background: rgba(0,0,0,.025); }
   .radio-item.is-active { border-color: var(--primary-color); background: rgba(3,169,244,.05); box-shadow: inset 0 0 0 1px var(--primary-color); }

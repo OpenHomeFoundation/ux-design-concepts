@@ -19,7 +19,9 @@ const D = {
   lan:     "M16,11V9H14V11H10V9H8V11A2,2 0 0,0 6,13V15H18V13A2,2 0 0,0 16,11M4,17V19A2,2 0 0,0 6,21H10V19H6V17H4M20,17H18V19H14V21H18A2,2 0 0,0 20,19V17M6,3A2,2 0 0,0 4,5V7H6V5H10V3H6M18,3H14V5H18V7H20V5A2,2 0 0,0 18,3Z",
   button:  "M10,9A1,1 0 0,1 11,8A1,1 0 0,1 12,9V13.47L13.21,13.6L18.15,15.79C18.68,16.03 19,16.56 19,17.14V21.5C18.97,22.32 18.32,22.97 17.5,23H11C10.62,23 10.26,22.85 10,22.57L5.1,18.37L5.84,17.6C6.03,17.39 6.3,17.28 6.58,17.28H6.8L10,19V9M11,5A4,4 0 0,1 15,9C15,10.5 14.2,11.77 13,12.46V11.24C13.61,10.69 14,9.89 14,9A3,3 0 0,0 11,6A3,3 0 0,0 8,9C8,9.89 8.39,10.69 9,11.24V12.46C7.8,11.77 7,10.5 7,9A4,4 0 0,1 11,5Z",
   led:     "M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z",
+  cog:     "M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z",
   lockReset:"M12,3A4,4 0 0,1 16,7V8H17A2,2 0 0,1 19,10V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V10A2,2 0 0,1 7,8H8V7A4,4 0 0,1 12,3M12,5A2,2 0 0,0 10,7V8H14V7A2,2 0 0,0 12,5M12,12A2,2 0 0,0 10,14A2,2 0 0,0 12,16A2,2 0 0,0 14,14A2,2 0 0,0 12,12Z",
+  shield:  "M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7A2,2 0 0,1 14,9A2,2 0 0,1 12,11A2,2 0 0,1 10,9A2,2 0 0,1 12,7M15.6,16.7C14.8,17.9 13.5,18.7 12,18.7C10.5,18.7 9.2,17.9 8.4,16.7C8.4,15.4 11,14.7 12,14.7C13,14.7 15.6,15.4 15.6,16.7Z",
 };
 
 /* ---------------- sidebar ---------------- */
@@ -124,7 +126,7 @@ function DeviceInfoCard() {
   );
 }
 
-function ControlsCard() {
+function ControlsCard({ sendspin, guest, onToggleSendspin, onToggleGuest }) {
   const [light, setLight] = React.useState(true);
   const [safe, setSafe] = React.useState(false);
   return (
@@ -133,6 +135,10 @@ function ControlsCard() {
         control={<Toggle on={light} onClick={() => setLight(!light)}></Toggle>}></EntityRow>
       <EntityRow icon={D.lockReset} color="#44739e" name="Safe mode"
         control={<Toggle on={safe} onClick={() => setSafe(!safe)}></Toggle>}></EntityRow>
+      <EntityRow icon={D.cog} color="#44739e" strike={!sendspin} name="Sendspin"
+        control={<Toggle on={sendspin} onClick={onToggleSendspin}></Toggle>}></EntityRow>
+      <EntityRow icon={D.shield} color="#44739e" strike={guest} name="Require PIN to play audio"
+        control={<Toggle on={!guest} onClick={onToggleGuest}></Toggle>}></EntityRow>
     </Card>
   );
 }
@@ -313,6 +319,10 @@ function App() {
     maSetup: t.musicAssistant === "setup",
   });
   const [open, setOpen] = React.useState(false);
+  const [sendspin, setSendspin] = React.useState(true);
+  const [guest, setGuest] = React.useState(true);
+  const toggleSendspin = () => setSendspin((on) => {if (on) setGuest(false);return !on;});
+  const toggleGuest = () => setGuest((g) => !g);
   const deferred = t.setupCard === "compact";
   const setDefer = (v) => setTweak("setupCard", v ? "compact" : "full");
   const vp = t.viewport || "fit";
@@ -320,7 +330,7 @@ function App() {
 
   const cards = {
     deviceInfo: <DeviceInfoCard></DeviceInfoCard>,
-    controls: <ControlsCard></ControlsCard>,
+    controls: <ControlsCard sendspin={sendspin} guest={guest} onToggleSendspin={toggleSendspin} onToggleGuest={toggleGuest}></ControlsCard>,
     sensors: <SensorsCard></SensorsCard>,
     diagnostic: <DiagnosticCard></DiagnosticCard>,
     events: <EventsCard></EventsCard>,
@@ -371,6 +381,10 @@ function App() {
           adapter={adapter}
           speaker={t.speaker}
           maSetup={t.musicAssistant === "setup"}
+          sendspin={sendspin}
+          guest={guest}
+          onSetSendspin={(v) => setSendspin(v)}
+          onSetGuest={(v) => setGuest(v)}
           onClose={() => setOpen(false)}
           onComplete={complete}
           onDismiss={dismiss}

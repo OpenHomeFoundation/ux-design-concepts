@@ -14,7 +14,7 @@ html,body{margin:0;background:#e9e9e9;font-family:Roboto,'Noto Sans',system-ui,s
 .bar button.on{background:#03a9f4;border-color:#03a9f4;color:#fff}
 .bar .muted{color:#727272}
 .viewport{position:absolute;top:48px;left:0}
-.canvas{position:relative;width:5760px;height:4926px;transform-origin:0 0}
+.canvas{position:relative;width:5760px;height:4858px;transform-origin:0 0}
 .board{position:absolute}
 .strip{position:absolute;top:-22px;left:0;font-size:13px;color:#727272;white-space:nowrap}
 .board iframe{display:block;border:1px solid #cfcfcf;background:#fafafa}
@@ -25,9 +25,9 @@ html,body{margin:0;background:#e9e9e9;font-family:Roboto,'Noto Sans',system-ui,s
 </style>
 </head>
 <body>
-<div class="bar"><h1>Home Assistant - Recording flows</h1><span class="muted">Standalone export of the design canvas · last update 2026-11-03 · proposed draft, for discussion</span><span class="sp"></span>
+<div class="bar"><h1>Home Assistant - Recording flows</h1><span class="muted">Standalone export of the design canvas · last update 2026-11-04 · proposed draft, for discussion</span><span class="sp"></span>
 <span class="muted">Zoom</span><button data-z="0.25">25%</button><button data-z="0.5" class="on">50%</button><button data-z="0.75">75%</button><button data-z="1">100%</button></div>
-<div class="viewport"><div class="canvas" id="canvas"><div class="board" id="Main" style="left:80px;top:80px;width:2034px;height:1260px"><div class="strip">Proposal: Home Assistant recording flows</div><iframe title="Proposal: Home Assistant recording flows" width="2034" height="1260" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Home Assistant - Recording flows&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+<div class="viewport"><div class="canvas" id="canvas"><div class="board" id="Main" style="left:80px;top:80px;width:2063px;height:1260px"><div class="strip">Proposal: Home Assistant recording flows</div><iframe title="Proposal: Home Assistant recording flows" width="2063" height="1260" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Home Assistant - Recording flows&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -545,7 +545,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;span style=&quot;font-size: 14px; color: var(--color-text-secondary)&quot;&gt;Roadmap opportunity #108 &quot;Streamline ways for storing camera recordings&quot; · continuation of Matter cameras (#119) and two-way audio (#201)&lt;/span&gt;
     &lt;span style=&quot;margin-left: auto; font-size: 13px; color: var(--color-text-tertiary); font-family: var(--font-mono)&quot;&gt;Last update: 2026-11-03&lt;/span&gt;
   &lt;/div&gt;
-  &lt;div style=&quot;display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px&quot;&gt;
+  &lt;div style=&quot;display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; width: 1985px&quot;&gt;
     &lt;div style=&quot;background: var(--color-surface); border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px&quot;&gt;
       &lt;h2 style=&quot;margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 17px&quot;&gt;Summary&lt;/h2&gt;
       &lt;p style=&quot;margin: 0; font-size: 14px; color: var(--color-text-secondary)&quot;&gt;With Matter cameras exposed in the existing UI and two-way audio arriving as a platform capability, the missing piece is what happens to the footage. Today that needs a separate NVR such as Frigate, wired back into Home Assistant and reviewed outside it. This opportunity adds a generic recording capability that any camera integration can use, with storage as a user choice: local disk first, network storage (NAS or other shares), Home Assistant Link, partner clouds and existing NVRs through one open storage provider interface. It reuses what Home Assistant already has (backup-style locations and retention, System → Storage, go2rtc, Media, repairs, the Matter Server install pattern) and only adds what recordings need.&lt;/p&gt;
@@ -562,7 +562,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/div&gt;
-  &lt;div style=&quot;display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 8px; background: var(--color-warning-subtle); border: 1px solid var(--color-warning); color: var(--color-text-primary); font-size: 14px&quot;&gt;
+  &lt;div style=&quot;display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 8px; background: var(--color-warning-subtle); border: 1px solid var(--color-warning); color: var(--color-text-primary); font-size: 14px; width: 1951px&quot;&gt;
     &lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; width=&quot;22&quot; height=&quot;22&quot; aria-hidden=&quot;true&quot; style=&quot;color: var(--color-warning); flex: none&quot;&gt;&lt;path d=&quot;M13,14H11V9H13M13,18H11V16H13M1,21H23L12,2L1,21Z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;
     &lt;div&gt;&lt;b style=&quot;font-weight: 500&quot;&gt;Proposed draft, for discussion.&lt;/b&gt; These flows and screens are wireframe-level sketches meant as a basis to ideate on, not a decided design or an implementation plan. Everything on this canvas is open to change.&lt;/div&gt;
   &lt;/div&gt;
@@ -620,9 +620,9 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
       &lt;h2 style=&quot;margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 17px&quot;&gt;Reference: how Backups does it today&lt;/h2&gt;
       &lt;div class=&quot;map&quot;&gt;
         &lt;div class=&quot;k&quot;&gt;Backups (core)&lt;/div&gt;&lt;div class=&quot;k&quot;&gt;Recordings (app + companion integration)&lt;/div&gt;
-        &lt;div&gt;Lives in Settings → System&lt;/div&gt;&lt;div&gt;Added like any integration; it installs and starts its app itself (Matter Server pattern)&lt;/div&gt;
+        &lt;div&gt;Lives in Settings → System&lt;/div&gt;&lt;div&gt;Added like any integration; it installs and starts its app itself&lt;/div&gt;
         &lt;div&gt;Onboarding dialog, 4 steps, then overview page&lt;/div&gt;&lt;div&gt;Config flow: use-the-app tick, install progress, then the same 4 steps; settings on the integration page, clips in Media&lt;/div&gt;
-        &lt;div&gt;Backup locations (local, network storage, Cloud)&lt;/div&gt;&lt;div&gt;App data folder on this system, or network storage the app can mount&lt;/div&gt;
+        &lt;div&gt;Backup locations (local, network storage, Cloud)&lt;/div&gt;&lt;div&gt;App data folder on this system, or network storage the app can mount, or cloud offering&lt;/div&gt;
         &lt;div&gt;Automatic backups: schedule&lt;/div&gt;&lt;div&gt;Per camera: continuous, on events, only via automations&lt;/div&gt;
         &lt;div&gt;Retention: keep N backups or N days&lt;/div&gt;&lt;div&gt;Retention: keep N days and a size cap, oldest deleted first&lt;/div&gt;
         &lt;div&gt;&quot;My backups&quot; list with details dialog&lt;/div&gt;&lt;div&gt;Media browser with a &quot;Recordings&quot; source, expanded with filters, timeline and bulk actions; no new sidebar item&lt;/div&gt;
@@ -3480,7 +3480,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Empty" style="left:80px;top:2846px;width:1200px;height:820px"><div class="strip">Devices &amp; services: Recordings offered</div><iframe title="Devices &amp; services: Recordings offered" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Devices and services: Recordings app discovered&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Empty" style="left:80px;top:2812px;width:1200px;height:820px"><div class="strip">Devices &amp; services: Recordings offered</div><iframe title="Devices &amp; services: Recordings offered" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Devices and services: Recordings app discovered&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -4048,7 +4048,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;button type=&quot;button&quot; class=&quot;ha-btn filled&quot; style=&quot;position: absolute; right: 24px; bottom: 24px&quot;&gt;Add integration&lt;/button&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Overview" style="left:1360px;top:2846px;width:1200px;height:820px"><div class="strip">Integration page: Recordings</div><iframe title="Integration page: Recordings" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Settings: Recordings overview&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Overview" style="left:1360px;top:2812px;width:1200px;height:820px"><div class="strip">Integration page: Recordings</div><iframe title="Integration page: Recordings" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Settings: Recordings overview&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -4661,7 +4661,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Browse" style="left:2640px;top:2846px;width:1200px;height:820px"><div class="strip">Media › Recordings (expanded browser)</div><iframe title="Media › Recordings (expanded browser)" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Media browser: Recordings, expanded with filters and timeline&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Recordings-Browse" style="left:2640px;top:2812px;width:1200px;height:820px"><div class="strip">Media › Recordings (expanded browser)</div><iframe title="Media › Recordings (expanded browser)" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Media browser: Recordings, expanded with filters and timeline&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -5276,7 +5276,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Media-Browser" style="left:3920px;top:2846px;width:1200px;height:820px"><div class="strip">Media › Recordings › camera (as today)</div><iframe title="Media › Recordings › camera (as today)" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Media browser with Recordings source&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Media-Browser" style="left:3920px;top:2812px;width:1200px;height:820px"><div class="strip">Media › Recordings › camera (as today)</div><iframe title="Media › Recordings › camera (as today)" width="1200" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Media browser with Recordings source&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -5830,7 +5830,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="MoreInfo-Camera" style="left:80px;top:4026px;width:480px;height:820px"><div class="strip">Recording device more-info</div><iframe title="Recording device more-info" width="480" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Recording device more-info dialog&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="MoreInfo-Camera" style="left:80px;top:3958px;width:480px;height:820px"><div class="strip">Recording device more-info</div><iframe title="Recording device more-info" width="480" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Recording device more-info dialog&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -6398,7 +6398,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Automation-Action" style="left:640px;top:4026px;width:560px;height:820px"><div class="strip">Automation: record clip</div><iframe title="Automation: record clip" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Automation editor: record clip action&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Automation-Action" style="left:640px;top:3958px;width:560px;height:820px"><div class="strip">Automation: record clip</div><iframe title="Automation: record clip" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Automation editor: record clip action&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -6954,7 +6954,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Repair-StorageFull" style="left:1280px;top:4026px;width:560px;height:820px"><div class="strip">Repair: storage almost full</div><iframe title="Repair: storage almost full" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Repair: recording storage almost full&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Repair-StorageFull" style="left:1280px;top:3958px;width:560px;height:820px"><div class="strip">Repair: storage almost full</div><iframe title="Repair: storage almost full" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Repair: recording storage almost full&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -7491,7 +7491,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Add-Network-Storage" style="left:1920px;top:4026px;width:560px;height:820px"><div class="strip">Add network storage (reused)</div><iframe title="Add network storage (reused)" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Add network storage dialog with Recordings usage&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Add-Network-Storage" style="left:1920px;top:3958px;width:560px;height:820px"><div class="strip">Add network storage (reused)</div><iframe title="Add network storage (reused)" width="560" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Add network storage dialog with Recordings usage&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -8042,7 +8042,7 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Clip-Detail" style="left:2560px;top:4026px;width:720px;height:820px"><div class="strip">Recording detail</div><iframe title="Recording detail" width="720" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Recording detail dialog&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="board" id="Clip-Detail" style="left:2560px;top:3958px;width:720px;height:820px"><div class="strip">Recording detail</div><iframe title="Recording detail" width="720" height="820" loading="lazy" srcdoc="&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Recording detail dialog&lt;/title&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap&quot;&gt;&lt;style&gt;/* =========================================================================
    HA Concept Car — Design Tokens
    ---------------------------------------------------------------------------
    Two voices reconciled:
@@ -8591,10 +8591,10 @@ a{color:var(--color-accent)}a:hover{color:var(--color-accent-hover)}
   &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="title1" style="left:80px;top:1406px;max-width:4080px">1. Add the integration. It installs its app (like Music Assistant), then configure it</div><div class="title1" style="left:80px;top:2606px;max-width:5040px">2. Devices &amp; services, the integration page, and recordings inside Media</div><div class="title1" style="left:80px;top:3786px;max-width:3200px">3. Using recordings: device dialog, automations, repairs, storage</div><div class="sticky orange" style="left:2240px;top:80px;width:560px"><b>Still needs core work later (not blocking the app)</b>• Recordings tab in the camera more-info dialog<br>• Camera dashboard card linking to the latest clip<br>• A &quot;recording storage provider&quot; platform so Frigate, vendor NVRs or a cloud partner can plug into the same browser and actions</div><div class="sticky orange" style="left:5200px;top:2846px;width:480px"><b>Media browser expansions this needs (all reusable by other video sources)</b>- Filter chips on a media source: camera, day range, event type, protected<br>- Day timeline for continuous recordings, with event markers and scrubbing<br>- Multi-select with download, protect and delete actions<br>- Clip detail: trigger metadata, size, expiry, related automation<br>- A camera card and the recording device dialog deep-link into Media › Recordings<br>Already there today: browse by folder, play in the browser, play on a media player, pick in a dashboard media card, attach to notifications.</div></div></div>
+&lt;/body&gt;&lt;/html&gt;"></iframe></div><div class="title1" style="left:80px;top:1464px;max-width:4080px;font-size:40px">1. Add the integration. It installs its app (like Music Assistant), then configure it</div><div class="title1" style="left:80px;top:2610px;max-width:5040px;font-size:40px">2. Devices &amp; services, the integration page, and recordings inside Media</div><div class="title1" style="left:80px;top:3756px;max-width:3200px;font-size:40px">3. Using recordings: device dialog, automations, repairs, storage</div><div class="sticky orange" style="left:2207px;top:80px;width:560px"><b>Some open topics /  core work later (not blocking the app)</b>- Recordings tab in the camera more-info dialog<br>- Camera dashboard card linking to the latest clip<br>- A &quot;recording storage provider&quot; platform so Frigate, vendor NVRs or a cloud partner can plug into the same browser and actions</div><div class="sticky orange" style="left:5200px;top:2812px;width:480px"><b>Media browser expansions this needs (all reusable by other video sources)</b>- Filter chips on a media source: camera, day range, event type, protected<br>- Day timeline for continuous recordings, with event markers and scrubbing<br>- Multi-select with download, protect and delete actions<br>- Clip detail: trigger metadata, size, expiry, related automation<br>- A camera card and the recording device dialog deep-link into Media › Recordings<br>Already there today: browse by folder, play in the browser, play on a media player, pick in a dashboard media card, attach to notifications.</div></div></div>
 <script>
 (function(){
-  var c=document.getElementById('canvas'), vp=c.parentElement, W=5760, H=4926;
+  var c=document.getElementById('canvas'), vp=c.parentElement, W=5760, H=4858;
   function setZoom(z){c.style.transform='scale('+z+')'; vp.style.width=(W*z)+'px'; vp.style.height=(H*z)+'px';
     document.querySelectorAll('.bar button').forEach(function(b){b.classList.toggle('on', +b.dataset.z===z);});}
   document.querySelectorAll('.bar button').forEach(function(b){b.addEventListener('click',function(){setZoom(+b.dataset.z);});});
